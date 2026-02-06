@@ -1,0 +1,498 @@
+/* ======================== GLOBAL ======================== */
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* ======================== SIGN IN ======================== */
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url('Assets/signImages/bg1.png') no-repeat center center;
+    background-size: cover;
+}
+
+
+.login-card {
+    background: #ffffff;
+    width: 380px;
+    padding: 30px 28px;
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.logo img {
+    width: 100px;
+}
+
+.form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #4a4a4a;
+}
+
+.form-control {
+    font-size: 14px;
+    padding: 10px 12px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 38px;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.6;
+}
+
+.forgot-link {
+    font-size: 13px;
+    text-decoration: none;
+    color: #1e88ff;
+}
+
+.btn-primary {
+    background-color: #1e88ff;
+    border: none;
+    padding: 10px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: #0f6cd1;
+}
+
+.signup-text {
+    font-size: 14px;
+}
+
+.signup-text a {
+    color: #1e88ff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* ======================== SIGN UP ======================== */
+.signup-body {
+    background: url("images/signImages/bg1.png") no-repeat center center fixed;
+    background-size: cover;
+}
+
+.signup-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.signup-card {
+    background: #ffffff;
+    width: 420px;
+    padding: 24px 26px;
+    border-radius: 14px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.signup-logo img {
+    width: 95px;
+}
+
+.signup-title {
+    color: #1e88ff;
+    letter-spacing: 1px;
+    margin-bottom: 12px !important;
+}
+
+/* tighter spacing */
+.form-label {
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.form-control {
+    font-size: 14px;
+    padding: 8px 12px;
+}
+
+.mb-4 {
+    margin-bottom: 14px !important;
+}
+
+.mb-3 {
+    margin-bottom: 10px !important;
+}
+
+.mb-2 {
+    margin-bottom: 8px !important;
+}
+
+/* password eye */
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1.2rem;
+    user-select: none;
+    color: #555;
+}
+
+.password-toggle:hover {
+    color: #1e88ff;
+}
+
+/* ================= HOME PAGE ================= */
+.home-body {
+    background: #f6f8fc;
+    font-family: "Segoe UI", sans-serif;
+    margin: 0;
+}
+
+/* ================= HEADER ================= */
+.topbar {
+    background: #1877f2;
+    height: 56px;
+    display: flex;
+    align-items: center;
+}
+
+.topbar-inner {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.logo img {
+    height: 40px;
+    width: 50px;
+
+}
+
+.top-menu {
+    margin: 0 auto;
+    display: flex;
+    gap: 22px;
+}
+
+.top-menu a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.top-menu a.active {
+    background: white;
+    color: #1877f2;
+}
+
+/* ================= TOP ICONS ================= */
+.top-icons {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.icon-wrapper {
+    position: relative;
+    cursor: pointer;
+}
+
+.icon-wrapper .icon-img {
+    width: 26px;
+    height: 26px;
+ 
+}
+
+.icon-wrapper .badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: red;
+    color: white;
+    font-size: 10px;
+    border-radius: 50%;
+    padding: 2px 5px;
+}
+
+.notif-dropdown {
+    display: none;
+    position: absolute;
+    top: 36px;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    width: 220px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    padding: 10px;
+    z-index: 10;
+}
+
+.notif-dropdown p {
+    margin: 5px 0;
+    font-size: 13px;
+    color: #333;
+}
+
+.notif-dropdown p a {
+    text-decoration: none;
+    color: #333;
+}
+
+.avatar-wrapper .avatar {
+    border-radius: 50%;
+}
+
+/* ================= SEARCH ================= */
+.search-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 30px;
+    gap: 16px;
+}
+
+
+.search-box {
+    background: white;
+    border-radius: 20px;
+    padding: 6px 14px;
+    width: 340px;
+    display: flex;
+    align-items: center;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+}
+
+.search-box i {
+    font-size: 16px;
+}
+
+
+.filters {
+    display: flex;
+    gap: 10px;
+}
+
+.chip {
+    border: none;
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-size: 13px;
+}
+
+.blue { background: #dbe9ff; color: #1877f2; }
+.purple { background: #e4dcff; color: #6f42c1; }
+.green { background: #ddf7e3; color: #28a745; }
+
+/* ================= POSTS ================= */
+.content-wrapper {
+    padding-top: 10px;
+}
+
+.post-card {
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    margin-bottom: 20px;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.post-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.post-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.post-meta {
+    font-size: 12px;
+    color: #777;
+}
+
+.post-menu {
+    margin-left: auto;
+    cursor: pointer;
+}
+
+.post-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 10px;
+}
+
+.post-title {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.post-rating {
+    font-size: 13px;
+}
+
+.stars {
+    color: #f5a623;
+}
+
+.post-text {
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.post-image {
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 10px;
+    object-fit: cover;
+    max-height: 450px;
+    display: block;
+}
+
+.see-all {
+    color: #1877f2;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.post-image {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 8px;
+}
+
+/* ================= COMMENT ================= */
+.post-comment {
+    display: flex;
+    gap: 10px;
+    background: #f1f3f6;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 12px;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.comment-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.comment-text {
+    font-size: 13px;
+}
+
+/* ================= COMMENT INPUT ================= */
+.comment-input {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.comment-input input {
+    flex: 1;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.comment-input button {
+    background: #1877f2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* ================= POST ACTIONS ================= */
+.post-actions {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    font-size: 13px;
+    color: #666;
+    margin-top: 10px;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar-card {
+    background: white;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+}
+
+.sidebar-title {
+    font-weight: 600;
+    font-size: 18px;
+    color: #1877f2;
+    margin-bottom: 10px;
+}
+
+.sidebar-text {
+    font-size: 13px;
+    color: #65676b;
+}
+
+.sidebar-map {
+    height: 120px;
+    border-radius: 10px;
+    background: #dcdfe4;
+}
+
+.lost-box {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    margin-bottom: 20px;
+}
+
+.lost-title {
+    color: #1877f2;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.lost-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.lost-img {
+    width: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-bottom: 10px;
+    max-height: 200px;
+}
+
+
