@@ -11,20 +11,18 @@ $report_count = $pdo->query("SELECT COUNT(*) FROM post_reports")->fetchColumn();
 $message_stat_count = $pdo->query("SELECT COUNT(*) FROM contact_messages")->fetchColumn();
 
 // 2. FETCH REPORTS WITH CORRECT JOINS
-// We need u1 for the Reporter Name
-// We need u2 for the Reported Post Owner's Name (via the pets table)
 $sql_reports = "SELECT 
                     pr.report_id, 
                     pr.report_type, 
                     pr.description, 
                     pr.post_id,
-                    p.pet_name, 
+                    p.content AS post_content,
                     p.image_url, 
                     u1.full_name AS reporter_name,
                     u2.full_name AS reported_user_name 
                 FROM post_reports pr 
                 LEFT JOIN users u1 ON pr.user_id = u1.user_id 
-                LEFT JOIN pets p ON pr.post_id = p.pet_id 
+                LEFT JOIN posts p ON pr.post_id = p.post_id 
                 LEFT JOIN users u2 ON p.user_id = u2.user_id 
                 ORDER BY pr.created_at DESC";
 $recent_reports = $pdo->query($sql_reports)->fetchAll(PDO::FETCH_ASSOC);
@@ -45,6 +43,19 @@ $recent_messages = $pdo->query("SELECT * FROM contact_messages ORDER BY created_
     <style>
         body { background-color: #cbd5e0; font-family: sans-serif; margin: 0; }
         .navbar-custom { background-color: #1e88e5; height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: white; }
+        .logo-admin { height: 30px; width: 30px; display: flex; align-items: center; }
+        .logo-admin img { height: 100%; width: 100%; object-fit: contain;  }
+        
+        /* Dropdown Styling */
+        .profile-dropdown .btn-profile { color: white; background: none; border: none; padding: 0; font-size: 1.5rem; transition: 0.3s; }
+        .profile-dropdown .btn-profile:after { display: none; } 
+        .dropdown-menu-end { border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: none; margin-top: 12px; min-width: 200px; padding: 10px 0; }
+        .dropdown-header { font-weight: 700; color: #2d3748; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+        .dropdown-item { font-size: 0.9rem; font-weight: 500; color: #4a5568; padding: 10px 20px; display: flex; align-items: center; gap: 10px; }
+        .dropdown-item i { width: 18px; text-align: center; }
+        .dropdown-item:hover { background-color: #f7fafc; color: #1e88e5; }
+        .dropdown-item.text-danger:hover { background-color: #fff5f5; color: #e53e3e !important; }
+
         .white-box-container { border: 6px solid white; border-radius: 30px; padding: 25px; display: flex; gap: 25px; align-items: stretch; margin: 20px; height: 600px; background-color: #cbd5e0; }
         .reports-panel { flex: 0 0 40%; display: flex; flex-direction: column; overflow: hidden; }
         .reports-scroll-area { overflow-y: auto; flex-grow: 1; padding-right: 10px; }
@@ -64,9 +75,25 @@ $recent_messages = $pdo->query("SELECT * FROM contact_messages ORDER BY created_
 <body>
 
 <div class="navbar-custom">
-    <i class="fas fa-paw fs-4"></i>
-    <div class="fw-bold">ADMIN PANEL</div>
-    <i class="fas fa-user-circle fs-4"></i>
+    <div class="logo-admin">
+        <a href="../src/manage_users.php">
+            <img src="../src/images/homeImages/Sese-Logo3.png" alt="Logo" />
+        </a>
+    </div>
+    <div class="fw-bold">ADMIN DASHBOARD</div>
+    
+    <div class="dropdown profile-dropdown">
+        <button class="btn btn-profile dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><h6 class="dropdown-header">Admin Account</h6></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="../src/mains/main.php"><i class="fas fa-home"></i> Main Feed</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
 </div>
 
 <div class="container-fluid">
@@ -105,10 +132,12 @@ $recent_messages = $pdo->query("SELECT * FROM contact_messages ORDER BY created_
         <h5 class="fw-bold mb-4"><i class="fas fa-envelope me-2"></i> RECENT MESSAGES</h5>
         <?php foreach ($recent_messages as $msg): ?>
         <div class="message-row">
-            <div class="msg-box"><?php echo htmlspecialchars($msg['full_name'] ?? 'Guest'); ?></div>
+            <div class="msg-box"><?php echo htmlspecialchars($msg['name'] ?? 'Guest'); ?></div>
             <div class="msg-box"><?php echo htmlspecialchars($msg['email']); ?></div>
             <div class="msg-box text-truncate"><?php echo htmlspecialchars($msg['message']); ?></div>
-            <button class="btn-trash py-2"><i class="fas fa-trash"></i></button>
+            <button class="btn-trash py-2" onclick="deleteMessage(<?php echo $msg['id']; ?>)">
+                <i class="fas fa-trash"></i>
+            </button>
         </div>
         <?php endforeach; ?>
     </div>
@@ -147,19 +176,32 @@ $recent_messages = $pdo->query("SELECT * FROM contact_messages ORDER BY created_
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // SweetAlert Logout Logic
+    function confirmLogout() {
+        Swal.fire({
+            title: 'Ready to leave?',
+            text: "You will need to login again to access the admin area.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#e53e3e',
+            cancelButtonColor: '#718096',
+            confirmButtonText: 'Logout Now'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = 'logout.php';
+            }
+        })
+    }
+
     function viewReport(data) {
         document.getElementById('modalReason').innerText = data.report_type;
         document.getElementById('modalReporter').innerText = data.reporter_name || 'Anonymous';
-        
-        // Fix for "User Not Found": Using the 'reported_user_name' alias from the SQL
         document.getElementById('modalReportedUser').innerText = "Reported User: " + (data.reported_user_name || 'Not Available');
-        document.getElementById('modalPetName').innerText = "Pet Listing: " + (data.pet_name || 'N/A');
+        document.getElementById('modalPetName').innerText = "Post Content: " + (data.post_content || 'N/A');
         
         const img = document.getElementById('modalPostImg');
-        if (data.image_url) {
-            // Cleans the path if 'uploads/' is already in the DB string
-            let cleanPath = data.image_url.replace('uploads/', '');
-            img.src = '../uploads/' + cleanPath;
+        if (data.image_url && data.image_url.trim() !== "") {
+            img.src = '../src/' + data.image_url; 
             img.style.display = 'block';
             img.onerror = function() { this.style.display = 'none'; };
         } else {
@@ -174,7 +216,7 @@ $recent_messages = $pdo->query("SELECT * FROM contact_messages ORDER BY created_
         if(!id) return;
         Swal.fire({
             title: 'Are you sure?',
-            text: "This will remove the reported pet post.",
+            text: "This will remove the reported pet post permanently.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -189,6 +231,30 @@ $recent_messages = $pdo->query("SELECT * FROM contact_messages ORDER BY created_
                     if (data.success) location.reload();
                     else Swal.fire('Error', data.error, 'error');
                 });
+            }
+        });
+    }
+
+    function deleteMessage(id) {
+        if(!id) return;
+        Swal.fire({
+            title: 'Archive Message?',
+            text: "This message will be moved to history.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#1e88e5',
+            confirmButtonText: 'Yes, Archive'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const fd = new FormData();
+                fd.append('delete_msg_id', id);
+                fetch('handle_messages.php', { method: 'POST', body: fd })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) location.reload();
+                    else Swal.fire('Error', data.error, 'error');
+                })
+                .catch(err => Swal.fire('Error', 'Connection failed', 'error'));
             }
         });
     }

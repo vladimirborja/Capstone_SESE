@@ -1,75 +1,84 @@
 <?php
 session_start();
-// 1. Database Connection
 $conn = new mysqli("localhost", "root", "", "capstone_db");
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../index.php");
-    exit();
-}
-
+if (!isset($_SESSION['user_id'])) { exit(); }
 $user_id = $_SESSION['user_id'];
 
-// ======================== HANDLE PROFILE PICTURE UPLOAD ========================
-if (isset($_POST['update_avatar'])) {
-    if (isset($_FILES['profile_pix']) && $_FILES['profile_pix']['error'] === 0) {
-        $file_name = $_FILES['profile_pix']['name'];
-        $file_tmp  = $_FILES['profile_pix']['tmp_name'];
+// HANDLE IMAGE UPLOAD
+if (isset($_POST['upload_photo'])) {
+    if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === 0) {
+        $target_dir = "../uploads/profile_pics/";
         
-        // Create unique name to avoid overwriting
-        $file_ext = pathinfo($file_name, PATHINFO_EXTENSION);
-        $new_file_name = "avatar_" . $user_id . "_" . time() . "." . $file_ext;
-        $upload_path = "uploads/" . $new_file_name;
-
-        // Ensure directory exists
-        if (!is_dir('uploads')) {
-            mkdir('uploads', 0777, true);
+        // Create directory if it doesn't exist
+        if (!file_exists($target_dir)) {
+            mkdir($target_dir, 0777, true);
         }
 
-        if (move_uploaded_file($file_tmp, $upload_path)) {
-            // Update database with the new path
-            $stmt = $conn->prepare("UPDATE users SET profile_pix = ? WHERE user_id = ?");
-            $stmt->bind_param("si", $upload_path, $user_id);
-            $stmt->execute();
-            
-            header("Location: profile.php?status=success");
+        $file_name = $_FILES["profile_image"]["name"];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+        $allowed_ext = array("jpg", "jpeg", "png", "gif");
+
+        if (in_array($file_ext, $allowed_ext)) {
+            // Create a unique name: user_1_1712345678.jpg
+            $new_filename = "user_" . $user_id . "_" . time() . "." . $file_ext;
+            $target_file = $target_dir . $new_filename;
+
+            if (move_uploaded_file($_FILES["profile_image"]["tmp_name"], $target_file)) {
+                // Update database with the file path
+                // Note: using the path relative to the root or where profile.php can access it
+                $db_path = "../uploads/profile_pics/" . $new_filename;
+                $stmt = $conn->prepare("UPDATE users SET profile_image = ? WHERE user_id = ?");
+                $stmt->bind_param("si", $db_path, $user_id);
+                
+                if ($stmt->execute()) {
+                    header("Location: profile.php?status=img_success");
+                } else {
+                    header("Location: profile.php?status=error");
+                }
+            } else {
+                header("Location: profile.php?status=img_error");
+            }
         } else {
-            header("Location: profile.php?status=error");
+            header("Location: profile.php?status=invalid_file");
         }
     } else {
-        header("Location: profile.php?status=error");
+        header("Location: profile.php?status=img_error");
     }
     exit();
 }
 
-// ======================== HANDLE BIO UPDATE ========================
-if (isset($_POST['save_bio'])) {
-    $bio = $_POST['bio'];
-
-    $stmt = $conn->prepare("UPDATE users SET bio = ? WHERE user_id = ?");
-    $stmt->bind_param("si", $bio, $user_id);
-
-    if ($stmt->execute()) {
-        header("Location: profile.php?tab=about&status=success");
-    } else {
-        header("Location: profile.php?tab=about&status=error");
-    }
-    exit();
-}
-
-// ======================== HANDLE BASIC INFO UPDATE ========================
+// HANDLE BASIC INFO UPDATE
 if (isset($_POST['update_info'])) {
-    $fname = $_POST['first_name'];
-    $lname = $_POST['last_name'];
-    $email = $_POST['email'];
+    // Combine first and last name as sent from the profile.php form
+    $first_name = trim($_POST['first_name']);
+    $last_name = trim($_POST['last_name']);
+    $full_name = $first_name . " " . $last_name;
+    
+    $email = trim($_POST['email']);
+    $username = trim($_POST['username']);
 
-    $stmt = $conn->prepare("UPDATE users SET first_name = ?, last_name = ?, email = ? WHERE user_id = ?");
-    $stmt->bind_param("sssi", $fname, $lname, $email, $user_id);
+    // Security Check: No numbers, only letters, spaces, and dots for full name
+    if (!preg_match("/^[a-zA-Z\s.]+$/", $full_name)) {
+        header("Location: profile.php?tab=settings&status=invalid_name");
+        exit();
+    }
+
+    // Security Check: No numbers, no spaces, only letters and dots for username
+    if (!preg_match("/^[a-zA-Z.]+$/", $username)) {
+        header("Location: profile.php?tab=settings&status=invalid_username");
+        exit();
+    }
+
+    $stmt = $conn->prepare("UPDATE users SET full_name = ?, email = ?, username = ? WHERE user_id = ?");
+    
+    if ($stmt === false) {
+        die("Critical Error: Column 'username' not found. Ensure you ran the ALTER TABLE SQL command.");
+    }
+
+    $stmt->bind_param("sssi", $full_name, $email, $username, $user_id);
 
     if ($stmt->execute()) {
         header("Location: profile.php?tab=settings&status=updated");
@@ -79,21 +88,37 @@ if (isset($_POST['update_info'])) {
     exit();
 }
 
-// ======================== HANDLE PASSWORD CHANGE ========================
+// HANDLE BIO UPDATE
+if (isset($_POST['save_bio'])) {
+    $bio = $_POST['bio'];
+    $stmt = $conn->prepare("UPDATE users SET bio = ? WHERE user_id = ?");
+    $stmt->bind_param("si", $bio, $user_id);
+    $stmt->execute() ? header("Location: profile.php?tab=about&status=success") : header("Location: profile.php?tab=about&status=error");
+    exit();
+}
+
+// HANDLE PASSWORD CHANGE
 if (isset($_POST['change_pwd'])) {
     $new_pwd = $_POST['new_password'];
-    $confirm_pwd = $_POST['confirm_password'];
-
-    if ($new_pwd === $confirm_pwd) {
-        $hashed_pwd = password_hash($new_pwd, PASSWORD_DEFAULT);
-        
+    if ($new_pwd === $_POST['confirm_password']) {
+        $hashed = password_hash($new_pwd, PASSWORD_DEFAULT);
         $stmt = $conn->prepare("UPDATE users SET password = ? WHERE user_id = ?");
-        $stmt->bind_param("si", $hashed_pwd, $user_id);
+        $stmt->bind_param("si", $hashed, $user_id);
         $stmt->execute();
-        
         header("Location: profile.php?tab=settings&status=pwd_success");
     } else {
         header("Location: profile.php?tab=settings&status=pwd_mismatch");
+    }
+    exit();
+}
+
+// HANDLE DELETE
+if (isset($_POST['delete_account'])) {
+    $stmt = $conn->prepare("DELETE FROM users WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    if ($stmt->execute()) {
+        session_destroy();
+        header("Location: ../index.php");
     }
     exit();
 }

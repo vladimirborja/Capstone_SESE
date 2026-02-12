@@ -224,7 +224,7 @@ function renderActionButtons() {
 
     if (cat === 'lost') {
         if (!isOwner) {
-            container.innerHTML = `<button class="btn btn-danger w-100 fw-bold" onclick="handleUpdate('to_pending')">I found this pet!</button>`;
+            container.innerHTML = `<button class="alert alert-danger w-100 fw-bold" onclick="handleUpdate('to_pending')">I found this pet!</button>`;
         } else {
             container.innerHTML = `<div class="alert alert-success py-2 text-center small"><strong>Your post is active. Hope you find your pet.</strong></div>`;
         }

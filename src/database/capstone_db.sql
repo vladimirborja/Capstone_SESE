@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 12, 2026 at 05:20 AM
+-- Generation Time: Feb 12, 2026 at 06:52 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,35 @@ SET time_zone = "+00:00";
 --
 -- Database: `capstone_db`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `archives`
+--
+
+CREATE TABLE `archives` (
+  `archive_id` int(11) NOT NULL,
+  `original_id` int(11) NOT NULL,
+  `type` enum('Report','Message') NOT NULL,
+  `sender_name` varchar(255) DEFAULT NULL,
+  `content` text DEFAULT NULL,
+  `reason_type` varchar(100) DEFAULT NULL,
+  `archived_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `archives`
+--
+
+INSERT INTO `archives` (`archive_id`, `original_id`, `type`, `sender_name`, `content`, `reason_type`, `archived_at`) VALUES
+(1, 25, 'Message', 'cayoh anicete', 'hi', NULL, '2026-02-12 15:33:00'),
+(2, 33, 'Report', 'Cayoh Anicete', 'report', 'Verbal Abuse', '2026-02-12 15:33:23'),
+(3, 33, 'Report', 'Cayoh Anicete', 'report', 'Verbal Abuse', '2026-02-12 16:19:07'),
+(4, 33, 'Report', 'Cayoh Anicete', 'report', 'Verbal Abuse', '2026-02-12 16:19:12'),
+(5, 33, 'Report', 'Cayoh Anicete', 'report', 'Verbal Abuse', '2026-02-12 16:19:14'),
+(6, 33, '', 'Ariana Punsalang', 'asdasdasd', NULL, '2026-02-12 16:21:55'),
+(7, 24, 'Message', 'Vladimir Borja', 'hi', NULL, '2026-02-12 16:27:31');
 
 -- --------------------------------------------------------
 
@@ -64,8 +93,7 @@ INSERT INTO `contact_messages` (`id`, `name`, `email`, `contact`, `subject`, `me
 (20, 'DAHS SDHA', 'kristinetuazon16@gmail.com', '6762880', 'DHASJ', 'DASNM,', '2026-02-09 10:34:25'),
 (21, 'cafe beni', 'cafe@gmail.com', '67890', 'Testing ULIT', 'HAYY', '2026-02-09 10:34:56'),
 (22, 'cafe beni', 'cafe@gmail.com', '64782930-', 'TESTING', 'TESTING SWAL', '2026-02-09 10:38:23'),
-(23, 'Vladimir Borja', 'vladimirborja013@gmail.com', '09999999', 'test', 'hi', '2026-02-11 03:12:11'),
-(24, 'Vladimir Borja', 'vladimirborja013@gmail.com', '09999999', 'hi', 'hi', '2026-02-11 03:21:28');
+(23, 'Vladimir Borja', 'vladimirborja013@gmail.com', '09999999', 'test', 'hi', '2026-02-11 03:12:11');
 
 -- --------------------------------------------------------
 
@@ -192,7 +220,29 @@ INSERT INTO `login_history` (`login_id`, `user_id`, `login_time`, `ip_address`, 
 (105, 6, '2026-02-12 01:52:58', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
 (106, 9, '2026-02-12 02:38:56', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
 (107, 5, '2026-02-12 03:22:21', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
-(108, 9, '2026-02-12 03:22:43', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success');
+(108, 9, '2026-02-12 03:22:43', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(109, 9, '2026-02-12 11:32:12', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(110, 5, '2026-02-12 12:23:41', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(111, 9, '2026-02-12 12:24:03', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(112, 5, '2026-02-12 12:31:32', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(113, 5, '2026-02-12 12:39:15', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(114, 5, '2026-02-12 12:40:27', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(115, 5, '2026-02-12 15:03:55', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(116, 9, '2026-02-12 15:24:33', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(117, 6, '2026-02-12 16:24:28', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(118, 5, '2026-02-12 16:25:57', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(119, 5, '2026-02-12 16:26:40', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(120, 5, '2026-02-12 16:31:08', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(121, 9, '2026-02-12 16:34:37', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(122, 5, '2026-02-12 16:37:09', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(123, 5, '2026-02-12 16:39:37', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(124, 9, '2026-02-12 16:55:31', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(125, 5, '2026-02-12 16:55:54', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(126, 9, '2026-02-12 17:02:45', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(127, 5, '2026-02-12 17:03:24', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(128, 9, '2026-02-12 17:13:32', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(129, 9, '2026-02-12 17:24:07', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(130, 5, '2026-02-12 17:31:08', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success');
 
 -- --------------------------------------------------------
 
@@ -237,7 +287,7 @@ INSERT INTO `pets` (`pet_id`, `user_id`, `pet_name`, `category`, `gender`, `bree
 (19, 11, 'tsesf', 'Pending', 'Male', 'Dog', 'brown', 'Test', 'adadaw', 'uploads/1770802913_sinoo.gif', '3131312', '2026-02-11 09:41:53'),
 (21, 6, 'sino ka', 'Found', 'Male', 'Dog', 'black', 'angeles', 'nawawala', 'uploads/1770811765_sino.jpg', '09123456789', '2026-02-11 12:09:25'),
 (22, 6, 'muwah', 'Found', 'Unknown', 'bakla', 'black', 'dito lang', 'aaa', 'uploads/1770811788_heart.jpg', '09999999', '2026-02-11 12:09:48'),
-(23, 6, 'otlum', 'Lost', 'Male', 'Dog', 'black', 'angeles', 'asd', 'uploads/1770861809_heart.jpg', '09123456789', '2026-02-12 02:03:29'),
+(23, 6, 'otlum', 'Pending', 'Male', 'Dog', 'black', 'angeles', 'asd', 'uploads/1770861809_heart.jpg', '09123456789', '2026-02-12 02:03:29'),
 (24, 9, 'otlum', 'Lost', 'Female', 'Dog', 'white', 'sanfer', 'hi', 'uploads/1770865886_otlum.jpg', '09123456789', '2026-02-12 03:11:26');
 
 -- --------------------------------------------------------
@@ -273,7 +323,7 @@ INSERT INTO `posts` (`post_id`, `user_id`, `content`, `image_url`, `created_at`)
 (21, 7, 'test', 'uploads/1770791314_otlum.jpg', '2026-02-11 06:28:34'),
 (29, 7, 'hi', '', '2026-02-12 01:52:23'),
 (30, 7, 'hi', 'uploads/1770861151_Borja (Assignment_ How globalization affects religious beliefs and practices).pdf', '2026-02-12 01:52:31'),
-(33, 6, 'asdasdasd', 'uploads/1770861404_sino.jpg', '2026-02-12 01:56:44');
+(34, 9, 'hi', 'uploads/1770913450_heart.jpg', '2026-02-12 16:24:10');
 
 -- --------------------------------------------------------
 
@@ -347,35 +397,13 @@ INSERT INTO `post_reports` (`report_id`, `post_id`, `user_id`, `report_type`, `d
 (4, 3, 7, 'Inappropriate Content', 'aa', '2026-02-06 20:08:59'),
 (5, 3, 7, 'Spam', 'a', '2026-02-06 20:12:11'),
 (6, 3, 7, 'Verbal Abuse', 'asd', '2026-02-06 20:15:56'),
-(7, 3, 7, 'Fake Content', 'asdasdasd', '2026-02-06 20:24:18'),
-(8, 11, 6, 'Fake Content', 'asdasdasd', '2026-02-06 20:38:09'),
-(9, 14, 6, 'Fake Content', 'testtt', '2026-02-06 21:11:44'),
-(10, 14, 6, 'Fake Content', 'asdasdasd', '2026-02-06 21:21:33'),
 (11, 16, 6, 'Fake Content', 'a', '2026-02-10 10:18:45'),
-(12, 18, 6, 'Verbal Abuse', 'test', '2026-02-11 03:07:13'),
 (13, 18, 9, 'Fake Content', 'hhi', '2026-02-11 03:11:12'),
 (14, 20, 6, 'Fake Content', 'ttesttt', '2026-02-11 03:20:25'),
 (15, 21, 6, 'Fake Content', 'testnow', '2026-02-11 06:30:18'),
 (35, 30, 6, 'Inappropriate', 'dwqeqwe', '2026-02-12 01:53:26'),
-(36, 29, 6, 'Verbal Abuse', 'hgjyt', '2026-02-12 01:53:34'),
 (38, 29, 6, 'Fake Content', 'heh', '2026-02-12 01:57:09'),
-(40, 20, 6, 'Fake Content', '0', '2026-02-12 01:59:32'),
-(51, 33, 9, 'Verbal Abuse', 'test', '2026-02-12 02:39:03'),
-(52, 33, 9, 'Verbal Abuse', 'report', '2026-02-12 03:10:48'),
-(53, 33, 9, 'Verbal Abuse', 'hi', '2026-02-12 03:14:32'),
-(54, 33, 9, 'Spam', 's', '2026-02-12 03:15:38'),
-(55, 33, 9, 'Verbal Abuse', 'hi', '2026-02-12 03:15:53'),
-(56, 33, 9, 'Fake Content', 'sino', '2026-02-12 03:21:26'),
-(57, 33, 9, 'Fake Content', 'sss', '2026-02-12 03:21:43'),
-(58, 33, 9, 'Inappropriate', 'baba', '2026-02-12 03:22:51'),
-(59, 33, 9, 'Verbal Abuse', 'baba', '2026-02-12 03:23:11'),
-(60, 33, 9, 'Fake Content', 'babaaba', '2026-02-12 03:23:24'),
-(61, 33, 9, 'Verbal Abuse', 'da', '2026-02-12 03:25:37'),
-(62, 33, 9, 'Fake Content', 'hi', '2026-02-12 03:27:38'),
-(63, 33, 9, 'Verbal Abuse', 'g', '2026-02-12 03:33:34'),
-(64, 33, 9, 'Fake Content', 'TEST', '2026-02-12 03:34:59'),
-(65, 33, 9, 'Verbal Abuse', 'g', '2026-02-12 03:37:11'),
-(66, 33, 9, 'Inappropriate', 'h', '2026-02-12 03:41:40');
+(40, 20, 6, 'Fake Content', '0', '2026-02-12 01:59:32');
 
 -- --------------------------------------------------------
 
@@ -386,6 +414,7 @@ INSERT INTO `post_reports` (`report_id`, `post_id`, `user_id`, `report_type`, `d
 CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
   `full_name` varchar(255) NOT NULL,
+  `username` varchar(100) DEFAULT NULL,
   `bio` text NOT NULL,
   `email` varchar(255) NOT NULL,
   `phone_number` varchar(20) NOT NULL,
@@ -394,27 +423,34 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `last_login` timestamp NULL DEFAULT NULL,
-  `is_active` tinyint(1) DEFAULT 1
+  `is_active` tinyint(1) DEFAULT 1,
+  `profile_image` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `full_name`, `bio`, `email`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`) VALUES
-(2, 'Vlad Borja', '', 'vladimirborja298@gmail.com', '09123456789', '$2y$10$YQ5bYjvD9r8vr1kHQaKLZ.QjeTuAcNdP5xwXs5pCcwbJBD757uj8K', 'user', '2026-01-29 17:38:50', '2026-01-29 17:38:50', NULL, 1),
-(4, 'margiel escalante', '', 'info@bb88advertising.com', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1),
-(5, 'Karl Vladimir Borja', '', 'vladimirborja013@gmail.com', '09650561211', '$2y$10$NJ/lcONneIkIa6C/oaqrsOxE5LYGtyit/hfpzK1m7YVgYvMkIZkRS', 'admin', '2026-01-29 18:09:12', '2026-02-12 03:22:21', '2026-02-12 03:22:21', 1),
-(6, 'Ariana Punsalang', '', 'anairadump@gmail.com', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-12 01:52:58', '2026-02-12 01:52:58', 1),
-(7, 'Kristine Tuazon', 'bioooo', 'kristinetuazon16@gmail.com', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-12 01:43:27', '2026-02-12 01:43:27', 1),
-(8, 'Mico Cuenco', '', 'micocuenco@gmail.com', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1),
-(9, 'Cayoh Anicete', '', 'cayohanicete@gmail.com', '09123456789', '$2y$10$FwW.D1eJaUaoW4SHT8MxM.17ca.fL6pEzy0McEeCVStu47RZ3yh9C', 'user', '2026-02-11 03:10:13', '2026-02-12 03:22:43', '2026-02-12 03:22:43', 1),
-(10, 'margiel escalante', '', 'margielescalante@gmail.com', '09123456789', '$2y$10$tJ6ojSH5oqJUchJHtZDGbuMJOKjQADmyrlhiP01MQfVfB4Fbbdcn.', 'user', '2026-02-11 06:26:03', '2026-02-11 06:31:48', '2026-02-11 06:31:48', 1),
-(11, 'Christian Aguas', '', 'acdeocera.bb88@gmail.com', '09201172065', '$2y$10$OIYShiZROiBhCVG3/k1nROqr8aQhykXnTTsa9I9QlFNxv2ns4jqKS', 'user', '2026-02-11 09:13:39', '2026-02-11 09:20:59', '2026-02-11 09:20:59', 1);
+INSERT INTO `users` (`user_id`, `full_name`, `username`, `bio`, `email`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`, `profile_image`) VALUES
+(2, 'Vlad Borja', NULL, '', 'vladimirborja298@gmail.com', '09123456789', '$2y$10$YQ5bYjvD9r8vr1kHQaKLZ.QjeTuAcNdP5xwXs5pCcwbJBD757uj8K', 'user', '2026-01-29 17:38:50', '2026-02-12 16:58:44', NULL, 1, NULL),
+(4, 'margiel escalante', NULL, '', 'info@bb88advertising.com', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1, NULL),
+(5, 'Karl Vladimir Borjaa', 'Karlaaa', 'SINO TO?!', 'vladimirborja013@gmail.com', '09650561211', '$2y$10$uG9A.q7baiL9l3cZJdWxMO8HkoGVy3IYN8R7ve1Kq0/ZmKb79WPje', 'admin', '2026-01-29 18:09:12', '2026-02-12 17:34:42', '2026-02-12 17:31:08', 1, '../uploads/profile_pics/user_5_1770917682.png'),
+(6, 'Ariana Punsalang', NULL, '', 'anairadump@gmail.com', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-12 16:24:28', '2026-02-12 16:24:28', 1, NULL),
+(7, 'Kristine Tuazon', NULL, 'bioooo', 'kristinetuazon16@gmail.com', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-12 01:43:27', '2026-02-12 01:43:27', 1, NULL),
+(8, 'Mico Cuenco', NULL, '', 'micocuenco@gmail.com', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1, NULL),
+(9, 'Cayoh Anicete', NULL, '', 'cayohanicete@gmail.com', '09123456789', '$2y$10$FwW.D1eJaUaoW4SHT8MxM.17ca.fL6pEzy0McEeCVStu47RZ3yh9C', 'user', '2026-02-11 03:10:13', '2026-02-12 17:24:07', '2026-02-12 17:24:07', 1, NULL),
+(10, 'margiel escalante', NULL, '', 'margielescalante@gmail.com', '09123456789', '$2y$10$tJ6ojSH5oqJUchJHtZDGbuMJOKjQADmyrlhiP01MQfVfB4Fbbdcn.', 'user', '2026-02-11 06:26:03', '2026-02-11 06:31:48', '2026-02-11 06:31:48', 1, NULL),
+(11, 'Christian Aguas', NULL, '', 'acdeocera.bb88@gmail.com', '09201172065', '$2y$10$OIYShiZROiBhCVG3/k1nROqr8aQhykXnTTsa9I9QlFNxv2ns4jqKS', 'user', '2026-02-11 09:13:39', '2026-02-12 17:01:12', '2026-02-11 09:20:59', 1, NULL);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `archives`
+--
+ALTER TABLE `archives`
+  ADD PRIMARY KEY (`archive_id`);
 
 --
 -- Indexes for table `contact_messages`
@@ -488,16 +524,22 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `archives`
+--
+ALTER TABLE `archives`
+  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT for table `contact_messages`
 --
 ALTER TABLE `contact_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `login_history`
 --
 ALTER TABLE `login_history`
-  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -515,25 +557,25 @@ ALTER TABLE `pets`
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `post_comments`
 --
 ALTER TABLE `post_comments`
-  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `post_likes`
 --
 ALTER TABLE `post_likes`
-  MODIFY `like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `post_reports`
 --
 ALTER TABLE `post_reports`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
 
 --
 -- AUTO_INCREMENT for table `users`

@@ -328,7 +328,7 @@ $all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id
         <div class="search-box d-flex align-items-center"><i class="bi bi-search me-2"></i><input type="text" placeholder="Search here..." /></div>
         <div class="filters d-flex gap-2">
             <button class="chip blue" data-bs-toggle="modal" data-bs-target="#createPostModal">+ Share a Furrendly Place</button>
-            <button class="chip red" style="background:#dc3545; color:white" data-bs-toggle="modal" data-bs-target="#missingDogModal">Missing Dog?</button>
+            <button class="chip red" style="background:#dc3545; color:white" data-bs-toggle="modal" data-bs-target="#missingDogModal">Missing a Pet?</button>
             <button class="chip purple">Location</button>
         </div>
     </div>
@@ -440,8 +440,8 @@ $all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id
                         <div class="faq-question">How do I share a pet-friendly place?</div>
                     </div>
                     <div class="faq-btn-group">
-                        <button class="faq-btn-read">Read more</button>
-                        <button class="faq-btn-ask">Ask now</button>
+                        <a href="../mains/about.php">Read More</a>
+                        <a href="../mains/contact.php">Ask Now</a>
                     </div>
                 </div>
 

@@ -8,6 +8,7 @@ requireRole(['admin']);
 $user = getLoggedInUser();
 
 // Handle role update
+$successMessage = ""; 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_role'])) {
         $userId = $_POST['user_id'];
@@ -41,106 +42,44 @@ $users = $stmt->fetchAll();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
-        body {
-            background: #f8f9fa;
-        }
-
-        .admin-header {
-            background: linear-gradient(135deg, #1e88ff, #0d6efd);
-            color: #fff;
-            padding: 20px 0;
-            margin-bottom: 30px;
-        }
-
-        .badge-admin {
-            background: #dc3545;
-        }
-
-        .badge-user {
-            background: #198754;
-        }
-
-        .badge-active {
-            background: #0d6efd;
-        }
-
-        .badge-inactive {
-            background: #6c757d;
-        }
+        body { background: #f8f9fa; }
+        .admin-header { background: linear-gradient(135deg, #1e88ff, #0d6efd); color: #fff; padding: 20px 0; margin-bottom: 30px; }
+        .badge-active { background: #0d6efd; }
+        .badge-inactive { background: #6c757d; }
+        .card { border-radius: 15px; }
+        .table thead { background-color: #f1f5f9; }
     </style>
 </head>
 
 <body>
-    <div class="admin-header">
+    <div class="admin-header shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="mb-0">User Management</h2>
-                <p class="mb-0">Manage user roles and permissions</p>
+                <h2 class="mb-0 fw-bold">User Management</h2>
+                <p class="mb-0 opacity-75">Manage user roles and permissions</p>
             </div>
             <div>
-                <span class="me-3">Welcome, <?= htmlspecialchars($user['name']); ?></span>
-                <a href="admin_reports.php" class="btn btn-light btn-sm me-2">Dashboard</a>
-                <a href="logout.php" class="btn btn-outline-light btn-sm">Logout</a>
+                <span class="me-3">Welcome, <strong><?= htmlspecialchars($user['name']); ?></strong></span>
+                <a href="admin_reports.php" class="btn btn-light btn-sm me-2 fw-bold">Dashboard</a>
+                <a href="logout.php" class="btn btn-outline-light btn-sm fw-bold">Logout</a>
             </div>
         </div>
     </div>
 
     <div class="container">
-        <?php if (isset($successMessage)): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?= $successMessage; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
-
-        <!-- Stats -->
-        <div class="row mb-4 text-center">
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Total Users</h5>
-                        <h2 class="text-primary"><?= count($users); ?></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Admins</h5>
-                        <h2 class="text-danger"><?= count(array_filter($users, fn($u) => $u['role'] === 'admin')); ?></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Users</h5>
-                        <h2 class="text-success"><?= count(array_filter($users, fn($u) => $u['role'] === 'user')); ?></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Active</h5>
-                        <h2 class="text-info"><?= count(array_filter($users, fn($u) => $u['is_active'])); ?></h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Users Table -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">All Users</h5>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold text-secondary">All Registered Users</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
                             <tr>
-                                <th>ID</th>
+                                <th class="ps-4">ID</th>
                                 <th>Full Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
@@ -148,41 +87,47 @@ $users = $stmt->fetchAll();
                                 <th>Status</th>
                                 <th>Registered</th>
                                 <th>Last Login</th>
-                                <th>Actions</th>
+                                <th class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($users as $u): ?>
                                 <tr>
-                                    <td><?= $u['user_id']; ?></td>
-                                    <td><?= htmlspecialchars($u['full_name']); ?></td>
+                                    <td class="ps-4"><?= $u['user_id']; ?></td>
+                                    <td class="fw-bold"><?= htmlspecialchars($u['full_name']); ?></td>
                                     <td><?= htmlspecialchars($u['email']); ?></td>
                                     <td><?= htmlspecialchars($u['phone_number']); ?></td>
                                     <td>
                                         <form method="POST" class="d-inline">
                                             <input type="hidden" name="user_id" value="<?= $u['user_id']; ?>">
+                                            <input type="hidden" name="update_role" value="1">
                                             <select name="role" class="form-select form-select-sm w-auto d-inline"
-                                                onchange="if(confirm('Change role for <?= htmlspecialchars($u['full_name']); ?>?')) this.form.submit();">
+                                                onchange="confirmRoleChange(this, '<?= htmlspecialchars($u['full_name']); ?>')">
                                                 <option value="user" <?= $u['role'] === 'user' ? 'selected' : ''; ?>>User</option>
                                                 <option value="admin" <?= $u['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
                                             </select>
-                                            <input type="hidden" name="update_role" value="1">
                                         </form>
                                     </td>
                                     <td>
                                         <form method="POST" class="d-inline">
                                             <input type="hidden" name="user_id" value="<?= $u['user_id']; ?>">
                                             <input type="hidden" name="is_active" value="<?= $u['is_active'] ? 0 : 1; ?>">
+                                            <input type="hidden" name="toggle_status" value="1">
                                             <span class="badge <?= $u['is_active'] ? 'badge-active' : 'badge-inactive'; ?>"><?= $u['is_active'] ? 'Active' : 'Inactive'; ?></span>
-                                            <button type="submit" name="toggle_status" class="btn btn-sm btn-outline-secondary ms-1"
-                                                onclick="return confirm('Toggle status for <?= htmlspecialchars($u['full_name']); ?>?');">
-                                                Toggle
+                                            <button type="button" class="btn btn-sm btn-outline-secondary ms-1"
+                                                onclick="confirmStatusToggle(this, '<?= htmlspecialchars($u['full_name']); ?>')">
+                                                <i class="fas fa-sync-alt"></i>
                                             </button>
                                         </form>
                                     </td>
                                     <td><?= date('M d, Y', strtotime($u['created_at'])); ?></td>
-                                    <td><?= $u['last_login'] ? date('M d, Y H:i', strtotime($u['last_login'])) : 'Never'; ?></td>
-                                    <td><button class="btn btn-sm btn-info" onclick="alert('View user ID: <?= $u['user_id']; ?>');">View</button></td>
+                                    <td><small><?= $u['last_login'] ? date('M d, Y H:i', strtotime($u['last_login'])) : 'Never'; ?></small></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-info text-white" 
+                                            onclick="viewUser('<?= $u['user_id']; ?>', '<?= htmlspecialchars($u['full_name']); ?>', '<?= htmlspecialchars($u['email']); ?>')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -190,10 +135,71 @@ $users = $stmt->fetchAll();
                 </div>
             </div>
         </div>
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script>
+        // Use the "Standard" Success SweetAlert (Center Modal)
+        <?php if ($successMessage !== ""): ?>
+            Swal.fire({
+                title: 'Success!',
+                text: '<?= $successMessage; ?>',
+                icon: 'success',
+                confirmButtonColor: '#1e88ff'
+            });
+        <?php endif; ?>
+
+        function confirmRoleChange(selectElement, userName) {
+            const newRole = selectElement.value;
+            Swal.fire({
+                title: 'Change User Role?',
+                text: `Are you sure you want to change ${userName} to ${newRole.toUpperCase()}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1e88ff',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, change it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    selectElement.form.submit();
+                } else {
+                    location.reload(); // Revert selection if canceled
+                }
+            });
+        }
+
+        function confirmStatusToggle(buttonElement, userName) {
+            Swal.fire({
+                title: 'Update Status?',
+                text: `Do you want to toggle the active status for ${userName}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1e88ff',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, update'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    buttonElement.form.submit();
+                }
+            });
+        }
+
+        function viewUser(id, name, email) {
+            Swal.fire({
+                title: 'User Information',
+                html: `
+                    <div class="text-start mt-3">
+                        <p><strong>User ID:</strong> ${id}</p>
+                        <p><strong>Full Name:</strong> ${name}</p>
+                        <p><strong>Email Address:</strong> ${email}</p>
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonColor: '#1e88ff'
+            });
+        }
+    </script>
+</body>
 </html>
