@@ -1,0 +1,412 @@
+/* ======================== ADMIN DASHBOARD ======================== */
+.admin-dashboard-body {
+    font-family: 'Inter', sans-serif;
+    background-color: #e8eef3;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.admin-dashboard-body .top-nav {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    padding: 12px 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.admin-dashboard-body .nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.admin-dashboard-body .paw-logo {
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.admin-dashboard-body .user-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #666;
+}
+
+.admin-dashboard-body .dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 30px;
+}
+
+.admin-dashboard-body .top-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.admin-dashboard-body .reports-panel {
+    background: #c5d5e0;
+    border-radius: 15px;
+    padding: 25px;
+}
+
+.admin-dashboard-body .reports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-dashboard-body .reports-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+}
+
+.admin-dashboard-body .reports-icon {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.admin-dashboard-body .reports-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.admin-dashboard-body .report-item {
+    background: white;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.admin-dashboard-body .report-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-dashboard-body .report-avatar {
+    width: 40px;
+    height: 40px;
+    background: #d0d0d0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 20px;
+}
+
+.admin-dashboard-body .report-text {
+    font-size: 15px;
+    color: #333;
+}
+
+.admin-dashboard-body .delete-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.admin-dashboard-body .delete-btn:hover {
+    color: #dc3545;
+}
+
+.admin-dashboard-body .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.admin-dashboard-body .stat-card {
+    background: #c5d5e0;
+    border-radius: 12px;
+    padding: 25px 20px;
+    text-align: left;
+}
+
+.admin-dashboard-body .stat-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.admin-dashboard-body .stat-value {
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1;
+    color: #000;
+}
+
+.admin-dashboard-body .messages-section {
+    background: #c5d5e0;
+    border-radius: 15px;
+    padding: 25px;
+}
+
+.admin-dashboard-body .messages-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.admin-dashboard-body .messages-icon {
+    font-size: 28px;
+    color: #000;
+}
+
+.admin-dashboard-body .messages-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+}
+
+.admin-dashboard-body .messages-table {
+    width: 100%;
+}
+
+.admin-dashboard-body .messages-table thead th {
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    padding-bottom: 15px;
+    text-align: left;
+    border: none;
+}
+
+.admin-dashboard-body .messages-table tbody tr td {
+    padding: 8px 0;
+}
+
+.admin-dashboard-body .message-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-dashboard-body .message-input {
+    flex: 1;
+    background: #d8e4ed;
+    border: 1px solid #a0b5c5;
+    border-radius: 6px;
+    padding: 12px 15px;
+    font-size: 14px;
+    color: #333;
+}
+
+.admin-dashboard-body .message-delete-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #333;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+/* Dropdown styling for the profile icon */
+.user-dropdown {
+    position: relative;
+    cursor: pointer;
+}
+
+.dropdown-menu-custom {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 55px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 150px;
+    overflow: hidden;
+}
+
+.dropdown-menu-custom.show {
+    display: block;
+}
+
+.logout-btn-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    color: #dc3545;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s;
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+}
+
+.logout-btn-link:hover {
+    background: #fff5f5;
+    color: #a71d2a;
+}
+
+/* ===== ORIGINAL BODY / DUPLICATE BLOCK (FORMATTED ONLY) ===== */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #e8eef3;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.top-nav {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    padding: 12px 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.user-dropdown {
+    position: relative;
+    cursor: pointer;
+}
+
+.dropdown-menu-custom {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 55px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 160px;
+    overflow: hidden;
+}
+
+.dropdown-menu-custom.show {
+    display: block;
+}
+
+.logout-btn-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    color: #dc3545;
+    width: 100%;
+    border: none;
+    background: none;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.logout-btn-link:hover {
+    background: #fff5f5;
+}
+
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 30px;
+}
+
+.top-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.reports-panel,
+.messages-section {
+    background: #c5d5e0;
+    border-radius: 15px;
+    padding: 25px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.stat-card {
+    background: #c5d5e0;
+    border-radius: 12px;
+    padding: 25px 20px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 14px;
+    font-weight: 800;
+    color: #444;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 48px;
+    font-weight: 900;
+    color: #000;
+}
+
+.report-item {
+    background: white;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.message-input {
+    width: 100%;
+    background: #d8e4ed;
+    border: 1px solid #a0b5c5;
+    border-radius: 6px;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+}
