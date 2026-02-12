@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 11, 2026 at 06:40 PM
+-- Generation Time: Feb 12, 2026 at 05:20 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -184,7 +184,15 @@ INSERT INTO `login_history` (`login_id`, `user_id`, `login_time`, `ip_address`, 
 (97, 9, '2026-02-11 16:13:53', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
 (98, 9, '2026-02-11 16:14:49', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
 (99, 5, '2026-02-11 16:15:38', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
-(100, 7, '2026-02-11 16:28:26', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success');
+(100, 7, '2026-02-11 16:28:26', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(101, 6, '2026-02-12 01:30:47', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(102, 7, '2026-02-12 01:31:37', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(103, 6, '2026-02-12 01:35:32', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(104, 7, '2026-02-12 01:43:27', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(105, 6, '2026-02-12 01:52:58', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(106, 9, '2026-02-12 02:38:56', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(107, 5, '2026-02-12 03:22:21', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(108, 9, '2026-02-12 03:22:43', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success');
 
 -- --------------------------------------------------------
 
@@ -228,7 +236,9 @@ CREATE TABLE `pets` (
 INSERT INTO `pets` (`pet_id`, `user_id`, `pet_name`, `category`, `gender`, `breed`, `color`, `last_seen_location`, `description`, `image_url`, `contact_number`, `created_at`) VALUES
 (19, 11, 'tsesf', 'Pending', 'Male', 'Dog', 'brown', 'Test', 'adadaw', 'uploads/1770802913_sinoo.gif', '3131312', '2026-02-11 09:41:53'),
 (21, 6, 'sino ka', 'Found', 'Male', 'Dog', 'black', 'angeles', 'nawawala', 'uploads/1770811765_sino.jpg', '09123456789', '2026-02-11 12:09:25'),
-(22, 6, 'muwah', 'Pending', 'Unknown', 'bakla', 'black', 'dito lang', 'aaa', 'uploads/1770811788_heart.jpg', '09999999', '2026-02-11 12:09:48');
+(22, 6, 'muwah', 'Found', 'Unknown', 'bakla', 'black', 'dito lang', 'aaa', 'uploads/1770811788_heart.jpg', '09999999', '2026-02-11 12:09:48'),
+(23, 6, 'otlum', 'Lost', 'Male', 'Dog', 'black', 'angeles', 'asd', 'uploads/1770861809_heart.jpg', '09123456789', '2026-02-12 02:03:29'),
+(24, 9, 'otlum', 'Lost', 'Female', 'Dog', 'white', 'sanfer', 'hi', 'uploads/1770865886_otlum.jpg', '09123456789', '2026-02-12 03:11:26');
 
 -- --------------------------------------------------------
 
@@ -249,7 +259,6 @@ CREATE TABLE `posts` (
 --
 
 INSERT INTO `posts` (`post_id`, `user_id`, `content`, `image_url`, `created_at`) VALUES
-(1, 6, 'asd', 'uploads/1770402983_otlum.jpg', '2026-02-06 18:36:23'),
 (3, 6, 'sino to', 'uploads/1770404670_otlum.jpg', '2026-02-06 19:04:30'),
 (6, 7, 'spiderman\\\\\\\\r\\\\\\\\nsssss', 'uploads/1770409060_GyiYtEVbMAAn5Tc.jpg', '2026-02-06 20:17:40'),
 (8, 7, '[MISSING DOG] Name: margiel | Last Seen: dito lang | Contact: 123', NULL, '2026-02-06 20:28:00'),
@@ -262,8 +271,9 @@ INSERT INTO `posts` (`post_id`, `user_id`, `content`, `image_url`, `created_at`)
 (18, 7, 'test1', 'uploads/1770779161_sinoo.gif', '2026-02-11 03:06:01'),
 (20, 7, '[MISSING DOG] Name: otlum | Last Seen: test | Contact: 12313131', 'uploads/missing_1770779896_otlum.jpg', '2026-02-11 03:18:16'),
 (21, 7, 'test', 'uploads/1770791314_otlum.jpg', '2026-02-11 06:28:34'),
-(22, 10, 'hu', 'uploads/1770791874_sinoo.gif', '2026-02-11 06:37:54'),
-(23, 11, 'test', 'uploads/1770801375_sinoo.gif', '2026-02-11 09:16:15');
+(29, 7, 'hi', '', '2026-02-12 01:52:23'),
+(30, 7, 'hi', 'uploads/1770861151_Borja (Assignment_ How globalization affects religious beliefs and practices).pdf', '2026-02-12 01:52:31'),
+(33, 6, 'asdasdasd', 'uploads/1770861404_sino.jpg', '2026-02-12 01:56:44');
 
 -- --------------------------------------------------------
 
@@ -284,30 +294,9 @@ CREATE TABLE `post_comments` (
 --
 
 INSERT INTO `post_comments` (`comment_id`, `post_id`, `user_id`, `comment_text`, `created_at`) VALUES
-(1, 22, 10, 'test 1', '2026-02-11 06:43:35'),
 (2, 21, 10, 'test 2', '2026-02-11 06:43:41'),
-(3, 22, 6, 's', '2026-02-11 07:42:12'),
-(4, 22, 6, 's', '2026-02-11 07:45:05'),
-(5, 22, 6, 's', '2026-02-11 07:45:09'),
-(6, 22, 6, 'd', '2026-02-11 07:50:33'),
-(7, 22, 9, 's', '2026-02-11 08:45:50'),
-(8, 22, 6, 'sino to', '2026-02-11 09:08:45'),
-(9, 22, 11, 'jkhjkhjk', '2026-02-11 09:15:11'),
-(10, 22, 11, 'jkkjggjgjgjgjgg', '2026-02-11 09:15:22'),
-(11, 23, 11, 'bjbjk', '2026-02-11 09:34:44'),
-(12, 23, 11, 'fsfsdf', '2026-02-11 09:40:55'),
 (13, 20, 11, 'dwdwed', '2026-02-11 09:46:14'),
-(14, 23, 6, '65', '2026-02-11 10:09:47'),
-(15, 23, 6, 'dd', '2026-02-11 12:00:28'),
-(16, 23, 6, 'test', '2026-02-11 12:07:26'),
-(17, 23, 6, 'baboy', '2026-02-11 12:13:59'),
 (18, 21, 6, 'bababa', '2026-02-11 12:43:30'),
-(19, 23, 5, 'asdasdasd', '2026-02-11 14:35:23'),
-(20, 23, 7, 'a', '2026-02-11 16:28:36'),
-(21, 23, 7, 'baboy', '2026-02-11 16:40:47'),
-(22, 23, 7, 'ddd', '2026-02-11 17:06:50'),
-(23, 23, 7, 'sino to', '2026-02-11 17:23:42'),
-(24, 22, 7, 'test', '2026-02-11 17:31:49'),
 (25, 21, 7, 'bababa', '2026-02-11 17:40:00');
 
 -- --------------------------------------------------------
@@ -328,18 +317,10 @@ CREATE TABLE `post_likes` (
 --
 
 INSERT INTO `post_likes` (`like_id`, `post_id`, `user_id`, `created_at`) VALUES
-(1, 22, 10, '2026-02-11 06:43:18'),
 (2, 21, 10, '2026-02-11 06:43:22'),
 (3, 20, 10, '2026-02-11 06:43:23'),
 (4, 18, 10, '2026-02-11 06:43:25'),
-(7, 22, 6, '2026-02-11 09:08:28'),
-(8, 22, 11, '2026-02-11 09:15:03'),
-(10, 23, 11, '2026-02-11 09:43:13'),
-(11, 23, 6, '2026-02-11 10:09:45'),
 (12, 21, 6, '2026-02-11 12:43:27'),
-(13, 23, 5, '2026-02-11 14:35:20'),
-(16, 23, 7, '2026-02-11 17:23:39'),
-(17, 22, 7, '2026-02-11 17:31:46'),
 (18, 21, 7, '2026-02-11 17:39:58');
 
 -- --------------------------------------------------------
@@ -362,7 +343,6 @@ CREATE TABLE `post_reports` (
 --
 
 INSERT INTO `post_reports` (`report_id`, `post_id`, `user_id`, `report_type`, `description`, `created_at`) VALUES
-(2, 3, 7, 'Fake Content', 'ayoko', '2026-02-06 19:15:14'),
 (3, 3, 7, 'Hate Speech', 'asd', '2026-02-06 20:05:32'),
 (4, 3, 7, 'Inappropriate Content', 'aa', '2026-02-06 20:08:59'),
 (5, 3, 7, 'Spam', 'a', '2026-02-06 20:12:11'),
@@ -376,15 +356,26 @@ INSERT INTO `post_reports` (`report_id`, `post_id`, `user_id`, `report_type`, `d
 (13, 18, 9, 'Fake Content', 'hhi', '2026-02-11 03:11:12'),
 (14, 20, 6, 'Fake Content', 'ttesttt', '2026-02-11 03:20:25'),
 (15, 21, 6, 'Fake Content', 'testnow', '2026-02-11 06:30:18'),
-(16, 22, 11, 'Verbal Abuse', 'Ello', '2026-02-11 09:14:33'),
-(17, 23, 6, 'Fake Content', '00', '2026-02-11 10:09:43'),
-(18, 23, 6, 'Inappropriate', 'vfdv', '2026-02-11 14:21:48'),
-(19, 23, 7, 'Fake Content', 'd', '2026-02-11 16:28:53'),
-(20, 23, 7, 'Verbal Abuse', 'at', '2026-02-11 16:40:37'),
-(21, 23, 7, 'Verbal Abuse', 'test report', '2026-02-11 17:07:00'),
-(22, 23, 7, 'Fake Content', 'hi', '2026-02-11 17:23:49'),
-(23, 23, 7, 'Fake Content', 'sinno', '2026-02-11 17:25:47'),
-(24, 23, 7, 'Verbal Abuse', 'ho', '2026-02-11 17:30:33');
+(35, 30, 6, 'Inappropriate', 'dwqeqwe', '2026-02-12 01:53:26'),
+(36, 29, 6, 'Verbal Abuse', 'hgjyt', '2026-02-12 01:53:34'),
+(38, 29, 6, 'Fake Content', 'heh', '2026-02-12 01:57:09'),
+(40, 20, 6, 'Fake Content', '0', '2026-02-12 01:59:32'),
+(51, 33, 9, 'Verbal Abuse', 'test', '2026-02-12 02:39:03'),
+(52, 33, 9, 'Verbal Abuse', 'report', '2026-02-12 03:10:48'),
+(53, 33, 9, 'Verbal Abuse', 'hi', '2026-02-12 03:14:32'),
+(54, 33, 9, 'Spam', 's', '2026-02-12 03:15:38'),
+(55, 33, 9, 'Verbal Abuse', 'hi', '2026-02-12 03:15:53'),
+(56, 33, 9, 'Fake Content', 'sino', '2026-02-12 03:21:26'),
+(57, 33, 9, 'Fake Content', 'sss', '2026-02-12 03:21:43'),
+(58, 33, 9, 'Inappropriate', 'baba', '2026-02-12 03:22:51'),
+(59, 33, 9, 'Verbal Abuse', 'baba', '2026-02-12 03:23:11'),
+(60, 33, 9, 'Fake Content', 'babaaba', '2026-02-12 03:23:24'),
+(61, 33, 9, 'Verbal Abuse', 'da', '2026-02-12 03:25:37'),
+(62, 33, 9, 'Fake Content', 'hi', '2026-02-12 03:27:38'),
+(63, 33, 9, 'Verbal Abuse', 'g', '2026-02-12 03:33:34'),
+(64, 33, 9, 'Fake Content', 'TEST', '2026-02-12 03:34:59'),
+(65, 33, 9, 'Verbal Abuse', 'g', '2026-02-12 03:37:11'),
+(66, 33, 9, 'Inappropriate', 'h', '2026-02-12 03:41:40');
 
 -- --------------------------------------------------------
 
@@ -413,11 +404,11 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`user_id`, `full_name`, `bio`, `email`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`) VALUES
 (2, 'Vlad Borja', '', 'vladimirborja298@gmail.com', '09123456789', '$2y$10$YQ5bYjvD9r8vr1kHQaKLZ.QjeTuAcNdP5xwXs5pCcwbJBD757uj8K', 'user', '2026-01-29 17:38:50', '2026-01-29 17:38:50', NULL, 1),
 (4, 'margiel escalante', '', 'info@bb88advertising.com', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1),
-(5, 'Karl Vladimir Borja', '', 'vladimirborja013@gmail.com', '09650561211', '$2y$10$NJ/lcONneIkIa6C/oaqrsOxE5LYGtyit/hfpzK1m7YVgYvMkIZkRS', 'admin', '2026-01-29 18:09:12', '2026-02-11 16:15:38', '2026-02-11 16:15:38', 1),
-(6, 'Ariana Punsalang', '', 'anairadump@gmail.com', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-11 12:14:41', '2026-02-11 12:14:41', 1),
-(7, 'Kristine Tuazon', 'bioooo', 'kristinetuazon16@gmail.com', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-11 16:34:13', '2026-02-11 16:28:26', 1),
+(5, 'Karl Vladimir Borja', '', 'vladimirborja013@gmail.com', '09650561211', '$2y$10$NJ/lcONneIkIa6C/oaqrsOxE5LYGtyit/hfpzK1m7YVgYvMkIZkRS', 'admin', '2026-01-29 18:09:12', '2026-02-12 03:22:21', '2026-02-12 03:22:21', 1),
+(6, 'Ariana Punsalang', '', 'anairadump@gmail.com', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-12 01:52:58', '2026-02-12 01:52:58', 1),
+(7, 'Kristine Tuazon', 'bioooo', 'kristinetuazon16@gmail.com', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-12 01:43:27', '2026-02-12 01:43:27', 1),
 (8, 'Mico Cuenco', '', 'micocuenco@gmail.com', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1),
-(9, 'Cayoh Anicete', '', 'cayohanicete@gmail.com', '09123456789', '$2y$10$FwW.D1eJaUaoW4SHT8MxM.17ca.fL6pEzy0McEeCVStu47RZ3yh9C', 'user', '2026-02-11 03:10:13', '2026-02-11 16:14:49', '2026-02-11 16:14:49', 1),
+(9, 'Cayoh Anicete', '', 'cayohanicete@gmail.com', '09123456789', '$2y$10$FwW.D1eJaUaoW4SHT8MxM.17ca.fL6pEzy0McEeCVStu47RZ3yh9C', 'user', '2026-02-11 03:10:13', '2026-02-12 03:22:43', '2026-02-12 03:22:43', 1),
 (10, 'margiel escalante', '', 'margielescalante@gmail.com', '09123456789', '$2y$10$tJ6ojSH5oqJUchJHtZDGbuMJOKjQADmyrlhiP01MQfVfB4Fbbdcn.', 'user', '2026-02-11 06:26:03', '2026-02-11 06:31:48', '2026-02-11 06:31:48', 1),
 (11, 'Christian Aguas', '', 'acdeocera.bb88@gmail.com', '09201172065', '$2y$10$OIYShiZROiBhCVG3/k1nROqr8aQhykXnTTsa9I9QlFNxv2ns4jqKS', 'user', '2026-02-11 09:13:39', '2026-02-11 09:20:59', '2026-02-11 09:20:59', 1);
 
@@ -506,7 +497,7 @@ ALTER TABLE `contact_messages`
 -- AUTO_INCREMENT for table `login_history`
 --
 ALTER TABLE `login_history`
-  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -518,31 +509,31 @@ ALTER TABLE `notifications`
 -- AUTO_INCREMENT for table `pets`
 --
 ALTER TABLE `pets`
-  MODIFY `pet_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `pet_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `post_comments`
 --
 ALTER TABLE `post_comments`
-  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `post_likes`
 --
 ALTER TABLE `post_likes`
-  MODIFY `like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `post_reports`
 --
 ALTER TABLE `post_reports`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT for table `users`
