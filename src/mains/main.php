@@ -480,7 +480,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <?php require_once '../features/modal_establishments.php'; ?>
     <script>
-        const API_BASE_URL = "../src/features/handle_establishments.php";
+        const API_BASE_URL = "../features/handle_establishments.php";
         const AUTO_INIT_MAP = false;
     </script>
     <script>
