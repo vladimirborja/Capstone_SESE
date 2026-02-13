@@ -1,74 +1,141 @@
-document.addEventListener("DOMContentLoaded", function () {
-  // 1. MAIN DISPLAY MAP
-  const map = L.map("map").setView([15.1465, 120.5794], 14);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+// 1. Declare variables globally so all functions can access them
+let mainMap;
+let isMapInitialized = false;
 
-  // 1.1. ADD MARKERS FROM DATABASE
+// 2. Define this globally so the HTML button's 'onclick' can find it
+function toggleMapView() {
+  const feed = document.getElementById("feed-container");
+  const mapBox = document.getElementById("map-container");
+  const btn = document.getElementById("toggleMapBtn");
+
+  if (feed.style.display !== "none") {
+    feed.style.display = "none";
+    mapBox.style.display = "block";
+    btn.innerHTML = "View Feed";
+    initMainMap(); // Call the initialization function
+  } else {
+    feed.style.display = "block";
+    mapBox.style.display = "none";
+    btn.innerHTML = "Location";
+  }
+}
+
+function initMainMap() {
+  if (isMapInitialized) {
+    if (mainMap) mainMap.invalidateSize();
+    return;
+  }
+
+  mainMap = L.map("map").setView([15.1465, 120.5794], 14);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+    mainMap,
+  );
+
   if (
     typeof establishmentData !== "undefined" &&
     establishmentData.length > 0
   ) {
     establishmentData.forEach((place) => {
-      // Create a marker for each establishment
-      const marker = L.marker([place.latitude, place.longitude]).addTo(map);
-
+      const marker = L.marker([place.latitude, place.longitude]).addTo(mainMap);
       // Create a nice popup content
       const popupContent = `
-                <div style="font-family: sans-serif;">
-                    <h6 class="fw-bold mb-1">${place.name}</h6>
-                    <p class="small text-muted mb-1"><i class="fas fa-map-marker-alt"></i> ${place.address}</p>
-                    <p class="small mb-0">${place.description}</p>
-                </div>
-            `;
+        <div class="p-1" style="min-width: 200px;">
+            <h6 class="fw-bold text-primary mb-1 d-flex align-items-center">
+            <i class="bi bi-geo-alt-fill me-2"></i> ${place.name}
+            </h6>
+            
+            <p class="text-muted mb-2">
+                ${place.address}
+            </p>
+            
+            <p class="mb-3 text-dark" style="line-height: 1.4;">
+            ${place.description}
+            </p>
+
+            <div class="d-grid">
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}" 
+                    target="_blank" 
+                    class="btn btn-sm btn-outline-primary py-1" 
+                    style="font-size: 0.75rem;">
+                    Get Directions
+                </a>
+            </div>
+        </div>
+        `;
 
       marker.bindPopup(popupContent);
     });
 
-    // Optional: Automatically zoom map to fit all markers
     const group = new L.featureGroup(
       establishmentData.map((p) => L.marker([p.latitude, p.longitude])),
     );
-    map.fitBounds(group.getBounds().pad(0.1));
+    mainMap.fitBounds(group.getBounds().pad(0.1));
+  }
+  isMapInitialized = true;
+}
+
+function approveEstablishment(id) {
+  const formData = new FormData();
+  formData.append("action", "approve_establishment");
+  formData.append("id", id);
+
+  fetch(API_BASE_URL, { method: "POST", body: formData })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        Swal.fire(
+          "Approved!",
+          "The establishment is now active.",
+          "success",
+        ).then(() => location.reload());
+      }
+    });
+}
+
+// 3. Keep DOM-dependent event listeners inside the DOMContentLoaded block
+document.addEventListener("DOMContentLoaded", function () {
+  if (typeof AUTO_INIT_MAP !== "undefined" && AUTO_INIT_MAP === true) {
+    initMainMap();
   }
 
-  // 2. MODAL PICKER MAP LOGIC
+  // MODAL PICKER MAP LOGIC
   let pickerMap;
   let pickerMarker;
   const modal = document.getElementById("addEstablishmentModal");
 
-  // Initialize picker map only when modal opens (Leaflet needs visible container)
-  modal.addEventListener("shown.bs.modal", function () {
-    if (!pickerMap) {
-      pickerMap = L.map("picker-map").setView([15.1465, 120.5794], 16);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-        pickerMap,
-      );
+  if (modal) {
+    modal.addEventListener("shown.bs.modal", function () {
+      if (!pickerMap) {
+        pickerMap = L.map("picker-map").setView([15.1465, 120.5794], 16);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+          pickerMap,
+        );
 
-      pickerMap.on("click", function (e) {
-        const lat = e.latlng.lat.toFixed(8);
-        const lng = e.latlng.lng.toFixed(8);
+        pickerMap.on("click", function (e) {
+          const lat = e.latlng.lat.toFixed(8);
+          const lng = e.latlng.lng.toFixed(8);
 
-        if (pickerMarker) {
-          pickerMarker.setLatLng(e.latlng);
-        } else {
-          pickerMarker = L.marker(e.latlng).addTo(pickerMap);
-        }
+          if (pickerMarker) {
+            pickerMarker.setLatLng(e.latlng);
+          } else {
+            pickerMarker = L.marker(e.latlng).addTo(pickerMap);
+          }
 
-        // Update hidden inputs and display text
-        document.getElementById("lat_input").value = lat;
-        document.getElementById("lng_input").value = lng;
-        document.getElementById("display-lat").innerText = lat;
-        document.getElementById("display-lng").innerText = lng;
-      });
-    } else {
-      pickerMap.invalidateSize(); // Refreshes map tiles properly
-    }
-  });
+          document.getElementById("lat_input").value = lat;
+          document.getElementById("lng_input").value = lng;
+          document.getElementById("display-lat").innerText = lat;
+          document.getElementById("display-lng").innerText = lng;
+        });
+      } else {
+        pickerMap.invalidateSize();
+      }
+    });
+  }
 
-  // 3. FORM SUBMISSION
-  document
-    .getElementById("addEstablishmentForm")
-    .addEventListener("submit", function (e) {
+  // FORM SUBMISSION
+  const estForm = document.getElementById("addEstablishmentForm");
+  if (estForm) {
+    estForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
       if (!document.getElementById("lat_input").value) {
@@ -77,17 +144,19 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const formData = new FormData(this);
-      // Assuming user_id comes from your session or a global var
-      formData.append("action", "add_establishment");
-
-      fetch("./features/handle_establishments.php", {
+      fetch(API_BASE_URL, {
         method: "POST",
         body: formData,
       })
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
-            Swal.fire("Success", "Establishment added!", "success").then(() =>
+            const successMsg =
+              typeof AUTO_INIT_MAP !== "undefined" && AUTO_INIT_MAP === true
+                ? "Establishment added!"
+                : "Request submitted! Waiting for admin approval.";
+
+            Swal.fire("Success", successMsg, "success").then(() =>
               location.reload(),
             );
           } else {
@@ -95,4 +164,5 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         });
     });
+  }
 });

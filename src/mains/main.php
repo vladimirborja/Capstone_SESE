@@ -139,6 +139,14 @@ $all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id
     ORDER BY p.created_at DESC");
 ?>
 
+<?php
+require_once '../db_config.php';
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+$est_stmt = $pdo->query("SELECT name, description, address, latitude, longitude FROM establishments WHERE status = 'active'");
+$active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -301,7 +309,7 @@ $all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id
 
     <header class="topbar container mx-auto px-4 rounded-4" style="margin-top: 20px;">
         <div class="topbar-inner">
-            <div class="logo"><a href="../index.php"><img src="../images/homeImages/Sese-Logo3.png" alt="Logo" /></a></div>
+            <div class="logo"><a href="main.php"><img src="../images/homeImages/Sese-Logo3.png" alt="Logo" /></a></div>
             <nav class="nav-links">
                 <a href="main.php">Home</a>
                 <a href="Lost&found.php">Lost & Found</a>
@@ -329,7 +337,8 @@ $all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id
         <div class="filters d-flex gap-2">
             <button class="chip blue" data-bs-toggle="modal" data-bs-target="#createPostModal">+ Share a Furrendly Place</button>
             <button class="chip red" style="background:#dc3545; color:white" data-bs-toggle="modal" data-bs-target="#missingDogModal">Missing a Pet?</button>
-            <button class="chip purple">Location</button>
+            <button class="chip green" data-bs-toggle="modal" data-bs-target="#addEstablishmentModal">+ Add Establishment</button>
+            <button class="chip purple" id="toggleMapBtn" onclick="toggleMapView()">Location</button>
         </div>
     </div>
 
@@ -337,89 +346,101 @@ $all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id
         <div class="row d-flex align-items-start">
             
             <div class="col-lg-9">
-                <?php while($post = $all_posts->fetch_assoc()): 
-                    $p_id = $post['post_id'];
-                    // Query counts for likes/comments
-                    $lc = $conn->query("SELECT (SELECT COUNT(*) FROM post_likes WHERE post_id=$p_id) as tl, (SELECT COUNT(*) FROM post_comments WHERE post_id=$p_id) as tc")->fetch_assoc();
-                ?>
-                    <div class="card mb-4 p-3 shadow-sm border-0 rounded-4 <?php echo (strpos($post['content'], '[MISSING DOG]') !== false) ? 'missing-dog-card' : ''; ?>">
-                        <div class="d-flex align-items-center">
-                            <img src="../images/homeImages/profile icon.png" class="rounded-circle me-2 clickable-user" width="40" height="40" onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>')" />
-                            <div>
-                                <div class="fw-bold clickable-user" onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>')"><?php echo htmlspecialchars($post['full_name']); ?></div>
-                                <small class="text-muted"><?php echo date('M d, g:i a', strtotime($post['created_at'])); ?></small>
-                            </div>
-                            <div class="dropdown ms-auto">
-                                <div class="post-menu-btn dropdown-toggle" data-bs-toggle="dropdown">•••</div>
-                                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                                    <?php if ($post['user_id'] == $current_user_id): ?>
-                                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editPostModal" onclick="fillEditModal(<?php echo $post['post_id']; ?>, '<?php echo addslashes($post['content']); ?>')"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
-                                        <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="confirmDelete(<?php echo $post['post_id']; ?>)"><i class="bi bi-trash3 me-2"></i>Delete Post</a></li>
-                                    <?php else: ?>
-                                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#reportPostModal" onclick="document.getElementById('report_post_id').value=<?php echo $post['post_id']; ?>"><i class="bi bi-flag me-2"></i>Report Post</a></li>
-                                    <?php endif; ?>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <p class="mt-3"><?php echo nl2br(htmlspecialchars($post['content'])); ?></p>
-                        <?php if ($post['image_url']): ?> <img src="../<?php echo $post['image_url']; ?>" class="post-image" /> <?php endif; ?>
-
-                        <div class="mt-3 pt-2 border-top d-flex align-items-center gap-4">
-                            <?php 
-                            $isLiked = hasUserLiked($post['post_id'], $current_user_id, $conn); 
-                            $count = $lc['tl'];
-                            ?>
-                            <div class="like-btn <?php echo $isLiked ? 'liked' : ''; ?>" onclick="handleLike(this, <?php echo $post['post_id']; ?>)">
-                                <i class="bi <?php echo $isLiked ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'; ?> me-1"></i> 
-                                <span class="like-label"><?php echo $isLiked ? 'Liked' : 'Like'; ?></span>
-                            </div>
-
-                            <small class="like-count-display" id="like-display-<?php echo $post['post_id']; ?>">
-                                <?php
-                                if ($isLiked) {
-                                    echo ($count > 1) ? "You and " . ($count - 1) . " others" : "You liked this";
-                                } else {
-                                    echo ($count > 0) ? $count . " likes" : "";
-                                }
-                                ?>
-                            </small>
-                            <div style="cursor:pointer" onclick="toggleComments(<?php echo $post['post_id']; ?>); document.getElementById('com-in-<?php echo $post['post_id']; ?>').focus();">
-                                <i class="bi bi-chat me-1"></i> Comment
-                            </div>
-                        </div>
-
-                        <div class="mt-3" id="comment-wrapper-<?php echo $post['post_id']; ?>">
-                            <?php if ($lc['tc'] > 0): ?>
-                                <div class="view-all-comments" id="toggle-text-<?php echo $post['post_id']; ?>" onclick="toggleComments(<?php echo $post['post_id']; ?>)">
-                                    View all <?php echo $lc['tc']; ?> comments
+                <div id="feed-container">
+                    <?php while($post = $all_posts->fetch_assoc()): 
+                        $p_id = $post['post_id'];
+                        // Query counts for likes/comments
+                        $lc = $conn->query("SELECT (SELECT COUNT(*) FROM post_likes WHERE post_id=$p_id) as tl, (SELECT COUNT(*) FROM post_comments WHERE post_id=$p_id) as tc")->fetch_assoc();
+                    ?>
+                        <div class="card mb-4 p-3 shadow-sm border-0 rounded-4 <?php echo (strpos($post['content'], '[MISSING DOG]') !== false) ? 'missing-dog-card' : ''; ?>">
+                            <div class="d-flex align-items-center">
+                                <img src="../images/homeImages/profile icon.png" class="rounded-circle me-2 clickable-user" width="40" height="40" onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>')" />
+                                <div>
+                                    <div class="fw-bold clickable-user" onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>')"><?php echo htmlspecialchars($post['full_name']); ?></div>
+                                    <small class="text-muted"><?php echo date('M d, g:i a', strtotime($post['created_at'])); ?></small>
                                 </div>
-                            <?php endif; ?>
-
-                            <div class="comment-container" id="comment-list-<?php echo $post['post_id']; ?>" style="display: none;">
-                                <?php 
-                                $pid = $post['post_id'];
-                                $comments = $conn->query("SELECT c.*, u.full_name FROM post_comments c JOIN users u ON c.user_id = u.user_id WHERE c.post_id = $pid ORDER BY c.created_at ASC");
-                                while($com = $comments->fetch_assoc()): ?>
-                                    <div class="comment-item">
-                                        <span class="comment-user clickable-user" onclick="viewUserProfile('<?php echo addslashes($com['full_name']); ?>')"><?php echo htmlspecialchars($com['full_name']); ?></span>
-                                        <span><?php echo htmlspecialchars($com['comment_text']); ?></span>
-                                    </div>
-                                <?php endwhile; ?>
+                                <div class="dropdown ms-auto">
+                                    <div class="post-menu-btn dropdown-toggle" data-bs-toggle="dropdown">•••</div>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                        <?php if ($post['user_id'] == $current_user_id): ?>
+                                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editPostModal" onclick="fillEditModal(<?php echo $post['post_id']; ?>, '<?php echo addslashes($post['content']); ?>')"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
+                                            <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="confirmDelete(<?php echo $post['post_id']; ?>)"><i class="bi bi-trash3 me-2"></i>Delete Post</a></li>
+                                        <?php else: ?>
+                                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#reportPostModal" onclick="document.getElementById('report_post_id').value=<?php echo $post['post_id']; ?>"><i class="bi bi-flag me-2"></i>Report Post</a></li>
+                                        <?php endif; ?>
+                                    </ul>
+                                </div>
                             </div>
-                        </div>
 
-                        <form action="main.php" method="POST" class="mt-3 d-flex align-items-center gap-2 comment-form">
-                            <input type="hidden" name="post_id" value="<?php echo $post['post_id']; ?>">
-                            <input type="text" name="comment_text" id="com-in-<?php echo $post['post_id']; ?>" 
-                                   class="form-control comment-input-pill border-0" 
-                                   placeholder="Write a comment..." required>
-                            <button type="submit" name="submit_comment" class="btn-send-circle">
-                                <i class="bi bi-send-fill"></i>
-                            </button>
-                        </form>
+                            <p class="mt-3"><?php echo nl2br(htmlspecialchars($post['content'])); ?></p>
+                            <?php if ($post['image_url']): ?> <img src="../<?php echo $post['image_url']; ?>" class="post-image" /> <?php endif; ?>
+
+                            <div class="mt-3 pt-2 border-top d-flex align-items-center gap-4">
+                                <?php 
+                                $isLiked = hasUserLiked($post['post_id'], $current_user_id, $conn); 
+                                $count = $lc['tl'];
+                                ?>
+                                <div class="like-btn <?php echo $isLiked ? 'liked' : ''; ?>" onclick="handleLike(this, <?php echo $post['post_id']; ?>)">
+                                    <i class="bi <?php echo $isLiked ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'; ?> me-1"></i> 
+                                    <span class="like-label"><?php echo $isLiked ? 'Liked' : 'Like'; ?></span>
+                                </div>
+
+                                <small class="like-count-display" id="like-display-<?php echo $post['post_id']; ?>">
+                                    <?php
+                                    if ($isLiked) {
+                                        echo ($count > 1) ? "You and " . ($count - 1) . " others" : "You liked this";
+                                    } else {
+                                        echo ($count > 0) ? $count . " likes" : "";
+                                    }
+                                    ?>
+                                </small>
+                                <div style="cursor:pointer" onclick="toggleComments(<?php echo $post['post_id']; ?>); document.getElementById('com-in-<?php echo $post['post_id']; ?>').focus();">
+                                    <i class="bi bi-chat me-1"></i> Comment
+                                </div>
+                            </div>
+
+                            <div class="mt-3" id="comment-wrapper-<?php echo $post['post_id']; ?>">
+                                <?php if ($lc['tc'] > 0): ?>
+                                    <div class="view-all-comments" id="toggle-text-<?php echo $post['post_id']; ?>" onclick="toggleComments(<?php echo $post['post_id']; ?>)">
+                                        View all <?php echo $lc['tc']; ?> comments
+                                    </div>
+                                <?php endif; ?>
+
+                                <div class="comment-container" id="comment-list-<?php echo $post['post_id']; ?>" style="display: none;">
+                                    <?php 
+                                    $pid = $post['post_id'];
+                                    $comments = $conn->query("SELECT c.*, u.full_name FROM post_comments c JOIN users u ON c.user_id = u.user_id WHERE c.post_id = $pid ORDER BY c.created_at ASC");
+                                    while($com = $comments->fetch_assoc()): ?>
+                                        <div class="comment-item">
+                                            <span class="comment-user clickable-user" onclick="viewUserProfile('<?php echo addslashes($com['full_name']); ?>')"><?php echo htmlspecialchars($com['full_name']); ?></span>
+                                            <span><?php echo htmlspecialchars($com['comment_text']); ?></span>
+                                        </div>
+                                    <?php endwhile; ?>
+                                </div>
+                            </div>
+
+                            <form action="main.php" method="POST" class="mt-3 d-flex align-items-center gap-2 comment-form">
+                                <input type="hidden" name="post_id" value="<?php echo $post['post_id']; ?>">
+                                <input type="text" name="comment_text" id="com-in-<?php echo $post['post_id']; ?>" 
+                                    class="form-control comment-input-pill border-0" 
+                                    placeholder="Write a comment..." required>
+                                <button type="submit" name="submit_comment" class="btn-send-circle">
+                                    <i class="bi bi-send-fill"></i>
+                                </button>
+                            </form>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
+
+                <div id="map-container" style="display: none;">
+                    <div class="card border-0 shadow-sm rounded-4 p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold m-0"><i class="bi bi-geo-alt-fill me-2 text-primary"></i>Pet-Friendly Establishments</h5>
+                            <button class="btn btn-secondary btn-sm" onclick="toggleMapView()"><i class="bi bi-arrow-left"></i> Back to Feed</button>
+                        </div>
+                        <div id="map" style="height: 600px; width: 100%; border-radius: 15px;"></div>
                     </div>
-                <?php endwhile; ?>
+                </div>
             </div>
 
             <div class="col-lg-3 sticky-column">
@@ -457,8 +478,19 @@ $all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id
         </div>
     </div>
 
+    <?php require_once '../features/modal_establishments.php'; ?>
+    <script>
+        const API_BASE_URL = "../src/features/handle_establishments.php";
+        const AUTO_INIT_MAP = false;
+    </script>
+    <script>
+        const establishmentData = <?php echo json_encode($active_establishments); ?>;
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../script/map_init.js"></script>
+
     <script>
         // NEW: View User Profile Popup
         function viewUserProfile(name) {

@@ -185,6 +185,10 @@ $establishments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     // Convert PHP array to JS object
     const establishmentData = <?php echo json_encode($establishments); ?>;
 </script>
+<script>
+    const API_BASE_URL = "./features/handle_establishments.php";
+    const AUTO_INIT_MAP = true;
+</script>
 <script src="script/map_init.js"></script>
 <script>
     // SweetAlert Logout Logic
