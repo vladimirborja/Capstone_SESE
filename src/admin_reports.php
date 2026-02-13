@@ -29,6 +29,10 @@ $recent_reports = $pdo->query($sql_reports)->fetchAll(PDO::FETCH_ASSOC);
 
 // 3. Messages Fetching
 $recent_messages = $pdo->query("SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 7")->fetchAll(PDO::FETCH_ASSOC);
+
+// map logic
+$stmt = $pdo->query("SELECT name, description, address, latitude, longitude FROM establishments WHERE status = 'active'");
+$establishments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!doctype html>
@@ -143,6 +147,8 @@ $recent_messages = $pdo->query("SELECT * FROM contact_messages ORDER BY created_
     </div>
 </div>
 
+<?php require_once './features/pet_establishments.php'; ?>
+
 <div class="modal fade" id="reportModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -175,6 +181,11 @@ $recent_messages = $pdo->query("SELECT * FROM contact_messages ORDER BY created_
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Convert PHP array to JS object
+    const establishmentData = <?php echo json_encode($establishments); ?>;
+</script>
+<script src="script/map_init.js"></script>
 <script>
     // SweetAlert Logout Logic
     function confirmLogout() {
