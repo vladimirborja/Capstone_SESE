@@ -132,7 +132,7 @@ $users = $stmt->fetchAll();
                                     <td><?= date('M d, Y', strtotime($u['created_at'])); ?></td>
                                     <td><small><?= $u['last_login'] ? date('M d, Y H:i', strtotime($u['last_login'])) : 'Never'; ?></small></td>
                                     <td class="text-center">
-                                        <button class="btn btn-sm btn-info text-white" 
+                                        <button class="btn btn-sm btn-info text-white" style="background-color: #84888b;" 
                                             onclick="viewUser('<?= $u['user_id']; ?>', '<?= htmlspecialchars($u['full_name']); ?>', '<?= htmlspecialchars($u['email']); ?>')">
                                             <i class="fas fa-eye"></i>
                                         </button>
