@@ -111,31 +111,101 @@ session_start();
   </div>
 
   <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold" id="termsModalLabel" style="color: #1e88ff">Terms and Conditions</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <h6>1. Account Security</h6>
-          <p>By registering, you agree to provide accurate information and maintain a strong password (at least 8 characters, including uppercase, lowercase, numbers, and symbols).</p>
-          
-          <h6>2. Data Privacy</h6>
-          <p>We respect your privacy. Your data is stored securely and is used solely for the purpose of managing your account and providing our services.</p>
-          
-          <h6>3. Prohibited Use</h6>
-          <p>You may not use this platform for any illegal or unauthorized purposes. Bypassing security or providing false identities is strictly prohibited.</p>
-          
-          <h6>4. User Agreement</h6>
-          <p>By checking the box on the registration form, you acknowledge that you have read and understood these terms in full.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background-color: #1e88ff; border: none;">I Understand</button>
-        </div>
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="termsModalLabel" style="color: #1e88ff">Terms and Conditions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="font-size: 0.9rem; line-height: 1.6;">
+        <p>Welcome to <strong>Sese</strong>, a centralized web-based social platform for discovering pet-inclusive establishments and pet care services within Angeles City.</p>
+        
+        <p>By accessing or using the Sese website, you agree to be bound by these Terms and Conditions. If you do not agree with any part of these Terms, you must discontinue use of the platform.</p>
+
+        <hr>
+
+        <h6>1. Purpose of the Platform</h6>
+        <p>Sese is developed as an academic capstone project and deployed as a community-based web platform. It aims to:</p>
+        <ul>
+          <li>Provide a centralized directory of pet-inclusive establishments</li>
+          <li>Allow users to post reviews, listings, and feedback</li>
+          <li>Enable users to upload images related to establishments and pets</li>
+          <li>Provide a lost-and-found section for pets within Angeles City</li>
+        </ul>
+        <p><small>Sese functions as an information-sharing platform and does not guarantee the accuracy of all user-submitted content.</small></p>
+
+        <h6>2. User Eligibility</h6>
+        <p>By using Sese, you confirm that:</p>
+        <ul>
+          <li>You are at least 16 years old; or</li>
+          <li>You have obtained consent from a parent or legal guardian.</li>
+        </ul>
+        <p>You agree to provide accurate, complete, and updated information during registration.</p>
+
+        <h6>3. User Accounts and Security</h6>
+        <p>Users must create an account to access posting features. You are responsible for:</p>
+        <ul>
+          <li>Maintaining the confidentiality of your login credentials</li>
+          <li>All activities under your account</li>
+          <li>Immediately reporting any unauthorized access</li>
+        </ul>
+
+        <h6>4. User-Generated Content</h6>
+        <p>Users may post listings, reviews, comments, and lost-and-found reports. By submitting content, you:</p>
+        <ol>
+          <li>Confirm that the content is accurate and lawful.</li>
+          <li>Confirm ownership or permission to upload.</li>
+          <li>Grant Sese a non-exclusive license to display and manage the content.</li>
+          <li>Accept that posts may be publicly visible.</li>
+        </ol>
+
+        <h6>5. Image Upload Policy</h6>
+        <p>Images must not infringe on copyrights, contain explicit/offensive material, or violate the privacy of individuals. Sese reserves the right to remove non-compliant images without notice.</p>
+
+        <h6>6. Establishment Listings and Verification</h6>
+        <p>While administrators may verify certain establishments via public records (e.g., DTI), Sese does not guarantee the legality or operational status of any listing.</p>
+
+        <h6>7. Lost and Found Feature Disclaimer</h6>
+        <p>This section is for community support only. Administrators do not retrieve pets or guarantee recovery. Interactions are at the user's own risk.</p>
+
+        <h6>8. Prohibited Activities</h6>
+        <p>Users must not impersonate others, post fraudulent info, attempt to hack the platform, or collect user data without consent.</p>
+
+        <h6>9. Intellectual Property</h6>
+        <p>System design, logos, and source code are the intellectual property of the Sese development team unless otherwise stated.</p>
+
+        <h6>10. Privacy and Data Protection</h6>
+        <p>Data processing complies with the <strong>Philippine Data Privacy Act of 2012 (RA 10173)</strong>. Personal info is used solely for account management and platform functionality.</p>
+
+        <h6>11. Limitation of Liability</h6>
+        <p>Sese is provided “as is.” Developers are not liable for inaccurate content, user disputes, or technical downtime.</p>
+
+        <h6>12. Academic Nature of the Platform</h6>
+        <p>Developed under the School of Computing of Holy Angel University, Sese remains subject to academic evaluation and research modifications.</p>
+
+        <h6>13. Termination of Access</h6>
+        <p>Sese reserves the right to suspend accounts or remove content for violations without prior notice.</p>
+
+        <h6>14. Amendments</h6>
+        <p>Terms may be updated at any time. Continued use constitutes acceptance of revised terms.</p>
+
+        <h6>15. Governing Law</h6>
+        <p>These Terms shall be governed by the laws of the Republic of the Philippines.</p>
+
+        <h6>16. Contact Information</h6>
+        <p>
+          <strong>Sese Development Team</strong><br>
+          Holy Angel University – School of Computing<br>
+          Email: <a href="mailto:hau.sese.dev@gmail.com">hau.sese.dev@gmail.com</a><br>
+          Location: Angeles City, Pampanga, Philippines
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background-color: #1e88ff; border: none;">I Understand</button>
       </div>
     </div>
   </div>
+</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

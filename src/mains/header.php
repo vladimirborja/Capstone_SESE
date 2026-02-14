@@ -1,32 +1,52 @@
 <?php
-require_once __DIR__ . '/../db_config.php'; 
+// Ensure session is started for user_id check
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+/**
+ * FIX: Path Logic
+ * We check multiple possible locations for db_config.php 
+ * so it works whether the header is included from /mains/ or the root.
+ */
+if (file_exists(__DIR__ . '/../db_config.php')) {
+    require_once __DIR__ . '/../db_config.php';
+} elseif (file_exists(__DIR__ . '/db_config.php')) {
+    require_once __DIR__ . '/db_config.php';
+}
 
 $user_id = $_SESSION['user_id'] ?? 0;
 $unread_count = 0;
 $notifications = [];
 
-if ($user_id > 0) {
+// Only run query if $pdo exists and user is logged in
+if ($user_id > 0 && isset($pdo)) {
+    // 1. Get unread count
     $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
     $stmt_count->execute([$user_id]);
     $unread_count = $stmt_count->fetchColumn();
-    $stmt_notifs = $pdo->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 10");
+    
+    // 2. Fetch notifications with post details
+    $stmt_notifs = $pdo->prepare("
+        SELECT n.*, p.content, p.image_url 
+        FROM notifications n 
+        LEFT JOIN posts p ON n.post_id = p.post_id 
+        WHERE n.user_id = ? 
+        ORDER BY n.created_at DESC LIMIT 5
+    ");
     $stmt_notifs->execute([$user_id]);
     $notifications = $stmt_notifs->fetchAll();
 }
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-<style>
-    .notif-dropdown { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; }
-    .notif-item { transition: background 0.2s; cursor: pointer; }
-    .notif-item:hover { background-color: #f1f1f1; }
-    .notif-item.unread { border-left: 4px solid #007bff; }
-</style>
 
 <header class="topbar container mx-auto px-4 rounded-4" style="margin-top: 20px;">
     <div class="topbar-inner d-flex justify-content-between align-items-center">
         <div class="logo">
-            <a href="../index.php"><img src="../images/homeImages/Sese-Logo3.png" alt="Logo" /></a>
+            <a href="../index.php">
+                <img src="../images/homeImages/Sese-Logo3.png" alt="Logo" />
+            </a>
         </div>
 
         <nav class="nav-links">
@@ -40,30 +60,34 @@ if ($user_id > 0) {
             <div class="icon-wrapper position-relative" onclick="toggleDropdown('notifDrop')">
                 <i class="bi bi-bell-fill fs-4" style="cursor: pointer; color: #fff;"></i>
                 <?php if ($unread_count > 0): ?>
-                    <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
                         <?php echo $unread_count; ?>
                     </span>
                 <?php endif; ?>
                 
-                <div class="notif-dropdown shadow p-3" id="notifDrop" style="display:none; position: absolute; right: 0; width: 320px; background: white; z-index: 1000; border-radius: 10px; top: 40px;">
+                <div class="notif-dropdown shadow p-3" id="notifDrop" style="display:none; position: absolute; right: 0; width: 300px; background: white; z-index: 1000; border-radius: 10px; top: 40px;">
                     <h6 class="border-bottom pb-2 mb-2" style="color: #333;">Notifications</h6>
-                    <div id="notif-list">
-                        <?php if (empty($notifications)): ?>
-                            <p class="text-muted small py-2 mb-0 text-center">No notifications yet.</p>
-                        <?php else: ?>
-                            <?php foreach ($notifications as $n): ?>
-                                <div class="notif-item p-2 border-bottom <?php echo $n['is_read'] == 0 ? 'unread bg-light' : ''; ?>" 
-                                     onclick="showNotifDetail('<?php echo addslashes($n['message']); ?>', '<?php echo $n['created_at']; ?>')">
-                                    <p class="small mb-1 <?php echo $n['is_read'] == 0 ? 'fw-bold' : ''; ?>" style="color: #333; line-height: 1.2;">
-                                        <?php echo htmlspecialchars($n['message']); ?>
-                                    </p>
-                                    <span class="text-muted" style="font-size: 0.65rem;">
-                                        <i class="bi bi-clock me-1"></i><?php echo date('M d, g:i a', strtotime($n['created_at'])); ?>
-                                    </span>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
+                    <?php if (empty($notifications)): ?>
+                        <p class="text-muted small py-2 mb-0">No notifications yet.</p>
+                    <?php else: ?>
+                        <?php foreach ($notifications as $n): ?>
+                            <div class="notif-item p-2 border-bottom <?php echo $n['is_read'] == 0 ? 'bg-light' : ''; ?>" 
+                                 style="cursor: pointer;"
+                                 data-message="<?php echo htmlspecialchars($n['message']); ?>"
+                                 data-date="<?php echo $n['created_at']; ?>"
+                                 data-content="<?php echo htmlspecialchars($n['content'] ?? 'No text content'); ?>"
+                                 data-image="<?php echo htmlspecialchars($n['image_url'] ?? ''); ?>"
+                                 data-postid="<?php echo $n['post_id']; ?>"
+                                 onclick="prepareNotifModal(this)">
+                                <p class="small mb-1 <?php echo $n['is_read'] == 0 ? 'fw-bold' : ''; ?>" style="color: #333;">
+                                    <?php echo htmlspecialchars($n['message']); ?>
+                                </p>
+                                <span class="text-muted" style="font-size: 0.7rem;">
+                                    <?php echo date('M d, g:i a', strtotime($n['created_at'])); ?>
+                                </span>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -83,26 +107,23 @@ if ($user_id > 0) {
 
 <div class="modal fade" id="notifDetailModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Notification Detail</h5>
+    <div class="modal-content" style="border-radius: 15px;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" style="color: #333;">Activity Detail</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        <div class="d-flex align-items-center mb-3">
-            <div class="bg-primary rounded-circle p-2 text-white me-3">
-                <i class="bi bi-info-circle-fill fs-4"></i>
-            </div>
-            <div>
-                <p id="modal-notif-message" class="mb-0 fw-bold"></p>
-                <small id="modal-notif-date" class="text-muted"></small>
-            </div>
+      <div class="modal-body text-center p-4">
+        <h5 id="modal-notif-message" class="fw-bold mb-1" style="color: #000;"></h5>
+        <p id="modal-notif-date" class="text-muted mb-4" style="font-size: 14px;"></p>
+        
+        <div style="background: #f0f2f5; border-radius: 12px; padding: 15px; text-align: left;">
+            <span class="d-block fw-bold text-muted mb-1" style="font-size: 10px; text-transform: uppercase;">YOUR POST</span>
+            <p id="modal-post-text" class="mb-0" style="color: #1c1e21; font-size: 14px;"></p>
+            <img id="modal-post-image" src="" style="max-width: 100%; border-radius: 8px; margin-top: 10px; display: none;" alt="Post Image">
         </div>
-        <hr>
-        <p class="text-muted small">This activity was recorded on your post.</p>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <div class="modal-footer border-0 flex-column">
+        <button type="button" class="btn btn-light w-100 fw-bold text-muted mt-2" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -111,7 +132,7 @@ if ($user_id > 0) {
 <script>
     function toggleDropdown(id) {
         const drop = document.getElementById(id);
-        const badge = document.getElementById('notif-badge'); 
+        const badge = document.querySelector('.badge.bg-danger'); 
         const allDrops = ['notifDrop', 'dropL'];
         
         allDrops.forEach(dId => {
@@ -125,27 +146,50 @@ if ($user_id > 0) {
         drop.style.display = isOpening ? 'block' : 'none';
 
         if (id === 'notifDrop' && isOpening && badge) {
-            fetch('../process/mark_read.php')
+            // FIX: Use absolute path for the fetch call so it works on all pages
+            const markReadPath = window.location.origin + "/Capstone/src/mains/process/mark_read.php";
+            fetch(markReadPath)
             .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    badge.style.display = 'none';
-                }
-            })
-            .catch(err => console.error('Error marking notifications:', err));
+            .then(data => { if(data.success) badge.style.display = 'none'; })
+            .catch(err => console.error('Error marking read:', err));
         }
     }
 
-    // Function to show the Pop-up
-    function showNotifDetail(message, date) {
-        document.getElementById('modal-notif-message').innerText = message;
-        // Format date nicely
-        const formattedDate = new Date(date).toLocaleString('en-US', { 
-            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true 
-        });
-        document.getElementById('modal-notif-date').innerText = formattedDate;
+    function prepareNotifModal(el) {
+        const message = el.getAttribute('data-message');
+        const date = el.getAttribute('data-date');
+        const content = el.getAttribute('data-content');
+        const image = el.getAttribute('data-image');
+        const pid = el.getAttribute('data-postid');
+        showNotifDetail(message, date, content, image, pid);
+    }
 
-        // Initialize and show Bootstrap Modal
+    function showNotifDetail(message, date, postText, postImage, postId) {
+        document.getElementById('modal-notif-message').innerText = message;
+        
+        const d = new Date(date);
+        document.getElementById('modal-notif-date').innerText = d.toLocaleString('en-US', { 
+            weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true 
+        });
+        
+        document.getElementById('modal-post-text').innerText = postText;
+        
+        const imgEl = document.getElementById('modal-post-image');
+        
+        if (postImage && postImage.trim() !== "" && postImage !== "null") {
+            const fullPath = window.location.origin + "/Capstone/src/uploads/" + postImage;
+            imgEl.src = fullPath; 
+            imgEl.style.display = 'block';
+            
+            imgEl.onerror = function() {
+                this.style.display = 'none';
+            };
+        } else {
+            imgEl.style.display = 'none';
+        }
+        
+        // FIX: Ensure viewdetails link also uses a clear path
+        
         var myModal = new bootstrap.Modal(document.getElementById('notifDetailModal'));
         myModal.show();
     }
@@ -167,7 +211,7 @@ if ($user_id > 0) {
             confirmButtonText: 'Logout'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = 'main.php?action=logout';
+                window.location.href = window.location.origin + '/Capstone/src/mains/main.php?action=logout';
             }
         });
     }
