@@ -47,10 +47,12 @@ $users = $stmt->fetchAll();
     <style>
         body { background: #f8f9fa; }
         .admin-header { background: linear-gradient(135deg, #1e88ff, #0d6efd); color: #fff; padding: 20px 0; margin-bottom: 30px; }
-        .badge-active { background: #0d6efd; }
-        .badge-inactive { background: #6c757d; }
+        .badge-active { background: #28a745; width: 75px; display: inline-block; }
+        .badge-inactive { background: #dc3545; width: 75px; display: inline-block; } /* Standardized width for alignment */
         .card { border-radius: 15px; }
         .table thead { background-color: #f1f5f9; }
+        /* Fixes the alignment of the badge and sync button */
+        .status-container { display: flex; align-items: center; gap: 8px; justify-content: start; }
     </style>
 </head>
 
@@ -109,15 +111,22 @@ $users = $stmt->fetchAll();
                                         </form>
                                     </td>
                                     <td>
-                                        <form method="POST" class="d-inline">
-                                            <input type="hidden" name="user_id" value="<?= $u['user_id']; ?>">
-                                            <input type="hidden" name="is_active" value="<?= $u['is_active'] ? 0 : 1; ?>">
-                                            <input type="hidden" name="toggle_status" value="1">
-                                            <span class="badge <?= $u['is_active'] ? 'badge-active' : 'badge-inactive'; ?>"><?= $u['is_active'] ? 'Active' : 'Inactive'; ?></span>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary ms-1"
-                                                onclick="confirmStatusToggle(this, '<?= htmlspecialchars($u['full_name']); ?>')">
-                                                <i class="fas fa-sync-alt"></i>
-                                            </button>
+                                        <form method="POST" class="m-0">
+                                            <div class="status-container">
+                                                <input type="hidden" name="user_id" value="<?= $u['user_id']; ?>">
+                                                <input type="hidden" name="is_active" value="<?= $u['is_active'] ? 0 : 1; ?>">
+                                                <input type="hidden" name="toggle_status" value="1">
+                                                
+                                                <span class="badge <?= $u['is_active'] ? 'badge-active' : 'badge-inactive'; ?>">
+                                                    <?= $u['is_active'] ? 'Active' : 'Inactive'; ?>
+                                                </span>
+                                                
+                                                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
+                                                    style="padding: 0.25rem 0.5rem;"
+                                                    onclick="confirmStatusToggle(this, '<?= htmlspecialchars($u['full_name']); ?>')">
+                                                    <i class="fas fa-sync-alt" style="font-size: 0.75rem;"></i>
+                                                </button>
+                                            </div>
                                         </form>
                                     </td>
                                     <td><?= date('M d, Y', strtotime($u['created_at'])); ?></td>
@@ -141,7 +150,6 @@ $users = $stmt->fetchAll();
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // Use the "Standard" Success SweetAlert (Center Modal)
         <?php if ($successMessage !== ""): ?>
             Swal.fire({
                 title: 'Success!',
@@ -165,7 +173,7 @@ $users = $stmt->fetchAll();
                 if (result.isConfirmed) {
                     selectElement.form.submit();
                 } else {
-                    location.reload(); // Revert selection if canceled
+                    location.reload(); 
                 }
             });
         }
@@ -181,7 +189,7 @@ $users = $stmt->fetchAll();
                 confirmButtonText: 'Yes, update'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    buttonElement.form.submit();
+                    buttonElement.closest('form').submit();
                 }
             });
         }
