@@ -2,13 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-// Database connection
-$conn = new mysqli("localhost", "root", "", "capstone_db");
-
-if ($conn->connect_error) {
-    echo json_encode(['status' => 'error', 'message' => 'Connection failed']);
-    exit();
-}
+require_once '../config.php';
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'Please login first']);

@@ -4,16 +4,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     die("Invalid request.");
 }
 
-// Database Connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$database = "capstone_db";
-
-$conn = new mysqli($servername, $username, $password, $database);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once '../config.php';
 
 // Get & Clean Form Data
 $first_name = trim($_POST['first_name'] ?? '');

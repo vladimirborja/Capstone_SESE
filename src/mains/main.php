@@ -2,11 +2,7 @@
 session_start();
 
 // Database connection
-$conn = new mysqli("localhost", "root", "", "capstone_db");
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once '../config.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.php");
@@ -248,7 +244,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="modal-content">
             <form action="main.php" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <h5>Share a Furrendly Place</h5>
+                    <h5>Share a Furrendly Post</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -311,7 +307,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="search-row d-flex justify-content-center align-items-center gap-3 mb-4 mt-4">
         <div class="search-box d-flex align-items-center"><i class="bi bi-search me-2"></i><input type="text" placeholder="Search here..." /></div>
         <div class="filters d-flex gap-2">
-            <button class="chip blue" data-bs-toggle="modal" data-bs-target="#createPostModal">+ Share a Furrendly Place</button>
+            <button class="chip blue" data-bs-toggle="modal" data-bs-target="#createPostModal">+ Share a Furrendly Post</button>
             <button class="chip green" data-bs-toggle="modal" data-bs-target="#addEstablishmentModal">+ Add Establishment</button>
             <button class="chip purple" id="toggleMapBtn" onclick="toggleMapView()">Location</button>
         </div>
