@@ -1,6 +1,20 @@
 // 1. Declare variables globally so all functions can access them
 let mainMap;
 let isMapInitialized = false;
+let allMarkers = []; // Array to store marker objects and their types
+
+// Toggle the 'Specify Others' input field
+function toggleOtherInput(value) {
+  const otherDiv = document.getElementById("otherTypeDiv");
+  const otherInput = document.getElementById("other_type_input");
+  if (value === "Others") {
+    otherDiv.style.display = "block";
+    otherInput.setAttribute("required", "required");
+  } else {
+    otherDiv.style.display = "none";
+    otherInput.removeAttribute("required");
+  }
+}
 
 // 2. Define this globally so the HTML button's 'onclick' can find it
 function toggleMapView() {
@@ -43,8 +57,8 @@ function initMainMap() {
             <h6 class="fw-bold text-primary mb-1 d-flex align-items-center">
             <i class="bi bi-geo-alt-fill me-2"></i> ${place.name}
             </h6>
-            
-            <p class="text-muted mb-2">
+            <span class="badge bg-primary rounded-pill" style="font-size: 0.80rem;">${place.type}</span>
+            <p class="text-muted">
                 ${place.address}
             </p>
             
@@ -64,6 +78,7 @@ function initMainMap() {
         `;
 
       marker.bindPopup(popupContent);
+      allMarkers.push({ marker: marker, type: place.type });
     });
 
     const group = new L.featureGroup(
@@ -72,6 +87,41 @@ function initMainMap() {
     mainMap.fitBounds(group.getBounds().pad(0.1));
   }
   isMapInitialized = true;
+}
+
+// Filtering Logic
+function filterMapMarkers() {
+  const selectedTypes = Array.from(
+    document.querySelectorAll(".filter-checkbox:checked"),
+  ).map((cb) => cb.value);
+  const standardTypes = [
+    "Restaurant / Cafe",
+    "Hotel / Resort",
+    "Mall / Shopping Center",
+    "Park / Recreational Area",
+  ];
+
+  allMarkers.forEach((item) => {
+    let isVisible = false;
+
+    if (selectedTypes.length === 0) {
+      isVisible = true; // Show all if none selected
+    } else {
+      const isOther = !standardTypes.includes(item.type);
+
+      if (selectedTypes.includes(item.type)) {
+        isVisible = true;
+      } else if (selectedTypes.includes("Others") && isOther) {
+        isVisible = true;
+      }
+    }
+
+    if (isVisible) {
+      item.marker.addTo(mainMap);
+    } else {
+      mainMap.removeLayer(item.marker);
+    }
+  });
 }
 
 function approveEstablishment(id) {
@@ -152,7 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((data) => {
           if (data.success) {
             const successMsg =
-              typeof AUTO_INIT_MAP !== "undefined" && AUTO_INIT_MAP === true
+              USER_ROLE === "admin"
                 ? "Establishment added!"
                 : "Request submitted! Waiting for admin approval.";
 

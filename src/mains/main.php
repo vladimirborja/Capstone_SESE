@@ -143,7 +143,7 @@ $all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id
 require_once '../db_config.php';
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$est_stmt = $pdo->query("SELECT name, description, address, latitude, longitude FROM establishments WHERE status = 'active'");
+$est_stmt = $pdo->query("SELECT name, description, address, latitude, longitude, type FROM establishments WHERE status = 'active'");
 $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -433,11 +433,43 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
 
                 <div id="map-container" style="display: none;">
-                    <div class="card border-0 shadow-sm rounded-4 p-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-bold m-0"><i class="bi bi-geo-alt-fill me-2 text-primary"></i>Pet-Friendly Establishments</h5>
                             <button class="btn btn-secondary btn-sm" onclick="toggleMapView()"><i class="bi bi-arrow-left"></i> Back to Feed</button>
                         </div>
+                        <div class="card border-0 shadow-sm rounded-4 p-3">
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-outline-primary mb-2 w-auto" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                                    <i class="bi bi-filter"></i> Filter by Type
+                                </button>
+                            </div>
+                            
+                            <div class="collapse" id="filterCollapse">
+                                <div class="p-2 border rounded-3 mb-3 bg-light">
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input filter-checkbox" type="checkbox" value="Restaurant / Cafe" id="f1" onchange="filterMapMarkers()">
+                                            <label class="form-check-label small" for="f1">Restaurant / Cafe</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input filter-checkbox" type="checkbox" value="Hotel / Resort" id="f2" onchange="filterMapMarkers()">
+                                            <label class="form-check-label small" for="f2">Hotel / Resort</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input filter-checkbox" type="checkbox" value="Mall / Shopping Center" id="f3" onchange="filterMapMarkers()">
+                                            <label class="form-check-label small" for="f3">Mall / Shopping Center</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input filter-checkbox" type="checkbox" value="Park / Recreational Area" id="f4" onchange="filterMapMarkers()">
+                                            <label class="form-check-label small" for="f4">Park / Recreational Area</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input filter-checkbox" type="checkbox" value="Others" id="f5" onchange="filterMapMarkers()">
+                                            <label class="form-check-label small" for="f5">Others</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         <div id="map" style="height: 600px; width: 100%; border-radius: 15px;"></div>
                     </div>
                 </div>
@@ -482,6 +514,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
     <script>
         const API_BASE_URL = "../features/handle_establishments.php";
         const AUTO_INIT_MAP = false;
+        const USER_ROLE = <?php echo json_encode($_SESSION['role']); ?>;
     </script>
     <script>
         const establishmentData = <?php echo json_encode($active_establishments); ?>;

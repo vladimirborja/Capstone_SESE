@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user_id = $_SESSION['user_id'];
         $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
 
-        // ACTION: APPROVE (Admin Only)
+        // ACTION: APPROVE (ADMIN ONLY)
         if (isset($_POST['action']) && $_POST['action'] === 'approve_establishment' && $isAdmin) {
             $id = $_POST['id'];
             $stmt = $pdo->prepare("UPDATE establishments SET status = 'active', user_id = ? WHERE id = ?");
@@ -19,15 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // ACTION: ADD NEW
         if (isset($_POST['name'])) {
+            // Logic for 'Others' specification
+            $type = ($_POST['type'] === 'Others') ? $_POST['other_type_input'] : $_POST['type'];
+
             if ($isAdmin) {
-                // Admin adds directly as active
-                $sql = "INSERT INTO establishments (user_id, requester_id, status, name, description, address, latitude, longitude) 
-                        VALUES (:uid, NULL, 'active', :name, :desc, :addr, :lat, :lng)";
+                $sql = "INSERT INTO establishments (user_id, requester_id, status, name, description, address, latitude, longitude, type) 
+                        VALUES (:uid, NULL, 'active', :name, :desc, :addr, :lat, :lng, :type)";
                 $params = ['uid' => $user_id];
             } else {
-                // User adds as pending
-                $sql = "INSERT INTO establishments (user_id, requester_id, status, name, description, address, latitude, longitude) 
-                        VALUES (NULL, :req_id, 'pending', :name, :desc, :addr, :lat, :lng)";
+                $sql = "INSERT INTO establishments (user_id, requester_id, status, name, description, address, latitude, longitude, type) 
+                        VALUES (NULL, :req_id, 'pending', :name, :desc, :addr, :lat, :lng, :type)";
                 $params = ['req_id' => $user_id];
             }
 
@@ -36,7 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'desc' => $_POST['description'],
                 'addr' => $_POST['address'],
                 'lat'  => $_POST['latitude'],
-                'lng'  => $_POST['longitude']
+                'lng'  => $_POST['longitude'],
+                'type' => $type
             ]);
             
             $stmt = $pdo->prepare($sql);

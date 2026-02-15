@@ -1,4 +1,5 @@
 <?php
+session_start();
 include 'db_config.php';
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -31,7 +32,7 @@ $recent_reports = $pdo->query($sql_reports)->fetchAll(PDO::FETCH_ASSOC);
 $recent_messages = $pdo->query("SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 7")->fetchAll(PDO::FETCH_ASSOC);
 
 // map logic
-$stmt = $pdo->query("SELECT name, description, address, latitude, longitude FROM establishments WHERE status = 'active'");
+$stmt = $pdo->query("SELECT name, description, address, latitude, longitude, type FROM establishments WHERE status = 'active'");
 $establishments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -188,6 +189,7 @@ $establishments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script>
     const API_BASE_URL = "./features/handle_establishments.php";
     const AUTO_INIT_MAP = true;
+    const USER_ROLE = <?php echo json_encode($_SESSION['role']); ?>;
 </script>
 <script src="script/map_init.js"></script>
 <script>

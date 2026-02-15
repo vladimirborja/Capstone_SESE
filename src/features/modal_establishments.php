@@ -14,6 +14,22 @@
                                 <input type="text" name="name" class="form-control" required placeholder="e.g. Paw-some Cafe">
                             </div>
                             <div class="mb-3">
+                                <label class="form-label small fw-bold">ESTABLISHMENT TYPE</label>
+                                <select name="type" id="typeSelect" class="form-select" required onchange="toggleOtherInput(this.value)">
+                                    <option value="" selected disabled>Select Type</option>
+                                    <option value="Restaurant / Cafe">Restaurant / Cafe</option>
+                                    <option value="Hotel / Resort">Hotel / Resort</option>
+                                    <option value="Mall / Shopping Center">Mall / Shopping Center</option>
+                                    <option value="Park / Recreational Area">Park / Recreational Area</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="otherTypeDiv" style="display: none;">
+                                <label class="form-label small fw-bold">PLEASE SPECIFY TYPE</label>
+                                <input type="text" name="other_type_input" id="other_type_input" class="form-control" placeholder="e.g., Veterinary Clinic">
+                            </div>
+                            <div class="mb-3">
                                 <label class="form-label small fw-bold">ADDRESS</label>
                                 <input type="text" name="address" class="form-control" required placeholder="Street, City, Province">
                             </div>
