@@ -93,7 +93,7 @@
                         </div>
                         <div class="info-content">
                             <h4>Email Address:</h4>
-                            <p>sese@hau.dev</p>
+                            <p>hau.sese.dev@gmail.com</p>
                         </div>
                     </div>
 

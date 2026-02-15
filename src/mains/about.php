@@ -149,7 +149,6 @@
                         in Angeles City by providing a verified and community-driven
                         platform that simplifies pet-inclusive living.
                     </p>
-                    <button class="btn btn-read-more">Read more</button>
                 </div>
             </div>
 
@@ -161,7 +160,6 @@
                         in Angeles City, creating a future where every establishment
                         is a pet-welcome zone.
                     </p>
-                    <button class="btn btn-read-more">Read more</button>
                 </div>
             </div>
         </div>

@@ -4,11 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-/**
- * FIX: Path Logic
- * We check multiple possible locations for db_config.php 
- * so it works whether the header is included from /mains/ or the root.
- */
 if (file_exists(__DIR__ . '/../db_config.php')) {
     require_once __DIR__ . '/../db_config.php';
 } elseif (file_exists(__DIR__ . '/db_config.php')) {
@@ -44,7 +39,7 @@ if ($user_id > 0 && isset($pdo)) {
 <header class="topbar container mx-auto px-4 rounded-4" style="margin-top: 20px;">
     <div class="topbar-inner d-flex justify-content-between align-items-center">
         <div class="logo">
-            <a href="../index.php">
+            <a href="../mains/main.php">
                 <img src="../images/homeImages/Sese-Logo3.png" alt="Logo" />
             </a>
         </div>
@@ -95,8 +90,13 @@ if ($user_id > 0 && isset($pdo)) {
                 <img src="../images/homeImages/profile icon.png" class="icon-img avatar" />
                 <div class="notif-dropdown shadow" id="dropL" style="display:none; position: absolute; right: 0; width: 150px; background: white; z-index: 1000; border-radius: 10px; top: 50px;">
                     <p class="p-2 mb-0 text-center">
+                        <div>
+                            <a href="profile.php">
+                            <i class="bi bi-person me-2"></i>Profile
+                        </a>
+                        </div>
                         <a href="javascript:void(0)" onclick="confirmLogout()" class="text-danger text-decoration-none">
-                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            <i class="bi bi-box-arrow-right me-2">Logout</i>
                         </a>
                     </p>
                 </div>
@@ -177,7 +177,7 @@ if ($user_id > 0 && isset($pdo)) {
         const imgEl = document.getElementById('modal-post-image');
         
         if (postImage && postImage.trim() !== "" && postImage !== "null") {
-            const fullPath = window.location.origin + "/Capstone/src/uploads/" + postImage;
+            const fullPath = "../" + postImage;
             imgEl.src = fullPath; 
             imgEl.style.display = 'block';
             
@@ -187,9 +187,7 @@ if ($user_id > 0 && isset($pdo)) {
         } else {
             imgEl.style.display = 'none';
         }
-        
-        // FIX: Ensure viewdetails link also uses a clear path
-        
+                
         var myModal = new bootstrap.Modal(document.getElementById('notifDetailModal'));
         myModal.show();
     }

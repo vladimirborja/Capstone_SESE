@@ -191,6 +191,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
     </style>
 </head>
 <body class="home-body">
+<?php include 'header.php'; ?>
 
     <div class="modal fade" id="editPostModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -247,7 +248,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="modal-content">
             <form action="main.php" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <h5>Share a Furrendly Post</h5>
+                    <h5>Share a Furrendly Place</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -307,36 +308,10 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-    <header class="topbar container mx-auto px-4 rounded-4" style="margin-top: 20px;">
-        <div class="topbar-inner">
-            <div class="logo"><a href="main.php"><img src="../images/homeImages/Sese-Logo3.png" alt="Logo" /></a></div>
-            <nav class="nav-links">
-                <a href="main.php">Home</a>
-                <a href="Lost&found.php">Lost & Found</a>
-                <a href="about.php">About Us</a>
-                <a href="contact.php">Contact Us</a>
-            </nav>
-            <div class="top-icons">
-                <div class="icon-wrapper avatar-wrapper" onclick="document.getElementById('dropL').style.display = (document.getElementById('dropL').style.display == 'block') ? 'none' : 'block';">
-                    <img src="../images/homeImages/profile icon.png" class="icon-img avatar" />
-                    <div class="notif-dropdown" id="dropL" style="display:none;">
-                         <p>
-                        <a href="profile.php">
-                            <i class="bi bi-person me-2"></i>Profile
-                        </a>
-                    </p>
-                        <p><a href="javascript:void(0)" onclick="confirmLogout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
     <div class="search-row d-flex justify-content-center align-items-center gap-3 mb-4 mt-4">
         <div class="search-box d-flex align-items-center"><i class="bi bi-search me-2"></i><input type="text" placeholder="Search here..." /></div>
         <div class="filters d-flex gap-2">
             <button class="chip blue" data-bs-toggle="modal" data-bs-target="#createPostModal">+ Share a Furrendly Place</button>
-            <button class="chip red" style="background:#dc3545; color:white" data-bs-toggle="modal" data-bs-target="#missingDogModal">Missing a Pet?</button>
             <button class="chip green" data-bs-toggle="modal" data-bs-target="#addEstablishmentModal">+ Add Establishment</button>
             <button class="chip purple" id="toggleMapBtn" onclick="toggleMapView()">Location</button>
         </div>
