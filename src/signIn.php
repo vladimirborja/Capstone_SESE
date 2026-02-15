@@ -79,10 +79,10 @@ session_start();
     // Handle status from Registration
     window.onload = function() {
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('status') === 'registered') {
+      if (urlParams.get('status') === 'verified') {
         Swal.fire({
           icon: 'success',
-          title: 'Account Created!',
+          title: 'Account Verified!',
           text: 'You can now sign in with your new account.',
           confirmButtonColor: '#1e88ff'
         });
