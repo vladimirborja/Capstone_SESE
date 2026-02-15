@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 12, 2026 at 06:52 PM
+-- Generation Time: Feb 13, 2026 at 10:45 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -48,7 +48,8 @@ INSERT INTO `archives` (`archive_id`, `original_id`, `type`, `sender_name`, `con
 (4, 33, 'Report', 'Cayoh Anicete', 'report', 'Verbal Abuse', '2026-02-12 16:19:12'),
 (5, 33, 'Report', 'Cayoh Anicete', 'report', 'Verbal Abuse', '2026-02-12 16:19:14'),
 (6, 33, '', 'Ariana Punsalang', 'asdasdasd', NULL, '2026-02-12 16:21:55'),
-(7, 24, 'Message', 'Vladimir Borja', 'hi', NULL, '2026-02-12 16:27:31');
+(7, 24, 'Message', 'Vladimir Borja', 'hi', NULL, '2026-02-12 16:27:31'),
+(8, 20, '', 'Kristine Tuazon', '[MISSING DOG] Name: otlum | Last Seen: test | Contact: 12313131', NULL, '2026-02-13 11:26:05');
 
 -- --------------------------------------------------------
 
@@ -94,6 +95,24 @@ INSERT INTO `contact_messages` (`id`, `name`, `email`, `contact`, `subject`, `me
 (21, 'cafe beni', 'cafe@gmail.com', '67890', 'Testing ULIT', 'HAYY', '2026-02-09 10:34:56'),
 (22, 'cafe beni', 'cafe@gmail.com', '64782930-', 'TESTING', 'TESTING SWAL', '2026-02-09 10:38:23'),
 (23, 'Vladimir Borja', 'vladimirborja013@gmail.com', '09999999', 'test', 'hi', '2026-02-11 03:12:11');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `establishments`
+--
+
+CREATE TABLE `establishments` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `requester_id` int(11) DEFAULT NULL,
+  `status` enum('active','pending') NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `latitude` decimal(10,8) NOT NULL,
+  `longitude` decimal(11,8) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -242,7 +261,13 @@ INSERT INTO `login_history` (`login_id`, `user_id`, `login_time`, `ip_address`, 
 (127, 5, '2026-02-12 17:03:24', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
 (128, 9, '2026-02-12 17:13:32', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
 (129, 9, '2026-02-12 17:24:07', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
-(130, 5, '2026-02-12 17:31:08', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success');
+(130, 5, '2026-02-12 17:31:08', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(131, 5, '2026-02-13 10:57:58', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(132, 5, '2026-02-13 11:00:10', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(133, 5, '2026-02-13 11:00:43', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(134, 5, '2026-02-13 11:01:29', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(135, 2, '2026-02-13 12:26:34', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(136, 5, '2026-02-13 14:02:14', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success');
 
 -- --------------------------------------------------------
 
@@ -319,7 +344,6 @@ INSERT INTO `posts` (`post_id`, `user_id`, `content`, `image_url`, `created_at`)
 (16, 7, 'bbbb e', 'uploads/1770717654_sinoo.gif', '2026-02-10 10:00:54'),
 (17, 6, '[MISSING DOG] Nam1e: margiel | Last Seen: dito lang | Contact: 123', 'uploads/missing_1770718695_otlum.jpg', '2026-02-10 10:18:15'),
 (18, 7, 'test1', 'uploads/1770779161_sinoo.gif', '2026-02-11 03:06:01'),
-(20, 7, '[MISSING DOG] Name: otlum | Last Seen: test | Contact: 12313131', 'uploads/missing_1770779896_otlum.jpg', '2026-02-11 03:18:16'),
 (21, 7, 'test', 'uploads/1770791314_otlum.jpg', '2026-02-11 06:28:34'),
 (29, 7, 'hi', '', '2026-02-12 01:52:23'),
 (30, 7, 'hi', 'uploads/1770861151_Borja (Assignment_ How globalization affects religious beliefs and practices).pdf', '2026-02-12 01:52:31'),
@@ -345,7 +369,6 @@ CREATE TABLE `post_comments` (
 
 INSERT INTO `post_comments` (`comment_id`, `post_id`, `user_id`, `comment_text`, `created_at`) VALUES
 (2, 21, 10, 'test 2', '2026-02-11 06:43:41'),
-(13, 20, 11, 'dwdwed', '2026-02-11 09:46:14'),
 (18, 21, 6, 'bababa', '2026-02-11 12:43:30'),
 (25, 21, 7, 'bababa', '2026-02-11 17:40:00');
 
@@ -368,7 +391,6 @@ CREATE TABLE `post_likes` (
 
 INSERT INTO `post_likes` (`like_id`, `post_id`, `user_id`, `created_at`) VALUES
 (2, 21, 10, '2026-02-11 06:43:22'),
-(3, 20, 10, '2026-02-11 06:43:23'),
 (4, 18, 10, '2026-02-11 06:43:25'),
 (12, 21, 6, '2026-02-11 12:43:27'),
 (18, 21, 7, '2026-02-11 17:39:58');
@@ -399,11 +421,9 @@ INSERT INTO `post_reports` (`report_id`, `post_id`, `user_id`, `report_type`, `d
 (6, 3, 7, 'Verbal Abuse', 'asd', '2026-02-06 20:15:56'),
 (11, 16, 6, 'Fake Content', 'a', '2026-02-10 10:18:45'),
 (13, 18, 9, 'Fake Content', 'hhi', '2026-02-11 03:11:12'),
-(14, 20, 6, 'Fake Content', 'ttesttt', '2026-02-11 03:20:25'),
 (15, 21, 6, 'Fake Content', 'testnow', '2026-02-11 06:30:18'),
 (35, 30, 6, 'Inappropriate', 'dwqeqwe', '2026-02-12 01:53:26'),
-(38, 29, 6, 'Fake Content', 'heh', '2026-02-12 01:57:09'),
-(40, 20, 6, 'Fake Content', '0', '2026-02-12 01:59:32');
+(38, 29, 6, 'Fake Content', 'heh', '2026-02-12 01:57:09');
 
 -- --------------------------------------------------------
 
@@ -432,9 +452,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `full_name`, `username`, `bio`, `email`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`, `profile_image`) VALUES
-(2, 'Vlad Borja', NULL, '', 'vladimirborja298@gmail.com', '09123456789', '$2y$10$YQ5bYjvD9r8vr1kHQaKLZ.QjeTuAcNdP5xwXs5pCcwbJBD757uj8K', 'user', '2026-01-29 17:38:50', '2026-02-12 16:58:44', NULL, 1, NULL),
+(2, 'Vlad Borja', NULL, '', 'vladimirborja298@gmail.com', '09123456789', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'user', '2026-01-29 17:38:50', '2026-02-13 12:26:34', '2026-02-13 12:26:34', 1, NULL),
 (4, 'margiel escalante', NULL, '', 'info@bb88advertising.com', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1, NULL),
-(5, 'Karl Vladimir Borjaa', 'Karlaaa', 'SINO TO?!', 'vladimirborja013@gmail.com', '09650561211', '$2y$10$uG9A.q7baiL9l3cZJdWxMO8HkoGVy3IYN8R7ve1Kq0/ZmKb79WPje', 'admin', '2026-01-29 18:09:12', '2026-02-12 17:34:42', '2026-02-12 17:31:08', 1, '../uploads/profile_pics/user_5_1770917682.png'),
+(5, 'Karl Vladimir Borjaa', 'Karlaaa', 'SINO TO?!', 'vladimirborja013@gmail.com', '09650561211', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'admin', '2026-01-29 18:09:12', '2026-02-13 14:02:14', '2026-02-13 14:02:14', 1, '../uploads/profile_pics/user_5_1770917682.png'),
 (6, 'Ariana Punsalang', NULL, '', 'anairadump@gmail.com', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-12 16:24:28', '2026-02-12 16:24:28', 1, NULL),
 (7, 'Kristine Tuazon', NULL, 'bioooo', 'kristinetuazon16@gmail.com', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-12 01:43:27', '2026-02-12 01:43:27', 1, NULL),
 (8, 'Mico Cuenco', NULL, '', 'micocuenco@gmail.com', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1, NULL),
@@ -457,6 +477,14 @@ ALTER TABLE `archives`
 --
 ALTER TABLE `contact_messages`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `establishments`
+--
+ALTER TABLE `establishments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `requester_id` (`requester_id`);
 
 --
 -- Indexes for table `login_history`
@@ -527,7 +555,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `archives`
 --
 ALTER TABLE `archives`
-  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `contact_messages`
@@ -536,10 +564,16 @@ ALTER TABLE `contact_messages`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
+-- AUTO_INCREMENT for table `establishments`
+--
+ALTER TABLE `establishments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- AUTO_INCREMENT for table `login_history`
 --
 ALTER TABLE `login_history`
-  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
+  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=137;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -586,6 +620,13 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `establishments`
+--
+ALTER TABLE `establishments`
+  ADD CONSTRAINT `establishments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `establishments_ibfk_2` FOREIGN KEY (`requester_id`) REFERENCES `users` (`user_id`);
 
 --
 -- Constraints for table `login_history`

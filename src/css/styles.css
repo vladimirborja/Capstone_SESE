@@ -74,166 +74,109 @@ body {
     text-decoration: none;
 }
 
-/* ======================== SIGN UP ======================== */
+/* ========================  SIGN UP ======================== */
 .signup-body {
     background: url("images/signImages/bg1.png") no-repeat center center fixed;
     background-size: cover;
+    margin: 0;
+    height: 100vh;
 }
 
-.sigsubnup-wrapper {
+.signup-wrapper {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 20px;
 }
 
 .signup-card {
     background: #ffffff;
-    width: 420px;
-    padding: 24px 26px;
+    width: 100%;
+    max-width: 600px; 
+    padding: 20px 30px;
     border-radius: 14px;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
 }
 
-.signup-logo img {
-    width: 95px;
-}
-
-.signup-title {
-    color: #1e88ff;
-    letter-spacing: 1px;
-    margin-bottom: 12px !important;
-}
-
-/* tighter spacing */
-.form-label {
-    font-size: 12px;
-    margin-bottom: 4px;
-}
-
-.form-control {
-    font-size: 14px;
-    padding: 8px 12px;
-}
-
-.mb-4 {
-    margin-bottom: 14px !important;
-}
-
-.mb-3 {
-    margin-bottom: 10px !important;
-}
-
-.mb-2 {
-    margin-bottom: 8px !important;
-}
-
-/* password eye */
-.password-toggle {
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    font-size: 1.2rem;
-    user-select: none;
-    color: #555;
-}
-
-.password-toggle:hover {
-    color: #1e88ff;
-}
-
-/* Styling to match your Sign In design */
-.auth-body {
-    background: url('../images/signImages/bg1.png') no-repeat center center fixed;
-    background-size: cover;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.auth-card {
-    background: white;
-    padding: 2.5rem;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 450px;
-    text-align: center;
-}
-
-.sese-logo {
-    width: 100px;
-    margin-bottom: 1rem;
-}
-
-.auth-title {
-    color: #2b80ff;
-    font-weight: 800;
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.form-group-wrapper {
+#signupForm {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px 20px; 
     text-align: left;
 }
 
+#signupForm .row, 
+#signupForm .mb-3, 
+#signupForm .signup-text,
+#signupForm button,
+.form-check,
+.signup-logo,
+.signup-title {
+    grid-column: span 2;
+}
+
+.signup-logo img { width: 70px; margin-bottom: 5px; }
+
+.signup-title {
+    color: #1e88ff;
+    font-size: 1.5rem !important;
+    font-weight: 800;
+    margin-bottom: 15px !important;
+}
+
 .form-label {
-    color: #2b80ff;
-    font-weight: 600;
-    margin-bottom: 5px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1e88ff;
+    margin-bottom: 2px;
+    text-transform: uppercase;
 }
 
 .form-control {
-    border: 1px solid #ced4da;
-    padding: 0.75rem;
-    border-radius: 10px;
-    margin-bottom: 1.2rem !important;
+    font-size: 0.80rem;
+    padding: 6px 35px 10px 12px; 
+    border-radius: 8px;
+    margin-bottom: 0 !important;
 }
 
-.btn-reset {
-    background-color: #2b80ff;
-    color: white;
-    border: none;
-    padding: 0.8rem;
-    border-radius: 10px;
-    width: 100%;
-    font-weight: 600;
-    font-size: 1.1rem;
-    transition: 0.3s;
+.position-relative {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%); 
+    z-index: 10;
+    font-size: 0.8rem;
+    color: #1e88ff;
+    display: flex;
+    align-items: center;
+}
+
+.mb-2.position-relative {
+    display: flex;
+    flex-direction: column;
+}
+.form-check {
+    margin-top: 5px;
+    margin-bottom: 10px !important;
+}
+
+.terms-text { font-size: 0.75rem; }
+
+.btn-primary {
+    padding: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.signup-text {
+    font-size: 0.8rem;
     margin-top: 10px;
 }
-
-.btn-reset:hover {
-    background-color: #1a66d1;
-}
-
-.back-link {
-    display: inline-block;
-    margin-top: 1.5rem;
-    color: #2b80ff;
-    text-decoration: none;
-    font-weight: 600;
-    border: 1px solid #2b80ff;
-    padding: 0.5rem 1.2rem;
-    border-radius: 8px;
-    transition: 0.3s;
-}
-
-.back-link:hover {
-    background: #2b80ff;
-    color: white;
-}
-
-
-
-
 /* ================= HOME PAGE ================= */
 .home-body {
     background: #f6f8fc;
@@ -1067,49 +1010,77 @@ body {
 /* ================= PROFILE & SETTINGS ================= */
 
 .profile-container {
-    max-width: 900px;
-    margin: 30px auto;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    padding: 20px;
-}
+        max-width: 900px;
+        margin: 30px auto;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 20px;
+        }
+        .profile-header { display: flex; align-items: center; justify-content: space-between; }
+        .profile-left { display: flex; align-items: center; }
+        
+        .profile-header .avatar-wrapper {
+        position: relative;
+        width: 120px; 
+        height: 120px;
+        display: inline-block; 
+        vertical-align: middle;
+        margin-right: 25px;
+        }
 
-.profile-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+        .avatar {
+        width: 100%; 
+        height: 100%; 
+        border-radius: 50%; 
+        border: 3px solid #1e90ff;
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        overflow: hidden;
+        background: #fff;
+        }
 
-.profile-left {
-    display: flex;
-    align-items: center;
-}
 
-.avatar {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    border: 3px solid #1e90ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    overflow: hidden;
-}
+        .camera-icon-style {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        z-index: 10;
+        }
 
-.avatar img {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    object-fit: cover;
-}
+        .upload-overlay {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: #1e90ff;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid white;
+            transition: 0.3s;
+            z-index: 5;
+        }
+        .upload-overlay:hover { background: #007bff; transform: scale(1.1); }
+        #imageUpload { display: none; }
 
-.profile-info h2 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: bold;
-}
+        .profile-info h2 { margin: 0; font-size: 20px; font-weight: bold; }
+        .username-display { color: #666; font-size: 14px; }
+        .tabs { margin-top: 20px; border-bottom: 1px solid #ddd; }
+        .tabs a { margin-right: 20px; padding-bottom: 10px; display: inline-block; text-decoration: none; color: #333; font-weight: bold; }
+        .tabs a.active { border-bottom: 3px solid #1e90ff; color: #1e90ff; }
+        
+        .form-control { background-color: #f0f4f8; border: 1px solid #ced4da; }
+        .save-btn { margin-top: 20px; background: #4da3ff; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .save-btn:hover { background: #1a8cff; }
+        .delete-btn { margin-top: 10px; background: #ff4d4d; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .delete-btn:hover { background: #e60000; }
+        h4 { margin-top: 25px; color: #333; font-weight: bold; }
 
 .username {
     color: #666;
@@ -1198,3 +1169,6 @@ h4 {
     color: #333;
     font-weight: bold;
 }
+
+
+

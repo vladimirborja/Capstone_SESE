@@ -247,7 +247,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="modal-content">
             <form action="main.php" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <h5>Create Post</h5>
+                    <h5>Share a Furrendly Post</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">

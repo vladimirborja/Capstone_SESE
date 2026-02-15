@@ -22,8 +22,8 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
   --spacing-unit: 8px;
-  --font-display: "Fredoka", sans-serif;
-  --font-body: "DM Sans", sans-serif;
+  --font-display: 'Fredoka', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
   --transition-fast: 150ms ease-in-out;
   --transition-base: 250ms ease-in-out;
   --transition-slow: 400ms ease-in-out;

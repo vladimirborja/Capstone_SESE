@@ -1,15 +1,39 @@
 <?php
-require_once __DIR__ . '/../db_config.php'; 
+// Ensure session is started for user_id check
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+/**
+ * FIX: Path Logic
+ * We check multiple possible locations for db_config.php 
+ * so it works whether the header is included from /mains/ or the root.
+ */
+if (file_exists(__DIR__ . '/../db_config.php')) {
+    require_once __DIR__ . '/../db_config.php';
+} elseif (file_exists(__DIR__ . '/db_config.php')) {
+    require_once __DIR__ . '/db_config.php';
+}
 
 $user_id = $_SESSION['user_id'] ?? 0;
 $unread_count = 0;
 $notifications = [];
 
-if ($user_id > 0) {
+// Only run query if $pdo exists and user is logged in
+if ($user_id > 0 && isset($pdo)) {
+    // 1. Get unread count
     $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
     $stmt_count->execute([$user_id]);
     $unread_count = $stmt_count->fetchColumn();
-    $stmt_notifs = $pdo->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 5");
+    
+    // 2. Fetch notifications with post details
+    $stmt_notifs = $pdo->prepare("
+        SELECT n.*, p.content, p.image_url 
+        FROM notifications n 
+        LEFT JOIN posts p ON n.post_id = p.post_id 
+        WHERE n.user_id = ? 
+        ORDER BY n.created_at DESC LIMIT 5
+    ");
     $stmt_notifs->execute([$user_id]);
     $notifications = $stmt_notifs->fetchAll();
 }
@@ -19,7 +43,6 @@ if ($user_id > 0) {
 
 <header class="topbar container mx-auto px-4 rounded-4" style="margin-top: 20px;">
     <div class="topbar-inner d-flex justify-content-between align-items-center">
-
         <div class="logo">
             <a href="../index.php">
                 <img src="../images/homeImages/Sese-Logo3.png" alt="Logo" />
@@ -48,7 +71,14 @@ if ($user_id > 0) {
                         <p class="text-muted small py-2 mb-0">No notifications yet.</p>
                     <?php else: ?>
                         <?php foreach ($notifications as $n): ?>
-                            <div class="notif-item p-2 border-bottom <?php echo $n['is_read'] == 0 ? 'bg-light' : ''; ?>">
+                            <div class="notif-item p-2 border-bottom <?php echo $n['is_read'] == 0 ? 'bg-light' : ''; ?>" 
+                                 style="cursor: pointer;"
+                                 data-message="<?php echo htmlspecialchars($n['message']); ?>"
+                                 data-date="<?php echo $n['created_at']; ?>"
+                                 data-content="<?php echo htmlspecialchars($n['content'] ?? 'No text content'); ?>"
+                                 data-image="<?php echo htmlspecialchars($n['image_url'] ?? ''); ?>"
+                                 data-postid="<?php echo $n['post_id']; ?>"
+                                 onclick="prepareNotifModal(this)">
                                 <p class="small mb-1 <?php echo $n['is_read'] == 0 ? 'fw-bold' : ''; ?>" style="color: #333;">
                                     <?php echo htmlspecialchars($n['message']); ?>
                                 </p>
@@ -63,7 +93,6 @@ if ($user_id > 0) {
 
             <div class="icon-wrapper avatar-wrapper position-relative" onclick="toggleDropdown('dropL')">
                 <img src="../images/homeImages/profile icon.png" class="icon-img avatar" />
-                
                 <div class="notif-dropdown shadow" id="dropL" style="display:none; position: absolute; right: 0; width: 150px; background: white; z-index: 1000; border-radius: 10px; top: 50px;">
                     <p class="p-2 mb-0 text-center">
                         <a href="javascript:void(0)" onclick="confirmLogout()" class="text-danger text-decoration-none">
@@ -73,9 +102,32 @@ if ($user_id > 0) {
                 </div>
             </div>
         </div>
-
     </div>
 </header>
+
+<div class="modal fade" id="notifDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 15px;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" style="color: #333;">Activity Detail</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center p-4">
+        <h5 id="modal-notif-message" class="fw-bold mb-1" style="color: #000;"></h5>
+        <p id="modal-notif-date" class="text-muted mb-4" style="font-size: 14px;"></p>
+        
+        <div style="background: #f0f2f5; border-radius: 12px; padding: 15px; text-align: left;">
+            <span class="d-block fw-bold text-muted mb-1" style="font-size: 10px; text-transform: uppercase;">YOUR POST</span>
+            <p id="modal-post-text" class="mb-0" style="color: #1c1e21; font-size: 14px;"></p>
+            <img id="modal-post-image" src="" style="max-width: 100%; border-radius: 8px; margin-top: 10px; display: none;" alt="Post Image">
+        </div>
+      </div>
+      <div class="modal-footer border-0 flex-column">
+        <button type="button" class="btn btn-light w-100 fw-bold text-muted mt-2" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
     function toggleDropdown(id) {
@@ -94,15 +146,52 @@ if ($user_id > 0) {
         drop.style.display = isOpening ? 'block' : 'none';
 
         if (id === 'notifDrop' && isOpening && badge) {
-            fetch('process/mark_read.php')
+            // FIX: Use absolute path for the fetch call so it works on all pages
+            const markReadPath = window.location.origin + "/Capstone/src/mains/process/mark_read.php";
+            fetch(markReadPath)
             .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    badge.style.display = 'none';
-                }
-            })
-            .catch(err => console.error('Error marking notifications:', err));
+            .then(data => { if(data.success) badge.style.display = 'none'; })
+            .catch(err => console.error('Error marking read:', err));
         }
+    }
+
+    function prepareNotifModal(el) {
+        const message = el.getAttribute('data-message');
+        const date = el.getAttribute('data-date');
+        const content = el.getAttribute('data-content');
+        const image = el.getAttribute('data-image');
+        const pid = el.getAttribute('data-postid');
+        showNotifDetail(message, date, content, image, pid);
+    }
+
+    function showNotifDetail(message, date, postText, postImage, postId) {
+        document.getElementById('modal-notif-message').innerText = message;
+        
+        const d = new Date(date);
+        document.getElementById('modal-notif-date').innerText = d.toLocaleString('en-US', { 
+            weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true 
+        });
+        
+        document.getElementById('modal-post-text').innerText = postText;
+        
+        const imgEl = document.getElementById('modal-post-image');
+        
+        if (postImage && postImage.trim() !== "" && postImage !== "null") {
+            const fullPath = window.location.origin + "/Capstone/src/uploads/" + postImage;
+            imgEl.src = fullPath; 
+            imgEl.style.display = 'block';
+            
+            imgEl.onerror = function() {
+                this.style.display = 'none';
+            };
+        } else {
+            imgEl.style.display = 'none';
+        }
+        
+        // FIX: Ensure viewdetails link also uses a clear path
+        
+        var myModal = new bootstrap.Modal(document.getElementById('notifDetailModal'));
+        myModal.show();
     }
 
     window.onclick = function(event) {
@@ -122,7 +211,7 @@ if ($user_id > 0) {
             confirmButtonText: 'Logout'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = 'main.php?action=logout';
+                window.location.href = window.location.origin + '/Capstone/src/mains/main.php?action=logout';
             }
         });
     }

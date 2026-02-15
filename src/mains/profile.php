@@ -45,66 +45,6 @@ $profile_img = !empty($user['profile_image']) ? $user['profile_image'] : '../ima
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        .profile-container {
-            max-width: 900px;
-            margin: 30px auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-        .profile-header { display: flex; align-items: center; justify-content: space-between; }
-        .profile-left { display: flex; align-items: center; }
-        
-        /* Avatar Container Fixes */
-        .avatar-wrapper {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            margin-right: 20px;
-        }
-        .avatar {
-            width: 100px; height: 100px; border-radius: 50%; border: 3px solid #1e90ff;
-            display: flex; align-items: center; justify-content: center; overflow: hidden;
-            background: #fff;
-        }
-        .avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* Camera Button Styling */
-        .upload-overlay {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            background: #1e90ff;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 2px solid white;
-            transition: 0.3s;
-            z-index: 5;
-        }
-        .upload-overlay:hover { background: #007bff; transform: scale(1.1); }
-        #imageUpload { display: none; }
-
-        .profile-info h2 { margin: 0; font-size: 20px; font-weight: bold; }
-        .username-display { color: #666; font-size: 14px; }
-        .tabs { margin-top: 20px; border-bottom: 1px solid #ddd; }
-        .tabs a { margin-right: 20px; padding-bottom: 10px; display: inline-block; text-decoration: none; color: #333; font-weight: bold; }
-        .tabs a.active { border-bottom: 3px solid #1e90ff; color: #1e90ff; }
-        
-        .form-control { background-color: #f0f4f8; border: 1px solid #ced4da; }
-        .save-btn { margin-top: 20px; background: #4da3ff; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .save-btn:hover { background: #1a8cff; }
-        .delete-btn { margin-top: 10px; background: #ff4d4d; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .delete-btn:hover { background: #e60000; }
-        h4 { margin-top: 25px; color: #333; font-weight: bold; }
-    </style>
 </head>
 <body class="bg-light">
     
@@ -116,11 +56,11 @@ $profile_img = !empty($user['profile_image']) ? $user['profile_image'] : '../ima
             <input type="hidden" name="upload_photo" value="1">
         </form>
 
-        <div class="profile-container shadow-sm">
-            <div class="profile-header">
+        <div class="profile-container shadow-sm ">
+            <div class="profile-header ">
                 <div class="profile-left">
                     <div class="avatar-wrapper">
-                        <div class="avatar">
+                        <div class="avatar ">
                             <img src="<?php echo htmlspecialchars($profile_img); ?>" id="profilePreview" alt="Avatar">
                         </div>
                         <label for="imageUpload" class="upload-overlay">
