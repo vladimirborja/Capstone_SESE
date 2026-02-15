@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 13, 2026 at 10:45 PM
+-- Generation Time: Feb 15, 2026 at 01:20 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -107,6 +107,7 @@ CREATE TABLE `establishments` (
   `user_id` int(11) DEFAULT NULL,
   `requester_id` int(11) DEFAULT NULL,
   `status` enum('active','pending') NOT NULL,
+  `type` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `address` varchar(255) NOT NULL,
@@ -267,7 +268,14 @@ INSERT INTO `login_history` (`login_id`, `user_id`, `login_time`, `ip_address`, 
 (133, 5, '2026-02-13 11:00:43', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
 (134, 5, '2026-02-13 11:01:29', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
 (135, 2, '2026-02-13 12:26:34', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
-(136, 5, '2026-02-13 14:02:14', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success');
+(136, 5, '2026-02-13 14:02:14', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(137, 2, '2026-02-13 15:13:51', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(138, 5, '2026-02-13 15:16:23', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(139, 5, '2026-02-14 12:35:10', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(140, 2, '2026-02-15 03:55:24', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(141, 5, '2026-02-15 03:55:56', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(142, 2, '2026-02-15 04:35:29', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(143, 5, '2026-02-15 05:07:12', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success');
 
 -- --------------------------------------------------------
 
@@ -370,7 +378,8 @@ CREATE TABLE `post_comments` (
 INSERT INTO `post_comments` (`comment_id`, `post_id`, `user_id`, `comment_text`, `created_at`) VALUES
 (2, 21, 10, 'test 2', '2026-02-11 06:43:41'),
 (18, 21, 6, 'bababa', '2026-02-11 12:43:30'),
-(25, 21, 7, 'bababa', '2026-02-11 17:40:00');
+(25, 21, 7, 'bababa', '2026-02-11 17:40:00'),
+(28, 34, 5, 'a', '2026-02-15 04:19:07');
 
 -- --------------------------------------------------------
 
@@ -452,9 +461,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `full_name`, `username`, `bio`, `email`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`, `profile_image`) VALUES
-(2, 'Vlad Borja', NULL, '', 'vladimirborja298@gmail.com', '09123456789', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'user', '2026-01-29 17:38:50', '2026-02-13 12:26:34', '2026-02-13 12:26:34', 1, NULL),
+(2, 'Vlad Borja', NULL, '', 'vladimirborja298@gmail.com', '09123456789', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'user', '2026-01-29 17:38:50', '2026-02-15 04:35:29', '2026-02-15 04:35:29', 1, NULL),
 (4, 'margiel escalante', NULL, '', 'info@bb88advertising.com', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1, NULL),
-(5, 'Karl Vladimir Borjaa', 'Karlaaa', 'SINO TO?!', 'vladimirborja013@gmail.com', '09650561211', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'admin', '2026-01-29 18:09:12', '2026-02-13 14:02:14', '2026-02-13 14:02:14', 1, '../uploads/profile_pics/user_5_1770917682.png'),
+(5, 'Karl Vladimir Borjaa', 'Karlaaa', 'SINO TO?!', 'vladimirborja013@gmail.com', '09650561211', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'admin', '2026-01-29 18:09:12', '2026-02-15 05:07:12', '2026-02-15 05:07:12', 1, '../uploads/profile_pics/user_5_1770917682.png'),
 (6, 'Ariana Punsalang', NULL, '', 'anairadump@gmail.com', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-12 16:24:28', '2026-02-12 16:24:28', 1, NULL),
 (7, 'Kristine Tuazon', NULL, 'bioooo', 'kristinetuazon16@gmail.com', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-12 01:43:27', '2026-02-12 01:43:27', 1, NULL),
 (8, 'Mico Cuenco', NULL, '', 'micocuenco@gmail.com', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1, NULL),
@@ -567,13 +576,13 @@ ALTER TABLE `contact_messages`
 -- AUTO_INCREMENT for table `establishments`
 --
 ALTER TABLE `establishments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `login_history`
 --
 ALTER TABLE `login_history`
-  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=137;
+  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=144;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -597,7 +606,7 @@ ALTER TABLE `posts`
 -- AUTO_INCREMENT for table `post_comments`
 --
 ALTER TABLE `post_comments`
-  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `post_likes`
