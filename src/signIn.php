@@ -65,7 +65,7 @@ session_start();
         </p>
 
         <div class="mt-1">
-          <a href="http://localhost/Capstone/src/index.php" class="btn btn-outline-primary btn-sm py-0">
+          <a href="index.php" class="btn btn-outline-primary btn-sm py-0">
             ← Back to Home
           </a>
         </div>
@@ -79,10 +79,10 @@ session_start();
     // Handle status from Registration
     window.onload = function() {
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('status') === 'registered') {
+      if (urlParams.get('status') === 'verified') {
         Swal.fire({
           icon: 'success',
-          title: 'Account Created!',
+          title: 'Account Verified!',
           text: 'You can now sign in with your new account.',
           confirmButtonColor: '#1e88ff'
         });
@@ -124,7 +124,7 @@ session_start();
       };
 
       try {
-        const response = await fetch('signin_process.php', {
+        const response = await fetch('signIn_process.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
