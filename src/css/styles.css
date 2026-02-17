@@ -1041,6 +1041,10 @@ body {
         background: #fff;
         }
 
+        .avatar img {
+            max-block-size: -webkit-fill-available;
+        }
+
 
         .camera-icon-style {
         position: absolute;

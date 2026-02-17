@@ -14,6 +14,18 @@ $user_id = $_SESSION['user_id'] ?? 0;
 $unread_count = 0;
 $notifications = [];
 
+// Fetch current user's profile image
+$current_user_profile_img = '../images/homeImages/profile icon.png'; // default
+if ($user_id > 0 && isset($conn)) {
+    $stmt_user = $conn->prepare("SELECT profile_image FROM users WHERE user_id = ?");
+    $stmt_user->bind_param("i", $user_id);
+    $stmt_user->execute();
+    $user_result = $stmt_user->get_result()->fetch_assoc();
+    if ($user_result && !empty($user_result['profile_image'])) {
+        $current_user_profile_img = $user_result['profile_image'];
+    }
+}
+
 // Only run query if $pdo exists and user is logged in
 if ($user_id > 0 && isset($pdo)) {
     // 1. Get unread count
@@ -35,6 +47,79 @@ if ($user_id > 0 && isset($pdo)) {
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<style>
+    /* Profile Icon Styling */
+    .avatar-wrapper {
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .avatar-wrapper .icon-img.avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid white;
+        transition: all 0.3s ease;
+    }
+
+    /* ===== ADMIN STYLE PROFILE DROPDOWN ===== */
+    #dropL {
+        display:none;
+        position:absolute;
+        right:0;
+        width:220px;
+        background:#f1f1f1;
+        border-radius:18px;
+        box-shadow:0 10px 25px rgba(0,0,0,0.15);
+        top:55px;
+        z-index:1000;
+        padding:10px 0;
+    }
+
+    #dropL .dropdown-header {
+        font-weight:700;
+        color:#2d3748;
+        text-transform:uppercase;
+        font-size:0.75rem;
+        letter-spacing:0.05em;
+        padding:10px 20px;
+    }
+
+    #dropL hr {
+        margin:6px 0;
+    }
+
+    #dropL .dropdown-item {
+        font-size:0.9rem;
+        font-weight:500;
+        color:#4a5568;
+        padding:10px 20px;
+        display:flex;
+        align-items:center;
+        gap:10px;
+        text-decoration:none;
+        transition:0.2s;
+    }
+
+    #dropL .dropdown-item i {
+        width:18px;
+        text-align:center;
+    }
+
+    #dropL .dropdown-item:hover {
+        background-color:#e2e8f0;
+        color:#1e88e5;
+    }
+
+    #dropL .dropdown-item.text-danger:hover {
+        background-color:#fff5f5;
+        color:#e53e3e !important;
+    }
+
+</style>
 
 <header class="topbar container mx-auto px-4 rounded-4" style="margin-top: 20px;">
     <div class="topbar-inner d-flex justify-content-between align-items-center">
@@ -87,18 +172,16 @@ if ($user_id > 0 && isset($pdo)) {
             </div>
 
             <div class="icon-wrapper avatar-wrapper position-relative" onclick="toggleDropdown('dropL')">
-                <img src="../images/homeImages/profile icon.png" class="icon-img avatar" />
-                <div class="notif-dropdown shadow" id="dropL" style="display:none; position: absolute; right: 0; width: 150px; background: white; z-index: 1000; border-radius: 10px; top: 50px;">
-                    <p class="p-2 mb-0 text-center">
-                        <div>
-                            <a href="profile.php">
-                            <i class="bi bi-person me-2"></i>Profile
-                        </a>
-                        </div>
-                        <a href="javascript:void(0)" onclick="confirmLogout()" class="text-danger text-decoration-none">
-                            <i class="bi bi-box-arrow-right me-2">Logout</i>
-                        </a>
-                    </p>
+                <img src="<?php echo htmlspecialchars($current_user_profile_img); ?>" class="icon-img avatar" alt="Your Profile" />
+            
+                <div class="notif-dropdown shadow" id="dropL">
+                    <a href="profile.php" class="dropdown-item">
+                        <i class="bi bi-person"></i> Profile
+                    </a>
+                    <hr>
+                    <a class="dropdown-item text-danger" href="javascript:void(0)" onclick="confirmLogout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
                 </div>
             </div>
         </div>
@@ -146,7 +229,6 @@ if ($user_id > 0 && isset($pdo)) {
         drop.style.display = isOpening ? 'block' : 'none';
 
         if (id === 'notifDrop' && isOpening && badge) {
-            // FIX: Use absolute path for the fetch call so it works on all pages
             const markReadPath = window.location.origin + "/Capstone/src/mains/process/mark_read.php";
             fetch(markReadPath)
             .then(res => res.json())
@@ -204,8 +286,11 @@ if ($user_id > 0 && isset($pdo)) {
     function confirmLogout() {
         Swal.fire({
             title: 'Logout?',
+            text: "You will need to login again to access your account.",
             icon: 'question',
             showCancelButton: true,
+            confirmButtonColor: '#e53e3e',
+            cancelButtonColor: '#718096',
             confirmButtonText: 'Logout'
         }).then((result) => {
             if (result.isConfirmed) {

@@ -87,11 +87,11 @@ $establishments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <div class="fw-bold">ADMIN DASHBOARD</div>
     
-    <div class="dropdown profile-dropdown">
+    <div class="dropdown profile-dropdown ">
         <button class="btn btn-profile dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fas fa-user-circle"></i>
         </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow">
+        <ul class="dropdown-menu dropdown-menu-end shadow border border-danger">
             <li><h6 class="dropdown-header">Admin Account</h6></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="../src/mains/main.php"><i class="fas fa-home"></i> Main Feed</a></li>

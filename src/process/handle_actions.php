@@ -79,7 +79,8 @@ if ($action === 'comment') {
         $stmt->bind_param("iis", $postId, $userId, $text);
         
         if ($stmt->execute()) {
-            $userStmt = $conn->prepare("SELECT full_name FROM users WHERE user_id = ?");
+            // UPDATED: Added profile_image to the user fetch
+            $userStmt = $conn->prepare("SELECT full_name, profile_image FROM users WHERE user_id = ?");
             $userStmt->bind_param("i", $userId);
             $userStmt->execute();
             $userData = $userStmt->get_result()->fetch_assoc();
@@ -94,7 +95,14 @@ if ($action === 'comment') {
                 createNotification($conn, $ownerId, $postId, $msg);
             }
             
-            echo json_encode(['status' => 'success', 'user_name' => $userData['full_name'], 'comment' => $text]);
+            $image_path = !empty($userData['profile_image']) ? $userData['profile_image'] : "../images/homeImages/profile icon.png";
+            
+            echo json_encode([
+                'status' => 'success', 
+                'user_name' => $userData['full_name'], 
+                'profile_image' => $image_path,
+                'comment' => $text
+            ]);
         }
     }
     exit();

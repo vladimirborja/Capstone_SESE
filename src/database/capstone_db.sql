@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 15, 2026 at 01:20 PM
+-- Generation Time: Feb 15, 2026 at 05:33 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -275,7 +275,15 @@ INSERT INTO `login_history` (`login_id`, `user_id`, `login_time`, `ip_address`, 
 (140, 2, '2026-02-15 03:55:24', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
 (141, 5, '2026-02-15 03:55:56', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
 (142, 2, '2026-02-15 04:35:29', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
-(143, 5, '2026-02-15 05:07:12', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success');
+(143, 5, '2026-02-15 05:07:12', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(144, 5, '2026-02-15 06:18:07', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(145, 2, '2026-02-15 07:06:58', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(146, 5, '2026-02-15 07:08:11', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(147, 2, '2026-02-15 07:29:13', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(148, 2, '2026-02-15 07:30:05', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(149, 9, '2026-02-15 07:31:06', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(150, 2, '2026-02-15 08:58:17', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success'),
+(151, 2, '2026-02-15 09:29:35', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'success');
 
 -- --------------------------------------------------------
 
@@ -285,11 +293,21 @@ INSERT INTO `login_history` (`login_id`, `user_id`, `login_time`, `ip_address`, 
 
 CREATE TABLE `notifications` (
   `id` int(11) NOT NULL,
+  `post_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `message` text NOT NULL,
   `is_read` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `post_id`, `user_id`, `message`, `is_read`, `created_at`) VALUES
+(1, 34, 9, 'Vlad Borja liked your post.', 0, '2026-02-15 07:29:26'),
+(2, 34, 9, 'Vlad Borja liked your post.', 0, '2026-02-15 07:30:09'),
+(3, 34, 9, 'Vlad Borja commented: \"312321312...\"', 0, '2026-02-15 07:30:33');
 
 -- --------------------------------------------------------
 
@@ -379,7 +397,8 @@ INSERT INTO `post_comments` (`comment_id`, `post_id`, `user_id`, `comment_text`,
 (2, 21, 10, 'test 2', '2026-02-11 06:43:41'),
 (18, 21, 6, 'bababa', '2026-02-11 12:43:30'),
 (25, 21, 7, 'bababa', '2026-02-11 17:40:00'),
-(28, 34, 5, 'a', '2026-02-15 04:19:07');
+(28, 34, 5, 'a', '2026-02-15 04:19:07'),
+(29, 34, 2, '312321312', '2026-02-15 07:30:33');
 
 -- --------------------------------------------------------
 
@@ -402,7 +421,8 @@ INSERT INTO `post_likes` (`like_id`, `post_id`, `user_id`, `created_at`) VALUES
 (2, 21, 10, '2026-02-11 06:43:22'),
 (4, 18, 10, '2026-02-11 06:43:25'),
 (12, 21, 6, '2026-02-11 12:43:27'),
-(18, 21, 7, '2026-02-11 17:39:58');
+(18, 21, 7, '2026-02-11 17:39:58'),
+(23, 34, 2, '2026-02-15 07:30:09');
 
 -- --------------------------------------------------------
 
@@ -444,8 +464,10 @@ CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
   `full_name` varchar(255) NOT NULL,
   `username` varchar(100) DEFAULT NULL,
+  `is_verified` tinyint(1) NOT NULL,
   `bio` text NOT NULL,
   `email` varchar(255) NOT NULL,
+  `verification_code` varchar(100) NOT NULL,
   `phone_number` varchar(20) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('user','admin') NOT NULL DEFAULT 'user',
@@ -460,16 +482,16 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `full_name`, `username`, `bio`, `email`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`, `profile_image`) VALUES
-(2, 'Vlad Borja', NULL, '', 'vladimirborja298@gmail.com', '09123456789', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'user', '2026-01-29 17:38:50', '2026-02-15 04:35:29', '2026-02-15 04:35:29', 1, NULL),
-(4, 'margiel escalante', NULL, '', 'info@bb88advertising.com', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1, NULL),
-(5, 'Karl Vladimir Borjaa', 'Karlaaa', 'SINO TO?!', 'vladimirborja013@gmail.com', '09650561211', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'admin', '2026-01-29 18:09:12', '2026-02-15 05:07:12', '2026-02-15 05:07:12', 1, '../uploads/profile_pics/user_5_1770917682.png'),
-(6, 'Ariana Punsalang', NULL, '', 'anairadump@gmail.com', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-12 16:24:28', '2026-02-12 16:24:28', 1, NULL),
-(7, 'Kristine Tuazon', NULL, 'bioooo', 'kristinetuazon16@gmail.com', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-12 01:43:27', '2026-02-12 01:43:27', 1, NULL),
-(8, 'Mico Cuenco', NULL, '', 'micocuenco@gmail.com', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1, NULL),
-(9, 'Cayoh Anicete', NULL, '', 'cayohanicete@gmail.com', '09123456789', '$2y$10$FwW.D1eJaUaoW4SHT8MxM.17ca.fL6pEzy0McEeCVStu47RZ3yh9C', 'user', '2026-02-11 03:10:13', '2026-02-12 17:24:07', '2026-02-12 17:24:07', 1, NULL),
-(10, 'margiel escalante', NULL, '', 'margielescalante@gmail.com', '09123456789', '$2y$10$tJ6ojSH5oqJUchJHtZDGbuMJOKjQADmyrlhiP01MQfVfB4Fbbdcn.', 'user', '2026-02-11 06:26:03', '2026-02-11 06:31:48', '2026-02-11 06:31:48', 1, NULL),
-(11, 'Christian Aguas', NULL, '', 'acdeocera.bb88@gmail.com', '09201172065', '$2y$10$OIYShiZROiBhCVG3/k1nROqr8aQhykXnTTsa9I9QlFNxv2ns4jqKS', 'user', '2026-02-11 09:13:39', '2026-02-12 17:01:12', '2026-02-11 09:20:59', 1, NULL);
+INSERT INTO `users` (`user_id`, `full_name`, `username`, `is_verified`, `bio`, `email`, `verification_code`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`, `profile_image`) VALUES
+(2, 'Vlad Borja', NULL, 0, '', 'vladimirborja298@gmail.com', '', '09123456789', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'user', '2026-01-29 17:38:50', '2026-02-15 09:29:35', '2026-02-15 09:29:35', 1, NULL),
+(4, 'margiel escalante', NULL, 0, '', 'info@bb88advertising.com', '', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1, NULL),
+(5, 'Karl Vladimir Borjaa', 'Karlaaa', 0, 'SINO TO?!', 'vladimirborja013@gmail.com', '', '09650561211', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'admin', '2026-01-29 18:09:12', '2026-02-15 07:08:11', '2026-02-15 07:08:11', 1, '../uploads/profile_pics/user_5_1770917682.png'),
+(6, 'Ariana Punsalang', NULL, 0, '', 'anairadump@gmail.com', '', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-12 16:24:28', '2026-02-12 16:24:28', 1, NULL),
+(7, 'Kristine Tuazon', NULL, 0, 'bioooo', 'kristinetuazon16@gmail.com', '', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-12 01:43:27', '2026-02-12 01:43:27', 1, NULL),
+(8, 'Mico Cuenco', NULL, 0, '', 'micocuenco@gmail.com', '', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1, NULL),
+(9, 'Cayoh Anicete', NULL, 0, '', 'cayohanicete@gmail.com', '', '09123456789', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'user', '2026-02-11 03:10:13', '2026-02-15 07:31:06', '2026-02-15 07:31:06', 1, NULL),
+(10, 'margiel escalante', NULL, 0, '', 'margielescalante@gmail.com', '', '09123456789', '$2y$10$tJ6ojSH5oqJUchJHtZDGbuMJOKjQADmyrlhiP01MQfVfB4Fbbdcn.', 'user', '2026-02-11 06:26:03', '2026-02-11 06:31:48', '2026-02-11 06:31:48', 1, NULL),
+(11, 'Christian Aguas', NULL, 0, '', 'acdeocera.bb88@gmail.com', '', '09201172065', '$2y$10$OIYShiZROiBhCVG3/k1nROqr8aQhykXnTTsa9I9QlFNxv2ns4jqKS', 'user', '2026-02-11 09:13:39', '2026-02-12 17:01:12', '2026-02-11 09:20:59', 1, NULL);
 
 --
 -- Indexes for dumped tables
@@ -507,7 +529,9 @@ ALTER TABLE `login_history`
 -- Indexes for table `notifications`
 --
 ALTER TABLE `notifications`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `post_id` (`post_id`);
 
 --
 -- Indexes for table `pets`
@@ -576,19 +600,19 @@ ALTER TABLE `contact_messages`
 -- AUTO_INCREMENT for table `establishments`
 --
 ALTER TABLE `establishments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `login_history`
 --
 ALTER TABLE `login_history`
-  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=144;
+  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
 
 --
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `pets`
@@ -606,13 +630,13 @@ ALTER TABLE `posts`
 -- AUTO_INCREMENT for table `post_comments`
 --
 ALTER TABLE `post_comments`
-  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `post_likes`
 --
 ALTER TABLE `post_likes`
-  MODIFY `like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `post_reports`
@@ -642,6 +666,13 @@ ALTER TABLE `establishments`
 --
 ALTER TABLE `login_history`
   ADD CONSTRAINT `login_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`);
 
 --
 -- Constraints for table `pets`

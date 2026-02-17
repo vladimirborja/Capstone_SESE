@@ -24,18 +24,31 @@ if (isset($_POST['delete_post_id'])) {
                 $post_data['content']
             ]);
 
-            // 3. Delete any reports associated with this post first (if no ON DELETE CASCADE)
+            // 3. Delete related notifications FIRST (this is what's causing your error)
+            $stmt_del_notifications = $pdo->prepare("DELETE FROM notifications WHERE post_id = ?");
+            $stmt_del_notifications->execute([$post_id]);
+
+            // 4. Delete related comments
+            $stmt_del_comments = $pdo->prepare("DELETE FROM post_comments WHERE post_id = ?");
+            $stmt_del_comments->execute([$post_id]);
+
+            // 5. Delete related likes
+            $stmt_del_likes = $pdo->prepare("DELETE FROM post_likes WHERE post_id = ?");
+            $stmt_del_likes->execute([$post_id]);
+
+            // 6. Delete any reports associated with this post
             $stmt_del_reports = $pdo->prepare("DELETE FROM post_reports WHERE post_id = ?");
             $stmt_del_reports->execute([$post_id]);
 
-            // 4. DELETE FROM THE ACTUAL POSTS TABLE 
+            // 7. DELETE FROM THE ACTUAL POSTS TABLE 
             // This is the step that removes it from your main.php feed
             $stmt_del_post = $pdo->prepare("DELETE FROM posts WHERE post_id = ?");
             $stmt_del_post->execute([$post_id]);
             
             $pdo->commit();
-            echo json_encode(['success' => true]);
+            echo json_encode(['success' => true, 'message' => 'Post deleted successfully']);
         } else {
+            $pdo->rollBack();
             echo json_encode(['success' => false, 'error' => 'Post not found in database']);
         }
     } catch (Exception $e) {

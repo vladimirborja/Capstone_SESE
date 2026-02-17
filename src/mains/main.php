@@ -24,7 +24,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 
 // --- 1. ADD POST LOGIC ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_post'])) {
-    $content = $conn->real_escape_string($_POST['post_content']);
+    $content = str_replace("\r\n", "\n", $_POST['post_content']);
     $image_path = "";
     if (!empty($_FILES['post_image']['name'])) {
         $target_dir = "../uploads/"; 
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_post'])) {
 // --- 2. EDIT POST LOGIC ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_post'])) {
     $post_id = intval($_POST['edit_post_id']);
-    $content = $conn->real_escape_string($_POST['edit_content']);
+    $content = str_replace("\r\n", "\n", $_POST['edit_content']);
     if (!empty($_FILES['edit_image']['name'])) {
         $target_dir = "../uploads/";
         $image_name = time() . "_" . basename($_FILES["edit_image"]["name"]);
@@ -133,11 +133,30 @@ function hasUserLiked($postId, $userId, $conn) {
     return $stmt->get_result()->num_rows > 0;
 }
 
-$all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id
-    FROM posts p 
-    JOIN users u ON p.user_id = u.user_id 
-    ORDER BY p.created_at DESC");
-?>
+    $search = "";
+        if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
+            $search = trim($_GET['search']);
+        }
+
+        if (!empty($search)) {
+        $stmt = $conn->prepare("SELECT p.*, u.full_name, u.user_id as author_id, u.profile_image
+        FROM posts p
+        JOIN users u ON p.user_id = u.user_id
+        WHERE p.content LIKE ? OR u.full_name LIKE ?
+        ORDER BY p.created_at DESC");
+
+        $search_param = "%" . $search . "%";
+        $stmt->bind_param("ss", $search_param, $search_param);
+        $stmt->execute();
+        $all_posts = $stmt->get_result();
+        } else {
+            $all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id, u.profile_image
+            FROM posts p 
+            JOIN users u ON p.user_id = u.user_id 
+            ORDER BY p.created_at DESC");
+        }
+
+        ?>
 
 <?php
 require_once '../db_config.php';
@@ -157,38 +176,86 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="../css/styles.css" />
     <style>
-        .post-menu-btn { cursor: pointer; color: #65676b; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-        .post-menu-btn:hover { background: #f2f2f2; }
-        .dropdown-toggle::after { display: none; }
-        .post-image { max-width: 100%; border-radius: 8px; margin-top: 10px; }
-        .like-btn { cursor: pointer; color: #65676b; transition: 0.2s; font-size: 0.95rem; display: flex; align-items: center; }
-        .like-btn.liked { color: #1877f2; font-weight: bold; }
-        .comment-item { background: #f0f2f5; border-radius: 12px; padding: 6px 12px; margin-bottom: 5px; font-size: 0.9rem; }
-        .comment-user { font-weight: bold; color: #050505; margin-right: 5px; }
-        .sidebar-card { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .like-count-display { font-size: 0.85rem; color: #65676b; margin-left: -15px; }
-        .missing-dog-card { border-left: 5px solid #dc3545; background-color: #fff9f9; }
-        .faq-section { background: #fff; border-radius: 15px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .faq-title { color: #0d6efd; font-weight: 700; margin-bottom: 2px; }
-        .faq-subtitle { color: #6c757d; font-size: 0.85rem; margin-bottom: 15px; }
-        .faq-item { background: #e7f3ff; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
-        .faq-question { color: #0d6efd; font-weight: 700; font-size: 0.9rem; margin-bottom: 5px; }
-        .faq-answer { color: #4b4b4b; font-size: 0.8rem; line-height: 1.4; }
-        .faq-btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .faq-btn-read { background: #3ab0ff; border: none; color: white; flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; }
-        .faq-btn-ask { background: #0d6efd; border: none; color: white; flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; }
-        #missing_preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; margin-top: 10px; }
-        .sticky-column { position: -webkit-sticky; position: sticky; bottom: 20px; align-self: flex-end; }
-        .btn-send-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; transition: all 0.2s ease-in-out; border: none; background-color: #0d6efd; color: white; }
-        .btn-send-circle:hover { background-color: #0b5ed7; transform: scale(1.08); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .btn-send-circle i { font-size: 1.1rem; margin-left: 2px; }
-        .comment-input-pill { height: 40px; border-radius: 20px !important; padding-left: 15px; background-color: #f0f2f5 !important; }
-        .view-all-comments { font-size: 0.9rem; color: #65676b; font-weight: 600; cursor: pointer; margin-bottom: 8px; display: inline-block; }
-        .view-all-comments:hover { text-decoration: underline; }
-        /* User interaction styles */
-        .clickable-user { cursor: pointer; }
-        .clickable-user:hover { text-decoration: underline; }
-    </style>
+    .post-menu-btn { cursor: pointer; color: #65676b; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+    .post-menu-btn:hover { background: #f2f2f2; }
+    .dropdown-toggle::after { display: none; }
+    .post-image { max-width: 100%; border-radius: 8px; margin-top: 10px; }
+    .like-btn { cursor: pointer; color: #65676b; transition: 0.2s; font-size: 0.95rem; display: flex; align-items: center; }
+    .like-btn.liked { color: #1877f2; font-weight: bold; }
+    .comment-item { background: #f0f2f5; border-radius: 12px; padding: 6px 12px; margin-bottom: 5px; font-size: 0.9rem; }
+    .comment-user { font-weight: bold; color: #050505; margin-right: 5px; }
+    .sidebar-card { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .like-count-display { font-size: 0.85rem; color: #65676b; margin-left: -15px; }
+    .missing-dog-card { border-left: 5px solid #dc3545; background-color: #fff9f9; }
+    .faq-section { background: #fff; border-radius: 15px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .faq-title { color: #0d6efd; font-weight: 700; margin-bottom: 2px; }
+    .faq-subtitle { color: #6c757d; font-size: 0.85rem; margin-bottom: 15px; }
+    .faq-item { background: #e7f3ff; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .faq-question { color: #0d6efd; font-weight: 700; font-size: 0.9rem; margin-bottom: 5px; }
+    .faq-answer { color: #4b4b4b; font-size: 0.8rem; line-height: 1.4; }
+    .faq-btn-group { display: flex; gap: 10px; margin-top: 15px; }
+    .faq-btn-read { background: #3ab0ff; border: none; color: white; flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; }
+    .faq-btn-ask { background: #0d6efd; border: none; color: white; flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; }
+    #missing_preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; margin-top: 10px; }
+    .sticky-column { position: -webkit-sticky; position: sticky; bottom: 20px; align-self: flex-end; }
+    .btn-send-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; transition: all 0.2s ease-in-out; border: none; background-color: #0d6efd; color: white; }
+    .btn-send-circle:hover { background-color: #0b5ed7; transform: scale(1.08); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .btn-send-circle i { font-size: 1.1rem; margin-left: 2px; }
+    .comment-input-pill { height: 40px; border-radius: 20px !important; padding-left: 15px; background-color: #f0f2f5 !important; }
+    .view-all-comments { font-size: 0.9rem; color: #65676b; font-weight: 600; cursor: pointer; margin-bottom: 8px; display: inline-block; }
+    .view-all-comments:hover { text-decoration: underline; }
+    .clickable-user { cursor: pointer; }
+    .clickable-user:hover { text-decoration: underline; }
+
+    #dropL {
+        display: none;
+        position: absolute;
+        right: 0;
+        width: 220px;
+        background: #f1f1f1;
+        border-radius: 18px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        top: 55px;
+        z-index: 1000;
+        padding: 10px 0;
+    }
+
+    #dropL .dropdown-header {
+        font-weight: 700;
+        color: #2d3748;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        padding: 10px 20px;
+    }
+
+    #dropL hr {
+        margin: 6px 0;
+    }
+
+    #dropL .dropdown-item {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #4a5568;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    #dropL .dropdown-item:hover {
+        background-color: #e2e8f0;
+        color: #1e88e5;
+    }
+
+    #dropL .dropdown-item.text-danger:hover {
+        background-color: #fff5f5;
+        color: #e53e3e !important;
+    }
+</style>
+
 </head>
 <body class="home-body">
 <?php include 'header.php'; ?>
@@ -248,13 +315,19 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="modal-content">
             <form action="main.php" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <h5>Share a Furrendly Place</h5>
+                    <h5>Share a Furrendly Post</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <textarea name="post_content" class="form-control mb-3" rows="4" placeholder="What's on your mind?" required></textarea>
-                    <input type="file" name="post_image" class="form-control">
+
+                    <div class="image-box mb-2 mt-3 " onclick="document.getElementById('postImageInput').click();" style="border: 2px dashed #ccc; padding: 20px; text-align:center; cursor:pointer;">
+                        <span id="postUploadPlaceholder"><br>Click to Upload Image</span>
+                        <img id="postImgPreview" style="display:none; max-width:100%; margin-top:10px;">
+                    </div>
+                    <input type="file" name="post_image" id="postImageInput" style="display:none;" accept="image/*" onchange="previewPostImage(this)">
                 </div>
+
                 <div class="modal-footer">
                     <button type="submit" name="submit_post" class="btn btn-primary">Post</button>
                 </div>
@@ -262,6 +335,8 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </div>
+
+
 
 <div class="modal fade" id="missingDogModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -301,7 +376,6 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <p id="popup_user_role" class="text-muted small mb-3">User Profile</p>
                     <hr>
                     <div class="d-grid gap-2 col-8 mx-auto">
-                        <!-- <button class="btn btn-primary rounded-pill">Message</button> -->
                     </div>
                 </div>
             </div>
@@ -309,9 +383,15 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <div class="search-row d-flex justify-content-center align-items-center gap-3 mb-4 mt-4">
-        <div class="search-box d-flex align-items-center"><i class="bi bi-search me-2"></i><input type="text" placeholder="Search here..." /></div>
+        <form method="GET" action="main.php" class="search-box d-flex align-items-center">
+            <i class="bi bi-search me-2"></i>
+            <input type="text" name="search" class="form-control border-0 shadow-none"
+            placeholder="Search here..."
+            value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+        </form>
+
         <div class="filters d-flex gap-2">
-            <button class="chip blue" data-bs-toggle="modal" data-bs-target="#createPostModal">+ Share a Furrendly Place</button>
+            <button class="chip blue" data-bs-toggle="modal" data-bs-target="#createPostModal">+ Share a Furrendly Post</button>
             <button class="chip green" data-bs-toggle="modal" data-bs-target="#addEstablishmentModal">+ Add Establishment</button>
             <button class="chip purple" id="toggleMapBtn" onclick="toggleMapView()">Location</button>
         </div>
@@ -324,14 +404,13 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div id="feed-container">
                     <?php while($post = $all_posts->fetch_assoc()): 
                         $p_id = $post['post_id'];
-                        // Query counts for likes/comments
                         $lc = $conn->query("SELECT (SELECT COUNT(*) FROM post_likes WHERE post_id=$p_id) as tl, (SELECT COUNT(*) FROM post_comments WHERE post_id=$p_id) as tc")->fetch_assoc();
                     ?>
                         <div class="card mb-4 p-3 shadow-sm border-0 rounded-4 <?php echo (strpos($post['content'], '[MISSING DOG]') !== false) ? 'missing-dog-card' : ''; ?>">
                             <div class="d-flex align-items-center">
-                                <img src="../images/homeImages/profile icon.png" class="rounded-circle me-2 clickable-user" width="40" height="40" onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>')" />
+                                <img src="<?php echo !empty($post['profile_image']) ? $post['profile_image'] : '../images/homeImages/profile icon.png'; ?>"  class="rounded-circle me-2 clickable-user" width="40" height="40"  onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>', '<?php echo !empty($post['profile_image']) ? addslashes($post['profile_image']) : ''; ?>')" />
                                 <div>
-                                    <div class="fw-bold clickable-user" onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>')"><?php echo htmlspecialchars($post['full_name']); ?></div>
+                                    <div class="fw-bold clickable-user" onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>', '<?php echo !empty($post['profile_image']) ? addslashes($post['profile_image']) : ''; ?>')"><?php echo htmlspecialchars($post['full_name']); ?></div>
                                     <small class="text-muted"><?php echo date('M d, g:i a', strtotime($post['created_at'])); ?></small>
                                 </div>
                                 <div class="dropdown ms-auto">
@@ -383,14 +462,17 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                 <div class="comment-container" id="comment-list-<?php echo $post['post_id']; ?>" style="display: none;">
                                     <?php 
-                                    $pid = $post['post_id'];
-                                    $comments = $conn->query("SELECT c.*, u.full_name FROM post_comments c JOIN users u ON c.user_id = u.user_id WHERE c.post_id = $pid ORDER BY c.created_at ASC");
-                                    while($com = $comments->fetch_assoc()): ?>
-                                        <div class="comment-item">
-                                            <span class="comment-user clickable-user" onclick="viewUserProfile('<?php echo addslashes($com['full_name']); ?>')"><?php echo htmlspecialchars($com['full_name']); ?></span>
-                                            <span><?php echo htmlspecialchars($com['comment_text']); ?></span>
-                                        </div>
-                                    <?php endwhile; ?>
+                                        $pid = $post['post_id'];
+                                        $comments = $conn->query("SELECT c.*, u.full_name, u.profile_image FROM post_comments c JOIN users u ON c.user_id = u.user_id WHERE c.post_id = $pid ORDER BY c.created_at ASC");
+                                        while($com = $comments->fetch_assoc()): ?>
+                                            <div class="comment-item d-flex align-items-center gap-2">
+                                                <img src="<?php echo !empty($com['profile_image']) ? $com['profile_image'] : '../images/homeImages/profile icon.png'; ?>" class="rounded-circle" width="25" height="25">
+                                                <div>
+                                                    <span class="comment-user clickable-user" onclick="viewUserProfile('<?php echo addslashes($com['full_name']); ?>', '<?php echo !empty($com['profile_image']) ? addslashes($com['profile_image']) : ''; ?>')"><?php echo htmlspecialchars($com['full_name']); ?></span>
+                                                    <span><?php echo htmlspecialchars($com['comment_text']); ?></span>
+                                                </div>
+                                            </div>
+                                        <?php endwhile; ?>
                                 </div>
                             </div>
 
@@ -466,6 +548,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                     <div class="faq-item">
                         <div class="faq-question">How do I share a pet-friendly place?</div>
+                        <div class="faq-answer">You can share a pet-friendly place by providing important details such as the location’s name, address, and description. Be sure to mention what makes it welcoming for pets, like outdoor seating, water bowls, or special pet services.</div>
                     </div>
                     <div class="faq-btn-group">
                         <a href="../mains/about.php">Read More</a>
@@ -500,9 +583,14 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="../script/map_init.js"></script>
 
     <script>
-        // NEW: View User Profile Popup
-        function viewUserProfile(name) {
+        function viewUserProfile(name, imgPath) {
             document.getElementById('popup_user_name').innerText = name;
+            const profileImg = document.getElementById('popup_user_img');
+            if (imgPath && imgPath !== '') {
+                profileImg.src = imgPath;
+            } else {
+                profileImg.src = '../images/homeImages/profile icon.png';
+            }
             var myModal = new bootstrap.Modal(document.getElementById('userProfileModal'));
             myModal.show();
         }
@@ -547,15 +635,22 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => { if (result.isConfirmed) window.location.href = 'main.php?delete_id=' + id; });
         }
-
         function confirmLogout() {
             Swal.fire({
                 title: 'Logout?',
+                text: "You will need to login again to access your account.",
                 icon: 'question',
                 showCancelButton: true,
+                confirmButtonColor: '#e53e3e',
+                cancelButtonColor: '#718096',
                 confirmButtonText: 'Logout'
-            }).then((result) => { if (result.isConfirmed) window.location.href = 'main.php?action=logout'; });
-        }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = window.location.origin + '/Capstone/src/mains/main.php?action=logout';
+                }
+            });
+            }
+
 
         function handleLike(btn, pid) {
             fetch('../process/handle_actions.php', {
@@ -584,56 +679,69 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         document.querySelectorAll('.comment-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const postId = this.querySelector('input[name="post_id"]').value;
-                const commentInput = this.querySelector('input[name="comment_text"]');
-                const commentText = commentInput.value;
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const postId = this.querySelector('input[name="post_id"]').value;
+        const commentInput = this.querySelector('input[name="comment_text"]');
+        const commentText = commentInput.value;
 
-                if(!commentText.trim()) return;
+        if(!commentText.trim()) return;
 
-                fetch('../process/handle_actions.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        action: 'comment', 
-                        post_id: postId, 
-                        text: commentText 
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === 'success' || data.message === 'Comment posted') {
-                        const container = document.getElementById('comment-list-' + postId);
-                        const toggleText = document.getElementById('toggle-text-' + postId);
-                        
-                        const newComment = document.createElement('div');
-                        newComment.className = 'comment-item';
-                        newComment.innerHTML = `<span class="comment-user clickable-user" onclick="viewUserProfile('${data.user_name}')">${data.user_name}</span> <span>${data.comment}</span>`;
-                        container.appendChild(newComment);
-                        
-                        container.style.display = 'block';
-                        if(toggleText) toggleText.innerText = "Hide comments";
-                        
-                        commentInput.value = ''; 
-                        
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Comment Successful!',
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                    } else {
-                        Swal.fire('Error', data.message || 'Something went wrong', 'error');
-                    }
-                })
-                .catch(err => {
-                    console.error("Submission failed:", err);
-                    Swal.fire('Error', 'Server connection failed.', 'error');
+        fetch('../process/handle_actions.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                action: 'comment', 
+                post_id: postId, 
+                text: commentText 
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                const container = document.getElementById('comment-list-' + postId);
+                const toggleText = document.getElementById('toggle-text-' + postId);
+                
+                const newComment = document.createElement('div');
+                newComment.className = 'comment-item d-flex align-items-center gap-2';
+                
+                const userImg = data.profile_image && data.profile_image !== '' && data.profile_image !== '../images/homeImages/profile icon.png' 
+                    ? data.profile_image 
+                    : '../images/homeImages/profile icon.png';
+                
+                const escapedName = data.user_name.replace(/'/g, "\\'");
+                const escapedImg = userImg.replace(/'/g, "\\'");
+                
+                newComment.innerHTML = `
+                    <img src="${userImg}" class="rounded-circle" width="25" height="25">
+                    <div>
+                        <span class="comment-user clickable-user" onclick="viewUserProfile('${escapedName}', '${escapedImg}')">${data.user_name}</span> 
+                        <span>${data.comment}</span>
+                    </div>
+                `;
+                container.appendChild(newComment);
+                
+                container.style.display = 'block';
+                if(toggleText) toggleText.innerText = "Hide comments";
+                
+                commentInput.value = ''; 
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Comment Successful!',
+                    showConfirmButton: false,
+                    timer: 1500
                 });
-            });
+            } else {
+                Swal.fire('Error', data.message || 'Something went wrong', 'error');
+            }
+        })
+        .catch(err => {
+            console.error("Submission failed:", err);
+            Swal.fire('Error', 'Server connection failed.', 'error');
         });
-
+    });
+});
         const msg = new URLSearchParams(window.location.search).get('msg');
         if (msg === 'missing_posted') Swal.fire('Alert Shared!', 'Success', 'success');
         if (msg === 'reported') Swal.fire('Thank you!', 'Report submitted.', 'success');
@@ -641,6 +749,23 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         if (msg === 'deleted') Swal.fire('Deleted!', 'Removed.', 'success');
         if (msg === 'updated') Swal.fire('Updated!', 'Saved.', 'success');
         if (msg === 'commented') Swal.fire('Success', 'Comment Successful!', 'success');
+
+        function previewPostImage(input) {
+    const preview = document.getElementById('postImgPreview');
+    const placeholder = document.getElementById('postUploadPlaceholder');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
     </script>
+
+
 </body>
 </html>
