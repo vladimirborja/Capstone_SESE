@@ -133,7 +133,7 @@ function hasUserLiked($postId, $userId, $conn) {
     return $stmt->get_result()->num_rows > 0;
 }
 
-$all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id
+$all_posts = $conn->query("SELECT p.*, u.full_name, u.user_id as author_id, u.profile_image
     FROM posts p 
     JOIN users u ON p.user_id = u.user_id 
     ORDER BY p.created_at DESC");
@@ -185,6 +185,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         .comment-input-pill { height: 40px; border-radius: 20px !important; padding-left: 15px; background-color: #f0f2f5 !important; }
         .view-all-comments { font-size: 0.9rem; color: #65676b; font-weight: 600; cursor: pointer; margin-bottom: 8px; display: inline-block; }
         .view-all-comments:hover { text-decoration: underline; }
+        
         /* User interaction styles */
         .clickable-user { cursor: pointer; }
         .clickable-user:hover { text-decoration: underline; }
@@ -248,7 +249,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="modal-content">
             <form action="main.php" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <h5>Share a Furrendly Place</h5>
+                    <h5>Share a Furrendly Post</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -311,7 +312,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="search-row d-flex justify-content-center align-items-center gap-3 mb-4 mt-4">
         <div class="search-box d-flex align-items-center"><i class="bi bi-search me-2"></i><input type="text" placeholder="Search here..." /></div>
         <div class="filters d-flex gap-2">
-            <button class="chip blue" data-bs-toggle="modal" data-bs-target="#createPostModal">+ Share a Furrendly Place</button>
+            <button class="chip blue" data-bs-toggle="modal" data-bs-target="#createPostModal">+ Share a Furrendly Post</button>
             <button class="chip green" data-bs-toggle="modal" data-bs-target="#addEstablishmentModal">+ Add Establishment</button>
             <button class="chip purple" id="toggleMapBtn" onclick="toggleMapView()">Location</button>
         </div>
@@ -329,9 +330,9 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                         <div class="card mb-4 p-3 shadow-sm border-0 rounded-4 <?php echo (strpos($post['content'], '[MISSING DOG]') !== false) ? 'missing-dog-card' : ''; ?>">
                             <div class="d-flex align-items-center">
-                                <img src="../images/homeImages/profile icon.png" class="rounded-circle me-2 clickable-user" width="40" height="40" onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>')" />
+                                <img src="<?php echo !empty($post['profile_image']) ? $post['profile_image'] : '../images/homeImages/profile icon.png'; ?>"  class="rounded-circle me-2 clickable-user" width="40" height="40"  onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>', '<?php echo !empty($post['profile_image']) ? addslashes($post['profile_image']) : ''; ?>')" />
                                 <div>
-                                    <div class="fw-bold clickable-user" onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>')"><?php echo htmlspecialchars($post['full_name']); ?></div>
+                                    <div class="fw-bold clickable-user" onclick="viewUserProfile('<?php echo addslashes($post['full_name']); ?>', '<?php echo !empty($post['profile_image']) ? addslashes($post['profile_image']) : ''; ?>')"><?php echo htmlspecialchars($post['full_name']); ?></div>
                                     <small class="text-muted"><?php echo date('M d, g:i a', strtotime($post['created_at'])); ?></small>
                                 </div>
                                 <div class="dropdown ms-auto">
@@ -383,14 +384,18 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                 <div class="comment-container" id="comment-list-<?php echo $post['post_id']; ?>" style="display: none;">
                                     <?php 
-                                    $pid = $post['post_id'];
-                                    $comments = $conn->query("SELECT c.*, u.full_name FROM post_comments c JOIN users u ON c.user_id = u.user_id WHERE c.post_id = $pid ORDER BY c.created_at ASC");
-                                    while($com = $comments->fetch_assoc()): ?>
-                                        <div class="comment-item">
-                                            <span class="comment-user clickable-user" onclick="viewUserProfile('<?php echo addslashes($com['full_name']); ?>')"><?php echo htmlspecialchars($com['full_name']); ?></span>
-                                            <span><?php echo htmlspecialchars($com['comment_text']); ?></span>
-                                        </div>
-                                    <?php endwhile; ?>
+                                        $pid = $post['post_id'];
+                                        // Added u.profile_image to this query
+                                        $comments = $conn->query("SELECT c.*, u.full_name, u.profile_image FROM post_comments c JOIN users u ON c.user_id = u.user_id WHERE c.post_id = $pid ORDER BY c.created_at ASC");
+                                        while($com = $comments->fetch_assoc()): ?>
+                                            <div class="comment-item d-flex align-items-center gap-2">
+                                                <img src="<?php echo !empty($com['profile_image']) ? $com['profile_image'] : '../images/homeImages/profile icon.png'; ?>" class="rounded-circle" width="25" height="25">
+                                                <div>
+                                                    <span class="comment-user clickable-user" onclick="viewUserProfile('<?php echo addslashes($com['full_name']); ?>', '<?php echo !empty($com['profile_image']) ? addslashes($com['profile_image']) : ''; ?>')"><?php echo htmlspecialchars($com['full_name']); ?></span>
+                                                    <span><?php echo htmlspecialchars($com['comment_text']); ?></span>
+                                                </div>
+                                            </div>
+                                        <?php endwhile; ?>
                                 </div>
                             </div>
 
@@ -501,8 +506,15 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <script>
         // NEW: View User Profile Popup
-        function viewUserProfile(name) {
+        function viewUserProfile(name, imgPath) {
             document.getElementById('popup_user_name').innerText = name;
+            // Update the image src in the modal with proper fallback
+            const profileImg = document.getElementById('popup_user_img');
+            if (imgPath && imgPath !== '') {
+                profileImg.src = imgPath;
+            } else {
+                profileImg.src = '../images/homeImages/profile icon.png';
+            }
             var myModal = new bootstrap.Modal(document.getElementById('userProfileModal'));
             myModal.show();
         }
@@ -584,56 +596,71 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         document.querySelectorAll('.comment-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const postId = this.querySelector('input[name="post_id"]').value;
-                const commentInput = this.querySelector('input[name="comment_text"]');
-                const commentText = commentInput.value;
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const postId = this.querySelector('input[name="post_id"]').value;
+        const commentInput = this.querySelector('input[name="comment_text"]');
+        const commentText = commentInput.value;
 
-                if(!commentText.trim()) return;
+        if(!commentText.trim()) return;
 
-                fetch('../process/handle_actions.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        action: 'comment', 
-                        post_id: postId, 
-                        text: commentText 
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === 'success' || data.message === 'Comment posted') {
-                        const container = document.getElementById('comment-list-' + postId);
-                        const toggleText = document.getElementById('toggle-text-' + postId);
-                        
-                        const newComment = document.createElement('div');
-                        newComment.className = 'comment-item';
-                        newComment.innerHTML = `<span class="comment-user clickable-user" onclick="viewUserProfile('${data.user_name}')">${data.user_name}</span> <span>${data.comment}</span>`;
-                        container.appendChild(newComment);
-                        
-                        container.style.display = 'block';
-                        if(toggleText) toggleText.innerText = "Hide comments";
-                        
-                        commentInput.value = ''; 
-                        
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Comment Successful!',
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                    } else {
-                        Swal.fire('Error', data.message || 'Something went wrong', 'error');
-                    }
-                })
-                .catch(err => {
-                    console.error("Submission failed:", err);
-                    Swal.fire('Error', 'Server connection failed.', 'error');
+        fetch('../process/handle_actions.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                action: 'comment', 
+                post_id: postId, 
+                text: commentText 
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                const container = document.getElementById('comment-list-' + postId);
+                const toggleText = document.getElementById('toggle-text-' + postId);
+                
+                const newComment = document.createElement('div');
+                newComment.className = 'comment-item d-flex align-items-center gap-2';
+                
+                // FIXED: Use profile_image from backend response
+                const userImg = data.profile_image && data.profile_image !== '' && data.profile_image !== '../images/homeImages/profile icon.png' 
+                    ? data.profile_image 
+                    : '../images/homeImages/profile icon.png';
+                
+                // Escape single quotes in user_name for onclick attribute
+                const escapedName = data.user_name.replace(/'/g, "\\'");
+                const escapedImg = userImg.replace(/'/g, "\\'");
+                
+                newComment.innerHTML = `
+                    <img src="${userImg}" class="rounded-circle" width="25" height="25">
+                    <div>
+                        <span class="comment-user clickable-user" onclick="viewUserProfile('${escapedName}', '${escapedImg}')">${data.user_name}</span> 
+                        <span>${data.comment}</span>
+                    </div>
+                `;
+                container.appendChild(newComment);
+                
+                container.style.display = 'block';
+                if(toggleText) toggleText.innerText = "Hide comments";
+                
+                commentInput.value = ''; 
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Comment Successful!',
+                    showConfirmButton: false,
+                    timer: 1500
                 });
-            });
+            } else {
+                Swal.fire('Error', data.message || 'Something went wrong', 'error');
+            }
+        })
+        .catch(err => {
+            console.error("Submission failed:", err);
+            Swal.fire('Error', 'Server connection failed.', 'error');
         });
-
+    });
+});
         const msg = new URLSearchParams(window.location.search).get('msg');
         if (msg === 'missing_posted') Swal.fire('Alert Shared!', 'Success', 'success');
         if (msg === 'reported') Swal.fire('Thank you!', 'Report submitted.', 'success');
