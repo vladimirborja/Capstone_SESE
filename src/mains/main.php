@@ -2,11 +2,7 @@
 session_start();
 
 // Database connection
-$conn = new mysqli("localhost", "root", "", "capstone_db");
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once '../config.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.php");
@@ -133,6 +129,7 @@ function hasUserLiked($postId, $userId, $conn) {
     return $stmt->get_result()->num_rows > 0;
 }
 
+
     $search = "";
         if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
             $search = trim($_GET['search']);
@@ -157,7 +154,6 @@ function hasUserLiked($postId, $userId, $conn) {
         }
 
         ?>
-
 <?php
 require_once '../db_config.php';
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

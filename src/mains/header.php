@@ -121,6 +121,25 @@ if ($user_id > 0 && isset($pdo)) {
 
 </style>
 
+<style>
+    /* Profile Icon Styling */
+    .avatar-wrapper {
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .avatar-wrapper .icon-img.avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid white;
+        transition: all 0.3s ease;
+    }
+    
+
+</style>
+
 <header class="topbar container mx-auto px-4 rounded-4" style="margin-top: 20px;">
     <div class="topbar-inner d-flex justify-content-between align-items-center">
         <div class="logo">

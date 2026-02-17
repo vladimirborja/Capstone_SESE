@@ -53,9 +53,9 @@ try {
     $isEmail = filter_var($emailOrPhone, FILTER_VALIDATE_EMAIL);
 
     if ($isEmail) {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND is_active = 1");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND is_active = 1 AND is_verified = 1");
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE phone_number = ? AND is_active = 1");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE phone_number = ? AND is_active = 1 AND is_verified = 1");
     }
 
     $stmt->execute([$emailOrPhone]);
@@ -95,10 +95,17 @@ try {
             ]
         ]);
     } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Invalid email/phone or password'
-        ]);
+        // If user exists but is not verified, you might want a specific error
+        $checkStatus = $pdo->prepare("SELECT is_verified FROM users WHERE email = ? OR phone_number = ?");
+        $checkStatus->execute([$emailOrPhone, $emailOrPhone]);
+        $status = $checkStatus->fetch();
+
+        if ($status && $status['is_verified'] == 0) {
+            echo json_encode(['success' => false, 'message' => 'Please verify your email before logging in.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid credentials.']);
+        }
+        exit;
     }
 } catch (Exception $e) {
     echo json_encode([

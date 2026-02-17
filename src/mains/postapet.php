@@ -1,11 +1,7 @@
 <?php
 session_start();
-// 1. Database connection
-$conn = new mysqli("localhost", "root", "", "capstone_db");
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once '../config.php';
 
 // Default user ID if session isn't set
 $current_user_id = $_SESSION['user_id'] ?? 1; 

@@ -102,7 +102,7 @@ session_start();
         </p>
 
         <div class="mt-2">
-          <a href="http://localhost/Capstone/src/index.php" class="btn btn-outline-primary btn-sm">
+          <a href="index.php" class="btn btn-outline-primary btn-sm">
             ← Back to Home
           </a>
         </div>
@@ -276,7 +276,7 @@ session_start();
             timer: 2000,
             showConfirmButton: false
           }).then(() => {
-            window.location.href = 'signIn.php?status=registered';
+            window.location.href = 'signIn.php';
           });
         } else {
           Swal.fire({

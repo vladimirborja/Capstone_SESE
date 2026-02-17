@@ -1,7 +1,5 @@
 <?php
 ob_start();
-error_reporting(0);
-ini_set('display_errors', 0);
 session_start();
 
 if (!file_exists('db_config.php')) {
@@ -15,6 +13,7 @@ if (!file_exists('db_config.php')) {
 }
 
 require_once 'db_config.php';
+require_once 'Mailer.php';
 
 if (!isset($pdo) || $pdo === null) {
     ob_clean();
@@ -91,22 +90,47 @@ try {
         $role = 'admin'; 
     }
 
+    $token = bin2hex(random_bytes(32));
     $fullName = $firstName . ' ' . $lastName;
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    $stmt = $pdo->prepare("
-        INSERT INTO users (full_name, email, phone_number, password, role) 
-        VALUES (?, ?, ?, ?, ?)
-    ");
-    $stmt->execute([$fullName, $email, $phoneNumber, $hashedPassword, $role]);
+    // 1. Start the transaction
+    $pdo->beginTransaction();
 
-    echo json_encode([
-        'success' => true,
-        'message' => 'Registration successful!'
-    ]);
+    $stmt = $pdo->prepare("
+        INSERT INTO users (full_name, email, phone_number, password, role, verification_code) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+    
+    $stmt->execute([$fullName, $email, $phoneNumber, $hashedPassword, $role, $token]);
+
+    // 2. Attempt to send the email
+    if (Mailer::sendVerification($email, $fullName, $token)) {
+        // 3. If email succeeds, COMMIT the changes to the DB
+        $pdo->commit();
+
+        echo json_encode([
+            'success' => true, 
+            'message' => 'Registration successful! Check your email to verify.'
+        ]);
+    } else {
+        // 4. If email fails, ROLLBACK (delete the user record automatically)
+        $pdo->rollBack();
+
+        echo json_encode([
+            'success' => false, 
+            'message' => 'Failed to send verification email. Please try again later.'
+        ]);
+    }
+
 } catch (Exception $e) {
+    // 5. Rollback on any other error (like DB connection loss)
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    
     echo json_encode([
         'success' => false,
-        'message' => 'Database error: ' . $e->getMessage()
+        'message' => 'System error: ' . $e->getMessage()
     ]);
 }
