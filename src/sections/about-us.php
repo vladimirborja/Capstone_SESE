@@ -12,7 +12,6 @@
                     <p class="about-card-text">
                         Our mission is to empower pet owners and local businesses in Angeles City by providing a single, verified, and community-driven platform that simplifies pet-inclusive living. We strive to eliminate the stress of exploring the city with furry companions by centralizing essential...
                     </p>
-                    <button class="btn btn-read-more">Read more</button>
                 </div>
             </div>
             <div class="col-lg-6">
@@ -21,7 +20,6 @@
                     <p class="about-card-text">
                         To be the leading digital heart of the pet community in Angeles City, creating a future where every establishment is a pet-welcome' zone, every pet owner feels supported by a reliable network, and no pet is ever truly lost. We envision an Angeles City that is the gold standard..
                     </p>
-                    <button class="btn btn-read-more">Read more</button>
                 </div>
             </div>
         </div>

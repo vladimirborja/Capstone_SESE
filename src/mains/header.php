@@ -118,26 +118,6 @@ if ($user_id > 0 && isset($pdo)) {
         background-color:#fff5f5;
         color:#e53e3e !important;
     }
-
-</style>
-
-<style>
-    /* Profile Icon Styling */
-    .avatar-wrapper {
-        position: relative;
-        cursor: pointer;
-    }
-    
-    .avatar-wrapper .icon-img.avatar {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid white;
-        transition: all 0.3s ease;
-    }
-    
-
 </style>
 
 <header class="topbar container mx-auto px-4 rounded-4" style="margin-top: 20px;">
@@ -159,7 +139,7 @@ if ($user_id > 0 && isset($pdo)) {
             <div class="icon-wrapper position-relative" onclick="toggleDropdown('notifDrop')">
                 <i class="bi bi-bell-fill fs-4" style="cursor: pointer; color: #fff;"></i>
                 <?php if ($unread_count > 0): ?>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                    <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
                         <?php echo $unread_count; ?>
                     </span>
                 <?php endif; ?>
@@ -234,7 +214,7 @@ if ($user_id > 0 && isset($pdo)) {
 <script>
     function toggleDropdown(id) {
         const drop = document.getElementById(id);
-        const badge = document.querySelector('.badge.bg-danger'); 
+        const badge = document.getElementById('notif-badge');
         const allDrops = ['notifDrop', 'dropL'];
         
         allDrops.forEach(dId => {
@@ -248,11 +228,27 @@ if ($user_id > 0 && isset($pdo)) {
         drop.style.display = isOpening ? 'block' : 'none';
 
         if (id === 'notifDrop' && isOpening && badge) {
-            const markReadPath = window.location.origin + "/Capstone/src/mains/process/mark_read.php";
-            fetch(markReadPath)
-            .then(res => res.json())
-            .then(data => { if(data.success) badge.style.display = 'none'; })
-            .catch(err => console.error('Error marking read:', err));
+            badge.style.display = 'none';
+
+            fetch('../process/mark_read.php')
+            .then(res => {
+                if (!res.ok) throw new Error('Network response was not ok');
+                return res.json();
+            })
+            .then(data => { 
+                console.log('Server response:', data); 
+                if(data.success) {
+                    document.querySelectorAll('.notif-item').forEach(item => {
+                        item.classList.remove('bg-light');
+                        const pTag = item.querySelector('p');
+                        if(pTag) pTag.classList.remove('fw-bold');
+                    });
+                } 
+            })
+            .catch(err => {
+                console.error('Fetch error:', err);
+                badge.style.display = 'block';
+            });
         }
     }
 
@@ -267,54 +263,45 @@ if ($user_id > 0 && isset($pdo)) {
 
     function showNotifDetail(message, date, postText, postImage, postId) {
         document.getElementById('modal-notif-message').innerText = message;
-        
         const d = new Date(date);
         document.getElementById('modal-notif-date').innerText = d.toLocaleString('en-US', { 
             weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true 
         });
-        
         document.getElementById('modal-post-text').innerText = postText;
-        
         const imgEl = document.getElementById('modal-post-image');
-        
         if (postImage && postImage.trim() !== "" && postImage !== "null") {
-            const fullPath = "../" + postImage;
-            imgEl.src = fullPath; 
+            imgEl.src = "../" + postImage; 
             imgEl.style.display = 'block';
-            
-            imgEl.onerror = function() {
-                this.style.display = 'none';
-            };
         } else {
             imgEl.style.display = 'none';
         }
-                
         var myModal = new bootstrap.Modal(document.getElementById('notifDetailModal'));
         myModal.show();
     }
 
     window.onclick = function(event) {
         if (!event.target.closest('.icon-wrapper')) {
-            const nDrop = document.getElementById('notifDrop');
-            const lDrop = document.getElementById('dropL');
-            if(nDrop) nDrop.style.display = 'none';
-            if(lDrop) lDrop.style.display = 'none';
+            document.querySelectorAll('.notif-dropdown').forEach(d => d.style.display = 'none');
         }
     }
 
     function confirmLogout() {
-        Swal.fire({
-            title: 'Logout?',
-            text: "You will need to login again to access your account.",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#e53e3e',
-            cancelButtonColor: '#718096',
-            confirmButtonText: 'Logout'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = window.location.origin + '/Capstone/src/mains/main.php?action=logout';
-            }
-        });
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Logout?',
+                text: "You will need to login again to access your account.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#e53e3e',
+                cancelButtonColor: '#718096',
+                confirmButtonText: 'Logout'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = window.location.origin + '/Capstone/src/mains/main.php?action=logout';
+                }
+            });
+        } else if(confirm("Are you sure you want to logout?")) {
+            window.location.href = window.location.origin + '/Capstone/src/mains/main.php?action=logout';
+        }
     }
 </script>

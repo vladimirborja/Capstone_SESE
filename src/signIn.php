@@ -1,5 +1,15 @@
 <?php
 session_start();
+
+// Redirect if already logged in
+if (isset($_SESSION['user_id'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header("Location: manage_users.php");
+    } else {
+        header("Location: mains/main.php");
+    }
+    exit;
+}
 ?>
 
 <!doctype html>
@@ -86,7 +96,6 @@ session_start();
           text: 'You can now sign in with your new account.',
           confirmButtonColor: '#1e88ff'
         });
-        // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     };
@@ -114,13 +123,13 @@ session_start();
       e.preventDefault();
       const signinBtn = document.getElementById('signinBtn');
       
-      // Visual feedback on button
       signinBtn.disabled = true;
       signinBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Signing in...';
 
       const formData = {
         emailOrPhone: document.getElementById('emailOrPhone').value,
-        password: document.getElementById('password').value
+        password: document.getElementById('password').value,
+        remember: document.getElementById('remember').checked
       };
 
       try {
@@ -130,23 +139,21 @@ session_start();
           body: JSON.stringify(formData)
         });
         
-        // If response is not OK (like 404 or 500), throw error to catch block
-        if (!response.ok) throw new Error('Network response was not ok');
-
+        // This parses the JSON response from your signIn_process.php
         const result = await response.json();
         
         if (result.success) {
           Swal.fire({
             icon: 'success',
             title: 'Welcome Back!',
-            text: 'Login successful.',
+            text: result.message || 'Login successful.',
             timer: 1500,
             showConfirmButton: false
           }).then(() => {
+            // Check the role returned from your process script
             window.location.href = result.user.role === 'admin' ? 'manage_users.php' : 'mains/main.php';
           });
         } else {
-          // Failure Swal
           Swal.fire({ 
             icon: 'error', 
             title: 'Login Failed', 
@@ -161,7 +168,7 @@ session_start();
         Swal.fire({ 
           icon: 'error', 
           title: 'System Error', 
-          text: 'Could not connect to the server. Please check the console.',
+          text: 'Could not connect to the server. Check if signIn_process.php exists.',
           confirmButtonColor: '#1e88ff'
         });
         signinBtn.disabled = false;
@@ -169,45 +176,5 @@ session_start();
       }
     });
   </script>
-
-  
 </body>
 </html>
-
-<?php
-header('Content-Type: application/json');
-require_once 'db_config.php';
-session_start();
-
-$data = json_decode(file_get_contents('php://input'), true);
-
-if (!isset($data['emailOrPhone']) || !isset($data['password'])) {
-    echo json_encode(['success' => false, 'message' => 'Missing credentials']);
-    exit;
-}
-
-$identifier = trim($data['emailOrPhone']);
-$password = trim($data['password']);
-
-try {
-    // Check for user by email OR phone
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? OR phone = ? LIMIT 1");
-    $stmt->execute([$identifier, $identifier]);
-    $user = $stmt->fetch();
-
-    if ($user && password_verify($password, $user['password'])) {
-        // Password is correct!
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['role'] = $user['role'];
-
-        echo json_encode([
-            'success' => true, 
-            'user' => ['role' => $user['role']]
-        ]);
-    } else {
-        // Invalid email/phone or password
-        echo json_encode(['success' => false, 'message' => 'Incorrect email/phone or password.']);
-    }
-} catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => 'Database error.']);
-}

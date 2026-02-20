@@ -3,6 +3,15 @@ session_start();
 include 'db_config.php';
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+// Fetch admin profile image from DB
+$adminStmt = $pdo->prepare("SELECT full_name, profile_image FROM users WHERE user_id = ?");
+$adminStmt->execute([$_SESSION['user_id']]);
+$adminData = $adminStmt->fetch();
+$adminName = $adminData['full_name'] ?? 'Admin';
+$adminProfileImage = (!empty($adminData['profile_image'])) 
+    ? str_replace('../', '', $adminData['profile_image'])
+    : 'images/homeImages/profile icon.png';
+
 // 1. Statistics Fetching
 $active_users = $pdo->query("SELECT COUNT(*) FROM users WHERE is_active = 1")->fetchColumn();
 $inactive_users = $pdo->query("SELECT COUNT(*) FROM users WHERE is_active = 0")->fetchColumn();
@@ -47,14 +56,45 @@ $establishments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         body { background-color: #cbd5e0; font-family: sans-serif; margin: 0; }
-        .navbar-custom { background-color: #1e88e5; height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: white; }
-        .logo-admin { height: 30px; width: 30px; display: flex; align-items: center; }
-        .logo-admin img { height: 100%; width: 100%; object-fit: contain;  }
         
-        /* Dropdown Styling */
-        .profile-dropdown .btn-profile { color: white; background: none; border: none; padding: 0; font-size: 1.5rem; transition: 0.3s; }
+        .navbar-custom { 
+            background-color: #1e88e5; 
+            height: 55px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 20px; 
+            color: white; 
+            position: relative;
+        }
+        
+        .nav-center-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-size: 1.25rem;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .logo-admin { height: 35px; width: 35px; display: flex; align-items: center; z-index: 1; }
+        .logo-admin img { height: 100%; width: 100%; object-fit: contain; }
+        .nav-right-group { display: flex; align-items: center; gap: 10px; z-index: 1; }
+
+        /* Admin profile picture in navbar */
+        .admin-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            cursor: pointer;
+        }
+        
+        .profile-dropdown .btn-profile { background: none; border: none; padding: 0; transition: 0.3s; display: flex; align-items: center; }
         .profile-dropdown .btn-profile:after { display: none; } 
-        .dropdown-menu-end { border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: none; margin-top: 12px; min-width: 200px; padding: 10px 0; }
+        .dropdown-menu-end { border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: none; margin-top: 12px; min-width: 220px; padding: 10px 0; }
         .dropdown-header { font-weight: 700; color: #2d3748; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
         .dropdown-item { font-size: 0.9rem; font-weight: 500; color: #4a5568; padding: 10px 20px; display: flex; align-items: center; gap: 10px; }
         .dropdown-item i { width: 18px; text-align: center; }
@@ -85,19 +125,34 @@ $establishments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <img src="../src/images/homeImages/Sese-Logo3.png" alt="Logo" />
         </a>
     </div>
-    <div class="fw-bold">ADMIN DASHBOARD</div>
-    
-    <div class="dropdown profile-dropdown ">
-        <button class="btn btn-profile dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-user-circle"></i>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow border border-danger">
-            <li><h6 class="dropdown-header">Admin Account</h6></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="../src/mains/main.php"><i class="fas fa-home"></i> Main Feed</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
+
+    <div class="nav-center-title">ADMIN DASHBOARD</div>
+
+    <div class="nav-right-group">
+        <a href="manage_users.php" class="btn btn-light btn-sm fw-bold me-2">
+            <i class="fas fa-users-cog me-1"></i> User Management
+        </a>
+        
+        <div class="dropdown profile-dropdown">
+            <button class="btn btn-profile dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="<?= htmlspecialchars($adminProfileImage); ?>" alt="Admin" class="admin-avatar">
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow">
+                <li>
+                    <div class="d-flex align-items-center gap-2 px-3 py-2">
+                        <img src="<?= htmlspecialchars($adminProfileImage); ?>" class="rounded-circle" width="40" height="40" style="object-fit:cover; border: 2px solid #1e88e5;">
+                        <div>
+                            <div class="fw-bold text-dark small"><?= htmlspecialchars($adminName); ?></div>
+                            <div class="text-muted" style="font-size:0.75rem;">Administrator</div>
+                        </div>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="../src/mains/main.php"><i class="fas fa-home"></i> Main Feed</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
     </div>
 </div>
 
@@ -174,7 +229,7 @@ $establishments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button class="btn btn-danger w-100 fw-bold py-2" id="confirmDeleteBtn">DELETE POST & NOTIFY OWNER</button>
+                <button class="btn btn-danger w-100 fw-bold py-2" id="confirmDeleteBtn">DELETE POST</button>
             </div>
         </div>
     </div>
@@ -183,17 +238,13 @@ $establishments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Convert PHP array to JS object
     const establishmentData = <?php echo json_encode($establishments); ?>;
-</script>
-<script>
     const API_BASE_URL = "./features/handle_establishments.php";
     const AUTO_INIT_MAP = true;
     const USER_ROLE = <?php echo json_encode($_SESSION['role']); ?>;
 </script>
 <script src="script/map_init.js"></script>
 <script>
-    // SweetAlert Logout Logic
     function confirmLogout() {
         Swal.fire({
             title: 'Ready to leave?',

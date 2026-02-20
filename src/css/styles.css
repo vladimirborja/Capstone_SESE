@@ -29,7 +29,7 @@ body {
 
 .form-label {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: bold;
     color: #4a4a4a;
 }
 
@@ -775,6 +775,8 @@ body {
 }
 
 
+
+/* CONTACT SECTION */
 .contact-section {
   padding: 80px 0;
   background-color: #f8fbff;
@@ -798,7 +800,7 @@ body {
 }
 .contact-section .form-label {
   color: #0084ff;
-  font-weight: 200;
+  font-weight: 400;
   font-size: 20px;
   margin-bottom: 4px;
 }
@@ -869,9 +871,10 @@ body {
 }
 .contact-section .contact-info-card .info-inner-box .info-content h4 {
   font-size: 20px;
-  font-weight: 300;
+  font-weight: bolder;
   margin-bottom: 2px;
   opacity: 0.9;
+  color: #fff;
 }
 .contact-section .contact-info-card .info-inner-box .info-content p {
   font-size: 16px;
@@ -885,6 +888,7 @@ body {
   font-size: 20px;
   font-weight: 500;
   margin-bottom: 15px;
+  color: #fff;
 }
 .contact-section .contact-info-card .social-media-section .social-grid {
   display: flex;
@@ -1173,6 +1177,3 @@ h4 {
     color: #333;
     font-weight: bold;
 }
-
-
-
