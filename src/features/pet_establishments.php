@@ -83,7 +83,7 @@
                             </tr>
                         <?php endforeach; ?>
                         <?php if (empty($pending)): ?>
-                            <tr><td colspan="4" class="text-center">No pending requests.</td></tr>
+                            <tr><td colspan="5" class="text-center">No pending requests.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>

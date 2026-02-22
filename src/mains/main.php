@@ -171,6 +171,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="icon" type="image/png" href="../favicon.png" />
     <style>
     .post-menu-btn { cursor: pointer; color: #65676b; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
     .post-menu-btn:hover { background: #f2f2f2; }
@@ -631,22 +632,6 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => { if (result.isConfirmed) window.location.href = 'main.php?delete_id=' + id; });
         }
-        function confirmLogout() {
-            Swal.fire({
-                title: 'Logout?',
-                text: "You will need to login again to access your account.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#e53e3e',
-                cancelButtonColor: '#718096',
-                confirmButtonText: 'Logout'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = 'main.php?action=logout';
-                }
-            });
-            }
-
 
         function handleLike(btn, pid) {
             fetch('../process/handle_actions.php', {

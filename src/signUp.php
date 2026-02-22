@@ -9,6 +9,7 @@ session_start();
 <head>
   <meta charset="UTF-8" />
   <title>Sign Up</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">

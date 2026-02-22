@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 20, 2026 at 09:19 PM
+-- Generation Time: Feb 22, 2026 at 02:19 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -554,7 +554,8 @@ CREATE TABLE `users` (
   `is_verified` tinyint(1) NOT NULL,
   `bio` text NOT NULL,
   `email` varchar(255) NOT NULL,
-  `verification_code` varchar(100) NOT NULL,
+  `verification_code` varchar(100) DEFAULT NULL,
+  `google_id` varchar(255) DEFAULT NULL,
   `phone_number` varchar(20) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('user','admin') NOT NULL DEFAULT 'user',
@@ -569,16 +570,16 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `full_name`, `username`, `is_verified`, `bio`, `email`, `verification_code`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`, `profile_image`) VALUES
-(4, 'margiel escalante', NULL, 0, '', 'info@bb88advertising.com', '', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1, NULL),
-(5, 'Karl Vladimir Borjaa', 'Karlaaa', 1, 'SINO TO?!', 'vladimirborja013@gmail.com', '', '09650561211', '$2y$10$qpS58OYVf9xG8yJRhiv4JuXKojMJBD0QvVbWiMXJsoMNp4vbticYG', 'admin', '2026-01-29 18:09:12', '2026-02-20 18:22:08', '2026-02-20 18:22:08', 1, '../uploads/profile_pics/user_5_1771609008.jpeg'),
-(6, 'Ariana Punsalang', NULL, 1, '', 'anairadump@gmail.com', '', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-20 16:24:20', '2026-02-17 09:58:06', 1, '../uploads/profile_pics/user_6_1771150867.png'),
-(7, 'Kristine Tuazon', NULL, 1, 'bioooo', 'kristinetuazon16@gmail.com', '', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-20 18:21:47', '2026-02-20 18:21:47', 1, '../uploads/profile_pics/user_7_1771609052.jpg'),
-(8, 'Mico Cuenco', NULL, 0, '', 'micocuenco@gmail.com', '', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1, NULL),
-(9, 'Cayoh Anicete', NULL, 0, '', 'cayohanicete@gmail.com', '', '09123456789', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'user', '2026-02-11 03:10:13', '2026-02-20 18:18:23', '2026-02-15 07:31:06', 0, NULL),
-(10, 'margiel escalante', NULL, 0, '', 'margielescalante@gmail.com', '', '09123456789', '$2y$10$tJ6ojSH5oqJUchJHtZDGbuMJOKjQADmyrlhiP01MQfVfB4Fbbdcn.', 'user', '2026-02-11 06:26:03', '2026-02-20 18:18:21', '2026-02-11 06:31:48', 1, NULL),
-(11, 'Christian Aguas', NULL, 0, '', 'acdeocera.bb88@gmail.com', '', '09201172065', '$2y$10$OIYShiZROiBhCVG3/k1nROqr8aQhykXnTTsa9I9QlFNxv2ns4jqKS', 'user', '2026-02-11 09:13:39', '2026-02-12 17:01:12', '2026-02-11 09:20:59', 1, NULL),
-(12, 'Cess Pascual', NULL, 0, '', 'princesstimbang03@gmail.com', '', '09123456789', '$2y$10$5PMDLFah4V/QQH1J1h7Gu.HHHrRMPPFGR2hBhZ0brkXhP9mUePhE2', 'user', '2026-02-17 12:18:23', '2026-02-17 12:18:23', NULL, 1, NULL);
+INSERT INTO `users` (`user_id`, `full_name`, `username`, `is_verified`, `bio`, `email`, `verification_code`, `google_id`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`, `profile_image`) VALUES
+(4, 'margiel escalante', NULL, 0, '', 'info@bb88advertising.com', '', '', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1, NULL),
+(5, 'Karl Vladimir Borjaa', 'Karlaaa', 1, 'SINO TO?!', 'vladimirborja013@gmail.com', '', '', '09650561211', '$2y$10$qpS58OYVf9xG8yJRhiv4JuXKojMJBD0QvVbWiMXJsoMNp4vbticYG', 'admin', '2026-01-29 18:09:12', '2026-02-20 18:22:08', '2026-02-20 18:22:08', 1, '../uploads/profile_pics/user_5_1771609008.jpeg'),
+(6, 'Ariana Punsalang', NULL, 1, '', 'anairadump@gmail.com', '', '', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-20 16:24:20', '2026-02-17 09:58:06', 1, '../uploads/profile_pics/user_6_1771150867.png'),
+(7, 'Kristine Tuazon', NULL, 1, 'bioooo', 'kristinetuazon16@gmail.com', '', '', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-20 18:21:47', '2026-02-20 18:21:47', 1, '../uploads/profile_pics/user_7_1771609052.jpg'),
+(8, 'Mico Cuenco', NULL, 0, '', 'micocuenco@gmail.com', '', '', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1, NULL),
+(9, 'Cayoh Anicete', NULL, 0, '', 'cayohanicete@gmail.com', '', '', '09123456789', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'user', '2026-02-11 03:10:13', '2026-02-20 18:18:23', '2026-02-15 07:31:06', 0, NULL),
+(10, 'margiel escalante', NULL, 0, '', 'margielescalante@gmail.com', '', '', '09123456789', '$2y$10$tJ6ojSH5oqJUchJHtZDGbuMJOKjQADmyrlhiP01MQfVfB4Fbbdcn.', 'user', '2026-02-11 06:26:03', '2026-02-20 18:18:21', '2026-02-11 06:31:48', 1, NULL),
+(11, 'Christian Aguas', NULL, 0, '', 'acdeocera.bb88@gmail.com', '', '', '09201172065', '$2y$10$OIYShiZROiBhCVG3/k1nROqr8aQhykXnTTsa9I9QlFNxv2ns4jqKS', 'user', '2026-02-11 09:13:39', '2026-02-12 17:01:12', '2026-02-11 09:20:59', 1, NULL),
+(12, 'Cess Pascual', NULL, 0, '', 'princesstimbang03@gmail.com', '', '', '09123456789', '$2y$10$5PMDLFah4V/QQH1J1h7Gu.HHHrRMPPFGR2hBhZ0brkXhP9mUePhE2', 'user', '2026-02-17 12:18:23', '2026-02-17 12:18:23', NULL, 1, NULL);
 
 --
 -- Indexes for dumped tables
