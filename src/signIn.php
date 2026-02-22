@@ -27,6 +27,13 @@ if (isset($_SESSION['user_id'])) {
     .form-label { margin-bottom: 2px !important; font-size: 0.9rem; }
     .mb-3 { margin-bottom: 0.75rem !important; }
     .mb-2 { margin-bottom: 0.5rem !important; }
+    .back-link {
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+    .back-link:hover {
+        color: #0d6efd !important; /* Bootstrap primary color */
+        transform: translateX(-3px); /* Subtle nudge to the left */
+    }
   </style>
 </head>
 
@@ -73,11 +80,36 @@ if (isset($_SESSION['user_id'])) {
         <p class="signup-text mb-1" style="color: #1e88ff; font-size: 0.9rem;">
           Don't have an account? <a href="signUp.php" style="text-decoration: none;">Sign up</a>
         </p>
+        <div class="text-center mb-3 font-weight-bold">
+          <span class="text-muted" style="font-size: 0.8rem; font-weight: 500;">OR</span>
+        </div>
 
-        <div class="mt-1">
-          <a href="index.php" class="btn btn-outline-primary btn-sm py-0">
-            ← Back to Home
-          </a>
+        <?php 
+          require_once 'google_api.php'; 
+          $auth_url = $client->createAuthUrl();
+        ?>
+
+        <a href="<?= filter_var($auth_url, FILTER_SANITIZE_URL) ?>" 
+          class="btn btn-light w-100 mb-4 py-2 border shadow-sm d-flex align-items-center justify-content-center"
+          style="font-weight: 500; border-radius: 8px; transition: all 0.3s ease;">
+            
+            <img src="https://developers.google.com/identity/images/g-logo.png" 
+                style="width: 20px; border-radius: 8px;" 
+                class="me-2" 
+                alt="Google Logo">
+            
+            <span style="color: #3c4043;">Sign in with Google</span>
+        </a>
+
+        <div class="mt-4 text-center">
+            <a href="index.php" 
+              class="text-decoration-none text-muted small d-inline-flex align-items-center back-link border shadow-sm px-3 py-1" 
+              style="border-radius: 8px;" >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-left me-2" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                </svg>
+                Back to Home
+            </a>
         </div>
       </form>
     </div>
