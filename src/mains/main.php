@@ -642,7 +642,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
                 confirmButtonText: 'Logout'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = window.location.origin + '/Capstone/src/mains/main.php?action=logout';
+                    window.location.href = 'main.php?action=logout';
                 }
             });
             }

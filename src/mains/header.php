@@ -297,11 +297,11 @@ if ($user_id > 0 && isset($pdo)) {
                 confirmButtonText: 'Logout'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = window.location.origin + '/Capstone/src/mains/main.php?action=logout';
+                    window.location.href + 'main.php?action=logout';
                 }
             });
         } else if(confirm("Are you sure you want to logout?")) {
-            window.location.href = window.location.origin + '/Capstone/src/mains/main.php?action=logout';
+            window.location.href = 'main.php?action=logout';
         }
     }
 </script>
