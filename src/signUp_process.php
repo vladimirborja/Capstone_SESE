@@ -86,9 +86,6 @@ try {
     }
 
     $role = 'user'; 
-    if ($email === 'vladimirborja013@gmail.com') {
-        $role = 'admin'; 
-    }
 
     $token = bin2hex(random_bytes(32));
     $fullName = $firstName . ' ' . $lastName;

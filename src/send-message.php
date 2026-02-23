@@ -4,7 +4,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     die("Invalid request.");
 }
 
-require_once '../config.php';
+require_once './config.php';
 
 // Get & Clean Form Data
 $first_name = trim($_POST['first_name'] ?? '');
