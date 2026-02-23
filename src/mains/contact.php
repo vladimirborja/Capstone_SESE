@@ -126,7 +126,7 @@ if (!isset($_SESSION['user_id'])) {
                                 <i class="fab fa-instagram"></i>
                             </a>
                             
-                            <a href="mailto:hau.sese.dev@gmail.com" class="social-box gm">
+                            <a href="mailto:hau.sese.dev@gmail.com" class="social-box gm" style="background-color: #237227;">
                                 <i class="fas fa-envelope"></i>
                             </a>
                         </div>
