@@ -116,11 +116,19 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
 
                     <div class="social-media-section">
-                        <h4 class="social-text">Follow us on social media for the latest updates!</h4>
+                        <h4 class="social-text">Follow us on social media!</h4>
                         <div class="social-grid">
-                            <a href="https://www.facebook.com/profile.php?id=61588023028977" class="social-box fb"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" class="social-box ig"><i class="fab fa-instagram"></i></a>
-                            <a href="#" class="social-box tk"><i class="fab fa-tiktok"></i></a>
+                            <a href="https://www.facebook.com/profile.php?id=61588023028977" class="social-box fb" target="_blank">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            
+                            <a href="#" class="social-box ig" target="_blank">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            
+                            <a href="mailto:hau.sese.dev@gmail.com" class="social-box gm">
+                                <i class="fas fa-envelope"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
