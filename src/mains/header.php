@@ -139,7 +139,8 @@ if ($user_id > 0 && isset($pdo)) {
             <div class="icon-wrapper position-relative" onclick="toggleDropdown('notifDrop')">
                 <i class="bi bi-bell-fill fs-4" style="cursor: pointer; color: #fff;"></i>
                 <?php if ($unread_count > 0): ?>
-                    <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                    <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger d-flex; align-items-center justify-content-center" 
+                            style="width: 18px; height: 18px; font-size: 0.8rem; padding: 0; line-height: 1; ">
                         <?php echo $unread_count; ?>
                     </span>
                 <?php endif; ?>

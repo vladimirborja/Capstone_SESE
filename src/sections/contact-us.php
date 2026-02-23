@@ -59,6 +59,7 @@
             <div class="col-lg-5">
                 <div class="contact-info-card">
                     <h3 class="contact-info-title">Get in Touch with the SESE Team.</h3>
+                    
                     <div class="info-inner-box">
                         <div class="info-icon"><i class="fas fa-phone-alt"></i></div>
                         <div class="info-content">
@@ -66,6 +67,7 @@
                             <p>+63 912 345 6789</p>
                         </div>
                     </div>
+
                     <div class="info-inner-box">
                         <div class="info-icon"><i class="fas fa-envelope"></i></div>
                         <div class="info-content">
@@ -73,6 +75,7 @@
                             <p>hau.sese.dev@gmail.com</p>
                         </div>
                     </div>
+
                     <div class="info-inner-box">
                         <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
                         <div class="info-content">
@@ -80,12 +83,21 @@
                             <p>#1 Holy Angel St., Angeles City, Pampanga, Philippines 2009</p>
                         </div>
                     </div>
+
                     <div class="social-media-section">
                         <h4 class="social-text">Follow us on social media!</h4>
                         <div class="social-grid">
-                            <a href="https://www.facebook.com/profile.php?id=61588023028977" class="social-box fb"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" class="social-box ig"><i class="fab fa-instagram"></i></a>
-                            <a href="#" class="social-box tk"><i class="fab fa-tiktok"></i></a>
+                            <a href="https://www.facebook.com/profile.php?id=61588023028977" class="social-box fb" target="_blank">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            
+                            <a href="#" class="social-box ig" target="_blank">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            
+                            <a href="mailto:hau.sese.dev@gmail.com" class="social-box gm">
+                                <i class="fas fa-envelope"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -103,8 +115,16 @@
             icon: 'success',
             confirmButtonColor: '#007bff'
         }).then(() => {
-            // Clean URL
             window.history.replaceState({}, document.title, window.location.pathname);
         });
     }
 </script>
+
+<style>
+    .gm {
+        background-color: #237227; 
+    }
+    .social-box i {
+        font-size: 1.2rem;
+    }
+</style>

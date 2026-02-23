@@ -37,7 +37,6 @@
                         <div class="pet-info-item"><label>Last Seen:</label>
                             <p>Angeles City</p>
                         </div>
-                        <button class="btn-read-more fs-5 rounded-3" style="color:#219AFF;">Read more</button>
                     </div>
                 </div>
             </div>
@@ -47,21 +46,19 @@
                 <div class="pet-card-vertical">
                     <div class="pet-image-container">
                         <span class="badge-latest">Latest</span>
-                        <img src="images/lost&found_section/5.png" alt="Lost Pet Coco">
+                        <img src="images/lost&found_section/cat1.png" alt="Lost Pet Lily">
                     </div>
                     <div class="pet-details-container">
                         <h3 class="pet-status fs-5">Status: <span>LOST PET</span></h3>
                         <div class="pet-info-item"><label>Pet Name:</label>
-                            <p>Coco</p>
+                            <p>Lily</p>
                         </div>
                         <div class="pet-info-item"><label>Type/Breed:</label>
-                            <p>Shih Tzu</p>
+                            <p>Ragdoll</p>
                         </div>
                         <div class="pet-info-item"><label>Last Seen:</label>
                             <p>Angeles City</p>
-                        </div>
-                        <button class="btn-read-more fs-5 rounded-3" style="color:#219AFF;">Read more</button>
-                    </div>
+                        </div>                    </div>
                 </div>
             </div>
 
@@ -70,7 +67,7 @@
                 <div class="pet-card-vertical">
                     <div class="pet-image-container">
                         <span class="badge-latest">Latest</span>
-                        <img src="images/lost&found_section/5.png" alt="Lost Pet Max">
+                        <img src="images/lost&found_section/dog1.png" alt="Lost Pet Max">
                     </div>
                     <div class="pet-details-container">
                         <h3 class="pet-status fs-5">Status: <span>LOST PET</span></h3>
@@ -78,13 +75,11 @@
                             <p>Max</p>
                         </div>
                         <div class="pet-info-item"><label>Type/Breed:</label>
-                            <p>Shih Tzu</p>
+                            <p>Corgi</p>
                         </div>
                         <div class="pet-info-item"><label>Last Seen:</label>
                             <p>Angeles City</p>
-                        </div>
-                        <button class="btn-read-more fs-5 rounded-3" style="color:#219AFF;">Read more</button>
-                    </div>
+                        </div>                    </div>
                 </div>
             </div>
 
@@ -93,7 +88,7 @@
                 <div class="pet-card-vertical">
                     <div class="pet-image-container">
                         <span class="badge-latest">Latest</span>
-                        <img src="images/lost&found_section/5.png" alt="Lost Pet Bella">
+                        <img src="images/lost&found_section/cat2.png" alt="Lost Pet Bella">
                     </div>
                     <div class="pet-details-container">
                         <h3 class="pet-status fs-5">Status: <span>LOST PET</span></h3>
@@ -101,13 +96,11 @@
                             <p>Bella</p>
                         </div>
                         <div class="pet-info-item"><label>Type/Breed:</label>
-                            <p>Shih Tzu</p>
+                            <p>Ragdoll</p>
                         </div>
                         <div class="pet-info-item"><label>Last Seen:</label>
                             <p>Angeles City</p>
-                        </div>
-                        <button class="btn-read-more fs-5 rounded-3" style="color:#219AFF;">Read more</button>
-                    </div>
+                        </div>                    </div>
                 </div>
             </div>
 

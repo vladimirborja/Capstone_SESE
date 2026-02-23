@@ -178,13 +178,13 @@ if (isset($_SESSION['user_id'])) {
         if (result.success) {
           Swal.fire({
             icon: 'success',
-            title: 'Welcome Back!',
+            title: 'Welcome!',
             text: result.message || 'Login successful.',
             timer: 1500,
             showConfirmButton: false
           }).then(() => {
             // Check the role returned from your process script
-            window.location.href = result.user.role === 'admin' ? 'manage_users.php' : 'mains/main.php';
+            window.location.href = result.user.role === 'admin' ? 'admin_reports.php' : 'mains/main.php';
           });
         } else {
           Swal.fire({ 

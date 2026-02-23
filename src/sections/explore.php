@@ -35,10 +35,10 @@
             class="map-iframe">
           </iframe>
 
-          <div class="map-buttons">
-            <button class="btn btn-primary fs-5">Pet-Friendly Places</button>
-            <button class="btn btn-primary fs-5">Pet Care Services</button>
-          </div>
+         <div class="map-buttons">
+          <a href="./signUp.php" class="btn btn-primary fs-5">Pet-Friendly Places</a>
+          <a href="./signUp.php" class="btn btn-primary fs-5">Pet Care Services</a>
+        </div>
         </div>
       </div>
     </div>

@@ -34,7 +34,7 @@
             </div>
 
             <div class="col-lg-3 text-lg-end">
-                <a href="#" class="btn btn-join-pill">Join the Club</a>
+                <a href="./signUp.php" class="btn btn-join-pill">Join the Club</a>
             </div>
         </div>
     </div>

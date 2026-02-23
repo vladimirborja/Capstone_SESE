@@ -18,11 +18,10 @@
                     Discover pet-inclusive cafés, restaurants, services, and more,<br>
                     all in one trusted platform built for pet owners and pet-loving businesses.
                 </p>
-                <div class="hero-buttons">
-                    <button class="btn btn-light btn-lg fs-5">Join the Club</button>
-                    <button class="btn btn-light btn-lg fs-5">Explore</button>
+               <div class="hero-buttons">
+                  <a href="./signUp.php" class="btn btn-light btn-lg fs-5">Join the Club</a>
+                  <a href="./signUp.php" class="btn btn-light btn-lg fs-5">Explore</a>
                 </div>
-            </div>
         </div>
     </div>
 </section>
