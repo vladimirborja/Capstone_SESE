@@ -126,10 +126,13 @@ session_start();
             </div>
           </div>
 
-          <div class="mb-3 form-check text-start">
-            <input type="checkbox" class="form-check-input" id="terms" required>
-            <label class="form-check-label terms-text" for="terms">
-              I agree to the <span class="terms-link" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</span>
+          <div class="mb-2 form-check text-start">
+            <input type="checkbox" class="form-check-input" id="agreements" required>
+            <label class="form-check-label terms-text" for="agreements">
+              I have read and agree to the
+              <span class="terms-link" data-bs-toggle="modal" data-bs-target="#termsModal">Terms &amp; Conditions</span>
+              and
+              <span class="terms-link" data-bs-toggle="modal" data-bs-target="#communityGuidelinesModal">Community Guidelines</span>.
             </label>
           </div>
 
@@ -148,6 +151,32 @@ session_start();
           <a href="index.php" class="btn btn-outline-primary btn-sm">
             ← Back to Home
           </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="communityGuidelinesModal" tabindex="-1" aria-labelledby="communityGuidelinesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="communityGuidelinesModalLabel" style="color: #1e88ff">Community Guidelines</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="font-size: 0.9rem; line-height: 1.6;">
+          <h6>Respectful Behavior</h6>
+          <p>Treat every member with kindness. Harassment, hate speech, and personal attacks are not allowed.</p>
+          <h6>No Spam or Fake Listings</h6>
+          <p>Do not post misleading information, duplicate listings, or promotional spam. Misrepresentation may result in account suspension.</p>
+          <h6>Lost &amp; Found Honesty Policy</h6>
+          <p>Only post real lost, found, or adoption cases. False claims and impersonation are strictly prohibited.</p>
+          <h6>Photo Requirements</h6>
+          <p>Upload clear and real photos only. Edited, stolen, or irrelevant images are subject to rejection.</p>
+          <h6>Consequences for Violations</h6>
+          <p>Violations may lead to content removal, warnings, temporary restrictions, or permanent account deactivation.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background-color: #1e88ff; border: none;">I Understand</button>
         </div>
       </div>
     </div>
@@ -308,11 +337,11 @@ session_start();
     document.getElementById('signupForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      if (!document.getElementById('terms').checked) {
+      if (!document.getElementById('agreements').checked) {
         Swal.fire({
           icon: 'warning',
           title: 'Requirement',
-          text: 'You must agree to the Terms and Conditions.',
+          text: 'You must agree to the Terms & Conditions and Community Guidelines.',
           confirmButtonColor: '#1e88ff'
         });
         return;
@@ -330,7 +359,8 @@ session_start();
         password:       document.getElementById('password').value,
         repeatPassword: document.getElementById('repeatPassword').value,
         role:           document.getElementById('role').value,
-        terms:          document.getElementById('terms').checked
+        terms:          document.getElementById('agreements').checked,
+        guidelines:     document.getElementById('agreements').checked
       };
 
       try {
@@ -374,6 +404,7 @@ session_start();
         signupBtn.textContent = 'Sign Up';
       }
     });
+
   </script>
 </body>
 </html>

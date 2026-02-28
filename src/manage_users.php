@@ -19,20 +19,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_role'])) {
         $userId = $_POST['user_id'];
         $newRole = $_POST['role'];
+        $reason = trim($_POST['reason'] ?? 'Role update by admin');
 
-        if (in_array($newRole, ['user', 'admin'])) {
+        if (in_array($newRole, ['user', 'admin', 'super_admin', 'business_owner', 'veterinarian', 'salon_owner'])) {
+            $oldStmt = $pdo->prepare("SELECT full_name, role FROM users WHERE user_id = ?");
+            $oldStmt->execute([$userId]);
+            $target = $oldStmt->fetch(PDO::FETCH_ASSOC);
+
             $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE user_id = ?");
             $stmt->execute([$newRole, $userId]);
             $successMessage = "User role updated successfully!";
+
+            try {
+                $log = $pdo->prepare("INSERT INTO admin_logs (admin_id, admin_name, affected_user_id, affected_user_name, action_type, old_status, new_status, reason) VALUES (?, ?, ?, ?, 'user_role_update', ?, ?, ?)");
+                $log->execute([$user['id'], $user['name'], $userId, $target['full_name'] ?? null, $target['role'] ?? null, $newRole, $reason]);
+            } catch (Exception $ignore) {
+            }
         }
     }
 
     if (isset($_POST['toggle_status'])) {
         $userId = $_POST['user_id'];
         $newStatus = $_POST['is_active'];
+        $reason = trim($_POST['reason'] ?? '');
+        if ($reason === '') {
+            $reason = 'Status update by admin';
+        }
+
+        $oldStmt = $pdo->prepare("SELECT full_name, is_active FROM users WHERE user_id = ?");
+        $oldStmt->execute([$userId]);
+        $target = $oldStmt->fetch(PDO::FETCH_ASSOC);
+
         $stmt = $pdo->prepare("UPDATE users SET is_active = ? WHERE user_id = ?");
         $stmt->execute([$newStatus, $userId]);
         $successMessage = "User status updated successfully!";
+
+        try {
+            $log = $pdo->prepare("INSERT INTO admin_logs (admin_id, admin_name, affected_user_id, affected_user_name, action_type, old_status, new_status, reason) VALUES (?, ?, ?, ?, 'user_status_update', ?, ?, ?)");
+            $log->execute([
+                $user['id'],
+                $user['name'],
+                $userId,
+                $target['full_name'] ?? null,
+                isset($target['is_active']) && (int)$target['is_active'] === 1 ? 'active' : 'inactive',
+                (int)$newStatus === 1 ? 'active' : 'inactive',
+                $reason
+            ]);
+        } catch (Exception $ignore) {
+        }
     }
 }
 
@@ -152,8 +186,7 @@ $users = $stmt->fetchAll();
                     <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
-                                <th class="ps-4">ID</th>
-                                <th>Full Name</th>
+                                <th class="ps-4">Full Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
                                 <th>Role</th>
@@ -165,19 +198,23 @@ $users = $stmt->fetchAll();
                         </thead>
                         <tbody>
                             <?php foreach ($users as $u): ?>
-                                <tr>
-                                    <td class="ps-4"><?= $u['user_id']; ?></td>
-                                    <td class="fw-bold"><?= htmlspecialchars($u['full_name']); ?></td>
+                                <tr data-user-id="<?= (int)$u['user_id']; ?>">
+                                    <td class="ps-4 fw-bold"><?= htmlspecialchars($u['full_name']); ?></td>
                                     <td><?= htmlspecialchars($u['email']); ?></td>
                                     <td><?= htmlspecialchars($u['phone_number']); ?></td>
                                     <td>
                                         <form method="POST" class="d-inline">
                                             <input type="hidden" name="user_id" value="<?= $u['user_id']; ?>">
                                             <input type="hidden" name="update_role" value="1">
+                                            <input type="hidden" name="reason" value="">
                                             <select name="role" class="form-select form-select-sm w-auto d-inline"
                                                 onchange="confirmRoleChange(this, '<?= htmlspecialchars($u['full_name']); ?>')">
                                                 <option value="user" <?= $u['role'] === 'user' ? 'selected' : ''; ?>>User</option>
                                                 <option value="admin" <?= $u['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                                                <option value="super_admin" <?= $u['role'] === 'super_admin' ? 'selected' : ''; ?>>Super Admin</option>
+                                                <option value="business_owner" <?= $u['role'] === 'business_owner' ? 'selected' : ''; ?>>Business Owner</option>
+                                                <option value="veterinarian" <?= $u['role'] === 'veterinarian' ? 'selected' : ''; ?>>Veterinarian</option>
+                                                <option value="salon_owner" <?= $u['role'] === 'salon_owner' ? 'selected' : ''; ?>>Salon Owner</option>
                                             </select>
                                         </form>
                                     </td>
@@ -187,6 +224,7 @@ $users = $stmt->fetchAll();
                                                 <input type="hidden" name="user_id" value="<?= $u['user_id']; ?>">
                                                 <input type="hidden" name="is_active" value="<?= $u['is_active'] ? 0 : 1; ?>">
                                                 <input type="hidden" name="toggle_status" value="1">
+                                                <input type="hidden" name="reason" value="">
                                                 
                                                 <span class="<?= $u['is_active'] ? 'badge-active' : 'badge-inactive'; ?>">
                                                     <?= $u['is_active'] ? 'Active' : 'Inactive'; ?>
@@ -204,7 +242,7 @@ $users = $stmt->fetchAll();
                                     <td><small><?= $u['last_login'] ? date('M d, Y H:i', strtotime($u['last_login'])) : 'Never'; ?></small></td>
                                     <td class="text-center">
                                         <button class="btn btn-sm text-white" style="background-color: #3182ce;" 
-                                            onclick="viewUser('<?= $u['user_id']; ?>', '<?= htmlspecialchars($u['full_name']); ?>', '<?= htmlspecialchars($u['email']); ?>')">
+                                            onclick="viewUser('<?= htmlspecialchars($u['full_name']); ?>', '<?= htmlspecialchars($u['email']); ?>')">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                     </td>
@@ -248,11 +286,23 @@ $users = $stmt->fetchAll();
                 title: 'Change User Role?',
                 text: `Are you sure you want to change ${userName} to ${newRole.toUpperCase()}?`,
                 icon: 'warning',
+                input: 'textarea',
+                inputLabel: 'Reason (required)',
+                inputPlaceholder: 'Type the reason for this role update...',
                 showCancelButton: true,
                 confirmButtonColor: '#1e88e5',
-                confirmButtonText: 'Yes, change it!'
+                confirmButtonText: 'Yes, change it!',
+                preConfirm: (reason) => {
+                    if (!reason || !reason.trim()) {
+                        Swal.showValidationMessage('Reason is required.');
+                    }
+                    return reason;
+                }
             }).then((result) => {
-                if (result.isConfirmed) selectElement.form.submit();
+                if (result.isConfirmed) {
+                    selectElement.form.querySelector('input[name="reason"]').value = result.value.trim();
+                    selectElement.form.submit();
+                }
                 else location.reload(); 
             });
         }
@@ -262,19 +312,31 @@ $users = $stmt->fetchAll();
                 title: 'Update Status?',
                 text: `Do you want to toggle the active status for ${userName}?`,
                 icon: 'question',
+                input: 'textarea',
+                inputLabel: 'Reason (required)',
+                inputPlaceholder: 'Type the reason for this status change...',
                 showCancelButton: true,
                 confirmButtonColor: '#1e88e5',
-                confirmButtonText: 'Yes, update'
+                confirmButtonText: 'Yes, update',
+                preConfirm: (reason) => {
+                    if (!reason || !reason.trim()) {
+                        Swal.showValidationMessage('Reason is required.');
+                    }
+                    return reason;
+                }
             }).then((result) => {
-                if (result.isConfirmed) buttonElement.closest('form').submit();
+                if (result.isConfirmed) {
+                    const form = buttonElement.closest('form');
+                    form.querySelector('input[name="reason"]').value = result.value.trim();
+                    form.submit();
+                }
             });
         }
 
-        function viewUser(id, name, email) {
+        function viewUser(name, email) {
             Swal.fire({
                 title: 'User Information',
                 html: `<div class="text-start mt-3">
-                        <p><strong>User ID:</strong> ${id}</p>
                         <p><strong>Full Name:</strong> ${name}</p>
                         <p><strong>Email Address:</strong> ${email}</p>
                     </div>`,

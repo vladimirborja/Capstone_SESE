@@ -40,6 +40,7 @@ try {
     $repeatPassword = $input['repeatPassword'] ?? '';
     
     $termsAccepted = $input['terms'] ?? false;
+    $guidelinesAccepted = $input['guidelines'] ?? false;
 
     if (empty($firstName) || empty($lastName) || empty($email) || empty($phoneNumber) || empty($password)) {
         echo json_encode([
@@ -53,6 +54,14 @@ try {
         echo json_encode([
             'success' => false,
             'message' => 'You must agree to the Terms and Conditions to create an account.'
+        ]);
+        exit;
+    }
+
+    if (!$guidelinesAccepted) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'You must agree to the Community Guidelines to create an account.'
         ]);
         exit;
     }

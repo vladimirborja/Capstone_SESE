@@ -1,6 +1,27 @@
 <?php
 session_start();
 
+require_once 'config.php';
+
+$featured_establishments = [];
+$latest_lost_found = [];
+
+if (isset($conn)) {
+    $estRes = $conn->query("SELECT name, type, barangay, address FROM establishments WHERE status IN ('approved','active') ORDER BY id DESC LIMIT 6");
+    if ($estRes) {
+        while ($row = $estRes->fetch_assoc()) {
+            $featured_establishments[] = $row;
+        }
+    }
+
+    $petRes = $conn->query("SELECT pet_name, category, breed, last_seen_location, image_url FROM pets ORDER BY created_at DESC LIMIT 8");
+    if ($petRes) {
+        while ($row = $petRes->fetch_assoc()) {
+            $latest_lost_found[] = $row;
+        }
+    }
+}
+
 $login_message = '';
 if (isset($_SESSION['login_success']) && $_SESSION['login_success'] === true) {
     $login_message = 'yes';
@@ -120,6 +141,29 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success'] === true) {
             });
         });
     </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var toggler = document.querySelector('.navbar-toggler');
+        var collapse = document.getElementById('navbarNav');
 
+        toggler.removeAttribute('data-bs-toggle');
+        toggler.removeAttribute('data-bs-target');
+
+        toggler.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (collapse.style.display === 'none' || collapse.style.display === '') {
+            collapse.style.display = 'block';
+        } else {
+            collapse.style.display = 'none';
+        }
+        });
+
+        collapse.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            collapse.style.display = 'none';
+        });
+        });
+    });
+    </script>
 </body>
 </html>

@@ -12,6 +12,146 @@ $adminProfileImage = (!empty($adminData['profile_image']))
     ? str_replace('../', '', $adminData['profile_image'])
     : 'images/homeImages/profile icon.png';
 
+$isAdminUser = isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'super_admin'], true);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_pet_action'])) {
+    header('Content-Type: application/json');
+    try {
+        if (!$isAdminUser) {
+            throw new Exception('Unauthorized action.');
+        }
+
+        $incomingPostId = $_POST['post_id'] ?? null;
+        $incomingPetId = $_POST['pet_id'] ?? null;
+        $petId = (int)($incomingPetId !== null ? $incomingPetId : $incomingPostId);
+        $decision = trim((string)($_POST['decision'] ?? ''));
+        $reason = trim((string)($_POST['reason'] ?? ''));
+        if ($petId <= 0 || !in_array($decision, ['approve', 'reject'], true)) {
+            throw new Exception('Invalid verification request: missing or invalid post ID.');
+        }
+        if ($decision === 'reject' && $reason === '') {
+            throw new Exception('Rejection reason is required.');
+        }
+
+        $petStmt = $pdo->prepare("SELECT p.pet_id, p.pet_name, p.user_id, p.category, p.requested_category,
+                                         COALESCE(u.full_name, 'User') AS owner_name
+                                  FROM pets p
+                                  LEFT JOIN users u ON u.user_id = p.user_id
+                                  WHERE p.pet_id = ?");
+        $petStmt->execute([$petId]);
+        $pet = $petStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$pet) {
+            throw new Exception('Pet post not found.');
+        }
+        if (strtolower((string)$pet['category']) !== 'waiting_approval') {
+            throw new Exception('This post is no longer pending approval.');
+        }
+
+        $requested = strtolower(trim((string)($pet['requested_category'] ?? '')));
+        $liveCategory = in_array($requested, ['lost', 'found', 'for_adoption'], true) ? $requested : 'lost';
+
+        $pdo->beginTransaction();
+        if ($decision === 'approve') {
+            $update = $pdo->prepare("UPDATE pets
+                                     SET category = ?, verification_status = 'approved', verification_reason = NULL
+                                     WHERE pet_id = ?");
+            $update->execute([$liveCategory, $petId]);
+
+            $message = 'Your lost & found post "' . ($pet['pet_name'] ?? 'Pet') . '" has been approved and is now live.';
+            $notify = $pdo->prepare("INSERT INTO adoption_notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
+            $notify->execute([$pet['user_id'], $message]);
+
+            $log = $pdo->prepare("INSERT INTO admin_logs (admin_id, admin_name, action_type, old_status, new_status, reason, affected_user_id, affected_user_name, created_at)
+                                  VALUES (?, ?, 'pet_post_approval', 'waiting_approval', ?, ?, ?, ?, NOW())");
+            $log->execute([
+                $_SESSION['user_id'],
+                $adminName,
+                $liveCategory,
+                'Approved pet post: ' . ($pet['pet_name'] ?? 'N/A') . ' (' . strtoupper($liveCategory) . ')',
+                $pet['user_id'],
+                $pet['owner_name']
+            ]);
+            $rec = $pdo->prepare("INSERT INTO lost_found_review_records
+                                    (pet_id, pet_name, post_type, submitted_by_user_id, submitted_by_name, status, admin_id, admin_name, rejection_reason, submitted_at, actioned_at)
+                                  VALUES
+                                    (?, ?, ?, ?, ?, 'approved', ?, ?, NULL, (SELECT created_at FROM pets WHERE pet_id = ?), NOW())
+                                  ON DUPLICATE KEY UPDATE
+                                    pet_name = VALUES(pet_name),
+                                    post_type = VALUES(post_type),
+                                    submitted_by_user_id = VALUES(submitted_by_user_id),
+                                    submitted_by_name = VALUES(submitted_by_name),
+                                    status = 'approved',
+                                    admin_id = VALUES(admin_id),
+                                    admin_name = VALUES(admin_name),
+                                    rejection_reason = NULL,
+                                    actioned_at = NOW()");
+            $rec->execute([
+                $petId,
+                $pet['pet_name'] ?? 'N/A',
+                $liveCategory,
+                $pet['user_id'],
+                $pet['owner_name'],
+                $_SESSION['user_id'],
+                $adminName,
+                $petId
+            ]);
+        } else {
+            $update = $pdo->prepare("UPDATE pets
+                                     SET category = 'rejected', verification_status = 'rejected', verification_reason = ?
+                                     WHERE pet_id = ?");
+            $update->execute([$reason, $petId]);
+
+            $message = 'Your lost & found post "' . ($pet['pet_name'] ?? 'Pet') . '" was rejected. Reason: ' . $reason;
+            $notify = $pdo->prepare("INSERT INTO adoption_notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
+            $notify->execute([$pet['user_id'], $message]);
+
+            $log = $pdo->prepare("INSERT INTO admin_logs (admin_id, admin_name, action_type, old_status, new_status, reason, affected_user_id, affected_user_name, created_at)
+                                  VALUES (?, ?, 'pet_post_rejection', 'waiting_approval', 'rejected', ?, ?, ?, NOW())");
+            $log->execute([
+                $_SESSION['user_id'],
+                $adminName,
+                'Rejected pet post: ' . ($pet['pet_name'] ?? 'N/A') . '. Reason: ' . $reason,
+                $pet['user_id'],
+                $pet['owner_name']
+            ]);
+            $rec = $pdo->prepare("INSERT INTO lost_found_review_records
+                                    (pet_id, pet_name, post_type, submitted_by_user_id, submitted_by_name, status, admin_id, admin_name, rejection_reason, submitted_at, actioned_at)
+                                  VALUES
+                                    (?, ?, ?, ?, ?, 'rejected', ?, ?, ?, (SELECT created_at FROM pets WHERE pet_id = ?), NOW())
+                                  ON DUPLICATE KEY UPDATE
+                                    pet_name = VALUES(pet_name),
+                                    post_type = VALUES(post_type),
+                                    submitted_by_user_id = VALUES(submitted_by_user_id),
+                                    submitted_by_name = VALUES(submitted_by_name),
+                                    status = 'rejected',
+                                    admin_id = VALUES(admin_id),
+                                    admin_name = VALUES(admin_name),
+                                    rejection_reason = VALUES(rejection_reason),
+                                    actioned_at = NOW()");
+            $rec->execute([
+                $petId,
+                $pet['pet_name'] ?? 'N/A',
+                $liveCategory,
+                $pet['user_id'],
+                $pet['owner_name'],
+                $_SESSION['user_id'],
+                $adminName,
+                $reason,
+                $petId
+            ]);
+        }
+
+        $pdo->commit();
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
 // 1. Statistics
 $active_users       = $pdo->query("SELECT COUNT(*) FROM users WHERE is_active = 1")->fetchColumn();
 $inactive_users     = $pdo->query("SELECT COUNT(*) FROM users WHERE is_active = 0")->fetchColumn();
@@ -43,8 +183,88 @@ $recent_messages = $pdo->query(
 
 // 5. Map / Establishments
 $establishments = $pdo->query(
-    "SELECT name, description, address, latitude, longitude, type FROM establishments WHERE status = 'active'"
+    "SELECT name, description, address, latitude, longitude, type, barangay FROM establishments WHERE status IN ('approved','active')"
 )->fetchAll(PDO::FETCH_ASSOC);
+
+$establishment_records = [];
+try {
+    $establishment_records = $pdo->query(
+        "SELECT er.establishment_name AS name,
+                er.category AS type,
+                er.barangay,
+                er.submitted_by_name AS submitted_by,
+                er.status,
+                er.admin_name AS actioned_by,
+                er.submitted_at,
+                er.actioned_at
+         FROM establishment_records er
+         WHERE er.status IN ('approved','rejected')
+         ORDER BY er.actioned_at DESC"
+    )->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($establishment_records)) {
+        $establishment_records = $pdo->query(
+            "SELECT e.id,
+                    e.name,
+                    e.type,
+                    e.barangay,
+                    COALESCE(u.full_name, 'N/A') AS submitted_by,
+                    CASE WHEN e.status = 'active' THEN 'approved' ELSE e.status END AS status,
+                    'N/A' AS actioned_by,
+                    e.created_at AS submitted_at,
+                    e.created_at AS actioned_at
+             FROM establishments e
+             LEFT JOIN users u ON u.user_id = e.requester_id
+             WHERE e.status IN ('approved','rejected','active')
+             ORDER BY e.created_at DESC"
+        )->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (Exception $e) {
+    $establishment_records = [];
+}
+
+$adoption_activity = [];
+try {
+    $adoption_activity = $pdo->query(
+        "SELECT p.pet_name, COALESCE(pr.adopter_name, a.full_name, 'N/A') AS adopter_name, o.full_name AS owner_name, pr.status, pr.created_at
+         FROM pet_responses pr
+         JOIN pets p ON p.pet_id = pr.pet_id
+         LEFT JOIN users o ON o.user_id = pr.owner_user_id
+         LEFT JOIN users a ON a.user_id = pr.responder_user_id
+         ORDER BY pr.created_at DESC
+         LIMIT 100"
+    )->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $adoption_activity = [];
+}
+
+$pending_pet_reviews = [];
+$reviewed_pet_posts = [];
+try {
+    $pending_pet_reviews = $pdo->query(
+        "SELECT p.pet_id, p.pet_name, p.category, p.requested_category, p.pet_type, p.breed, p.size, p.last_seen_barangay,
+                p.description, p.contact_number, p.reward_offered, p.reward_details, p.image_url, p.owner_with_pet_image_url,
+                p.verification_status, p.verification_reason, p.created_at,
+                COALESCE(u.full_name, 'N/A') AS owner_name, COALESCE(u.username, 'N/A') AS owner_username, COALESCE(u.email, 'N/A') AS owner_email
+         FROM pets p
+         LEFT JOIN users u ON u.user_id = p.user_id
+         WHERE LOWER(p.category) = 'waiting_approval'
+         ORDER BY p.created_at DESC"
+    )->fetchAll(PDO::FETCH_ASSOC);
+
+    $reviewed_pet_posts = $pdo->query(
+        "SELECT r.pet_id, r.pet_name, r.post_type, r.submitted_by_name AS owner_name,
+                r.status AS review_status, r.admin_name, r.rejection_reason, r.submitted_at, r.actioned_at,
+                p.image_url, p.owner_with_pet_image_url
+         FROM lost_found_review_records r
+         LEFT JOIN pets p ON p.pet_id = r.pet_id
+         WHERE r.status IN ('approved','rejected')
+         ORDER BY r.actioned_at DESC"
+    )->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $pending_pet_reviews = [];
+    $reviewed_pet_posts = [];
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -140,6 +360,11 @@ $establishments = $pdo->query(
         .messages-container { background-color: #d1d9e6; border: 6px solid white; border-radius: 30px; padding: 25px; margin: 20px; }
         .message-row { display: grid; grid-template-columns: 1.2fr 1.5fr 2.5fr 50px; gap: 15px; align-items: center; margin-bottom: 12px; }
         .msg-box { background: #f8fafc; border-radius: 10px; padding: 10px 15px; font-size: 0.9rem; color: #4a5568; height: 45px; display: flex; align-items: center; overflow: hidden; border: 1px solid #e2e8f0; }
+        .pet-photo-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 280px; }
+        .pet-photo-box { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; background: #fff; }
+        .pet-photo-box .photo-title { font-size: 0.75rem; font-weight: 700; color: #4a5568; margin-bottom: 6px; }
+        .pet-photo-box img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .pet-photo-placeholder { display: flex; align-items: center; justify-content: center; height: 150px; border-radius: 8px; border: 1px dashed #cbd5e1; color: #64748b; font-size: 0.78rem; text-align: center; padding: 8px; background: #f8fafc; }
 
         /* ── Stat Modal ── */
         #statModal .modal-content  { border-radius: 20px; border: none; overflow: hidden; }
@@ -240,6 +465,9 @@ $establishments = $pdo->query(
     <div class="nav-right-group">
         <a href="manage_users.php" class="btn btn-light btn-sm fw-bold me-2">
             <i class="fas fa-users-cog me-1"></i> User Management
+        </a>
+        <a href="admin_logs.php" class="btn btn-light btn-sm fw-bold me-2">
+            <i class="fas fa-clipboard-list me-1"></i> Admin Logs
         </a>
         <div class="dropdown profile-dropdown">
             <button class="btn btn-profile dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -388,6 +616,150 @@ $establishments = $pdo->query(
         </div>
         <?php endforeach; ?>
     </div>
+
+    <?php if ($isAdminUser): ?>
+    <div class="messages-container shadow-sm">
+        <h5 class="fw-bold mb-3"><i class="fas fa-user-check me-2"></i> PENDING LOST &amp; FOUND POSTS</h5>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Pet</th>
+                        <th>Post Type</th>
+                        <th>Submitted By</th>
+                        <th>Details</th>
+                        <th>Photos</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($pending_pet_reviews)): ?>
+                        <?php foreach ($pending_pet_reviews as $pet): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($pet['pet_name'] ?? 'N/A') ?></td>
+                                <td>
+                                    <span class="badge bg-info text-uppercase">
+                                        <?= htmlspecialchars(str_replace('_', ' ', (string)($pet['requested_category'] ?? 'lost'))) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold"><?= htmlspecialchars($pet['owner_name'] ?? 'N/A') ?></div>
+                                    <div class="small text-muted">@<?= htmlspecialchars($pet['owner_username'] ?? 'N/A') ?></div>
+                                    <div class="small text-muted"><?= htmlspecialchars($pet['owner_email'] ?? 'N/A') ?></div>
+                                </td>
+                                <td class="small">
+                                    <div><strong>Type:</strong> <?= htmlspecialchars($pet['pet_type'] ?? 'N/A') ?></div>
+                                    <div><strong>Breed:</strong> <?= htmlspecialchars($pet['breed'] ?? 'N/A') ?></div>
+                                    <div><strong>Size:</strong> <?= htmlspecialchars($pet['size'] ?? 'N/A') ?></div>
+                                    <div><strong>Last Seen Barangay:</strong> <?= htmlspecialchars($pet['last_seen_barangay'] ?? 'N/A') ?></div>
+                                    <div><strong>Contact:</strong> <?= htmlspecialchars($pet['contact_number'] ?? 'N/A') ?></div>
+                                    <div><strong>Description:</strong> <?= htmlspecialchars($pet['description'] ?? 'N/A') ?></div>
+                                    <?php if (!empty($pet['reward_offered']) || !empty($pet['reward_details'])): ?>
+                                        <div><strong>Reward:</strong> <?= htmlspecialchars($pet['reward_details'] ?? 'With Reward') ?></div>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <div class="pet-photo-pair">
+                                        <div class="pet-photo-box">
+                                            <div class="photo-title">Pet Photo</div>
+                                            <?php if (!empty($pet['image_url'])): ?>
+                                                <img src="<?= htmlspecialchars($pet['image_url']) ?>" alt="Pet Photo">
+                                            <?php else: ?>
+                                                <div class="pet-photo-placeholder">No pet photo uploaded.</div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="pet-photo-box">
+                                            <div class="photo-title">Verification Photo (Admin Only)</div>
+                                            <?php if (!empty($pet['owner_with_pet_image_url'])): ?>
+                                                <img src="<?= htmlspecialchars($pet['owner_with_pet_image_url']) ?>" alt="Verification Photo">
+                                            <?php else: ?>
+                                                <div class="pet-photo-placeholder">No verification photo uploaded.</div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><?= !empty($pet['created_at']) ? htmlspecialchars(date('M d, Y h:i A', strtotime($pet['created_at']))) : 'N/A' ?></td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-success btn-sm" onclick="verifyPetPost(<?= (int)$pet['pet_id'] ?>, 'approve')">Approve</button>
+                                        <button class="btn btn-danger btn-sm" onclick="verifyPetPost(<?= (int)$pet['pet_id'] ?>, 'reject')">Reject</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr><td colspan="7" class="text-center">No pending pet posts for approval.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="messages-container shadow-sm">
+        <h5 class="fw-bold mb-3"><i class="fas fa-history me-2"></i> LOST &amp; FOUND REVIEW RECORDS</h5>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Pet Name</th>
+                        <th>Post Type</th>
+                        <th>Submitted By</th>
+                        <th>Status</th>
+                        <th>Admin Who Actioned</th>
+                        <th>Date Submitted</th>
+                        <th>Date Actioned</th>
+                        <th>Rejection Reason</th>
+                        <th>Photos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($reviewed_pet_posts)): ?>
+                        <?php foreach ($reviewed_pet_posts as $pet): ?>
+                            <?php $isApproved = strtolower((string)$pet['review_status']) === 'approved'; ?>
+                            <tr>
+                                <td><?= htmlspecialchars($pet['pet_name'] ?? 'N/A') ?></td>
+                                <td>
+                                    <span class="badge bg-info text-uppercase">
+                                        <?= htmlspecialchars(str_replace('_', ' ', (string)($pet['post_type'] ?? 'N/A'))) ?>
+                                    </span>
+                                </td>
+                                <td><?= htmlspecialchars($pet['owner_name'] ?? 'N/A') ?></td>
+                                <td><span class="badge <?= $isApproved ? 'bg-success' : 'bg-danger' ?> text-uppercase"><?= htmlspecialchars($pet['review_status'] ?? 'N/A') ?></span></td>
+                                <td><?= htmlspecialchars($pet['admin_name'] ?? 'N/A') ?></td>
+                                <td><?= !empty($pet['submitted_at']) ? htmlspecialchars(date('M d, Y h:i A', strtotime($pet['submitted_at']))) : 'N/A' ?></td>
+                                <td><?= !empty($pet['actioned_at']) ? htmlspecialchars(date('M d, Y h:i A', strtotime($pet['actioned_at']))) : 'N/A' ?></td>
+                                <td><?= htmlspecialchars($pet['rejection_reason'] ?? 'N/A') ?></td>
+                                <td>
+                                    <div class="pet-photo-pair">
+                                        <div class="pet-photo-box">
+                                            <div class="photo-title">Pet Photo</div>
+                                            <?php if (!empty($pet['image_url'])): ?>
+                                                <img src="<?= htmlspecialchars($pet['image_url']) ?>" alt="Pet Photo">
+                                            <?php else: ?>
+                                                <div class="pet-photo-placeholder">No pet photo uploaded.</div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="pet-photo-box">
+                                            <div class="photo-title">Verification Photo (Admin Only)</div>
+                                            <?php if (!empty($pet['owner_with_pet_image_url'])): ?>
+                                                <img src="<?= htmlspecialchars($pet['owner_with_pet_image_url']) ?>" alt="Verification Photo">
+                                            <?php else: ?>
+                                                <div class="pet-photo-placeholder">No verification photo uploaded.</div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr><td colspan="9" class="text-center">No reviewed pet posts yet.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
 
 <?php require_once './features/pet_establishments.php'; ?>
@@ -546,6 +918,10 @@ $establishments = $pdo->query(
 ═══════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="script/barangay-coords.js"></script>
+<script src="script/map-utils.js"></script>
+<script src="script/barangay-dropdown.js"></script>
 <script>
     const establishmentData = <?php echo json_encode($establishments); ?>;
     const API_BASE_URL      = "./features/handle_establishments.php";
@@ -603,6 +979,49 @@ function deleteMessage(id) {
                 .catch(() => Swal.fire('Error', 'Connection failed', 'error'));
         }
     });
+}
+
+function verifyPetPost(petId, decision) {
+    const submit = (reason = '') => {
+        const fd = new FormData();
+        fd.append('verify_pet_action', '1');
+        fd.append('pet_id', String(petId));
+        fd.append('post_id', String(petId));
+        fd.append('decision', decision);
+        if (reason) fd.append('reason', reason);
+
+        fetch('admin_reports.php', { method: 'POST', body: fd })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Updated', 'Pet verification status updated.', 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message || 'Unable to update verification.', 'error');
+                }
+            })
+            .catch(() => Swal.fire('Error', 'Connection failed.', 'error'));
+    };
+
+    if (decision === 'reject') {
+        Swal.fire({
+            title: 'Reject Pet Verification',
+            input: 'textarea',
+            inputLabel: 'Reason (required)',
+            inputPlaceholder: 'State the reason for rejection...',
+            showCancelButton: true,
+            preConfirm: (value) => {
+                if (!value || !value.trim()) {
+                    Swal.showValidationMessage('Rejection reason is required.');
+                    return false;
+                }
+                return value.trim();
+            }
+        }).then((result) => {
+            if (result.isConfirmed) submit(result.value);
+        });
+    } else {
+        submit('');
+    }
 }
 
 /* ═══════════════════════════════════════════

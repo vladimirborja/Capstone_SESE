@@ -40,10 +40,14 @@ function initMainMap() {
     return;
   }
 
-  mainMap = L.map("map").setView([15.1465, 120.5794], 14);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-    mainMap,
-  );
+  if (typeof initAngelesMap === "function") {
+    mainMap = initAngelesMap("map");
+  } else {
+    mainMap = L.map("map").setView([15.1465, 120.5794], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+      mainMap,
+    );
+  }
 
   if (
     typeof establishmentData !== "undefined" &&
@@ -58,27 +62,27 @@ function initMainMap() {
             <i class="bi bi-geo-alt-fill me-2"></i> ${place.name}
             </h6>
             <span class="badge bg-primary rounded-pill" style="font-size: 0.80rem;">${place.type}</span>
-            <p class="text-muted">
-                ${place.address}
-            </p>
-            
-            <p class="mb-3 text-dark" style="line-height: 1.4;">
-            ${place.description}
+            <p class="text-muted mb-2">
+                Barangay: ${place.barangay || "N/A"}
             </p>
 
             <div class="d-grid">
                 <a href="https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}" 
                     target="_blank" 
-                    class="btn btn-sm btn-outline-primary py-1" 
+                    class="btn btn-sm btn-primary py-1" 
                     style="font-size: 0.75rem;">
-                    Get Directions
+                    View Directions
                 </a>
             </div>
         </div>
         `;
 
       marker.bindPopup(popupContent);
-      allMarkers.push({ marker: marker, type: place.type });
+      allMarkers.push({
+        marker: marker,
+        type: place.type,
+        barangay: (place.barangay || "").toLowerCase().trim(),
+      });
     });
 
     const group = new L.featureGroup(
@@ -94,6 +98,11 @@ function filterMapMarkers() {
   const selectedTypes = Array.from(
     document.querySelectorAll(".filter-checkbox:checked"),
   ).map((cb) => cb.value);
+  const selectedBarangay = (
+    document.getElementById("mapBarangayFilter")?.value || ""
+  )
+    .toLowerCase()
+    .trim();
   const standardTypes = [
     "Restaurant / Cafe",
     "Hotel / Resort",
@@ -114,6 +123,10 @@ function filterMapMarkers() {
       } else if (selectedTypes.includes("Others") && isOther) {
         isVisible = true;
       }
+    }
+
+    if (isVisible && selectedBarangay) {
+      isVisible = item.barangay === selectedBarangay;
     }
 
     if (isVisible) {
@@ -138,12 +151,38 @@ function approveEstablishment(id) {
           "The establishment is now active.",
           "success",
         ).then(() => location.reload());
+      } else {
+        Swal.fire("Error", data.message || "Approval failed.", "error");
       }
     });
 }
 
+function rejectEstablishment(id) {
+  const hiddenId = document.getElementById("rejectEstablishmentId");
+  const reasonInput = document.getElementById("rejectReasonInput");
+  if (!hiddenId || !reasonInput) return;
+  hiddenId.value = id;
+  reasonInput.value = "";
+  const modalEl = document.getElementById("rejectEstablishmentModal");
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  modal.show();
+}
+
 // 3. Keep DOM-dependent event listeners inside the DOMContentLoaded block
 document.addEventListener("DOMContentLoaded", function () {
+  if (
+    typeof populateBarangayDropdown === "function" &&
+    document.getElementById("mapBarangayFilter")
+  ) {
+    populateBarangayDropdown("mapBarangayFilter");
+    const dropdown = document.getElementById("mapBarangayFilter");
+    dropdown.addEventListener("change", function () {
+      if (this.value && mainMap && typeof zoomToBarangay === "function") {
+        zoomToBarangay(mainMap, this.value, null);
+      }
+      filterMapMarkers();
+    });
+  }
   if (typeof AUTO_INIT_MAP !== "undefined" && AUTO_INIT_MAP === true) {
     initMainMap();
   }
@@ -151,15 +190,50 @@ document.addEventListener("DOMContentLoaded", function () {
   // MODAL PICKER MAP LOGIC
   let pickerMap;
   let pickerMarker;
+  let pickerMarkerBound = false;
   const modal = document.getElementById("addEstablishmentModal");
+  const barangaySelect = document.getElementById("establishment-barangay-select");
+
+  if (typeof populateBarangayDropdown === "function" && barangaySelect) {
+    populateBarangayDropdown("establishment-barangay-select");
+  }
+
+  function syncLatLngDisplay() {
+    const lat = document.getElementById("lat_input")?.value || "-";
+    const lng = document.getElementById("lng_input")?.value || "-";
+    document.getElementById("display-lat").innerText = lat;
+    document.getElementById("display-lng").innerText = lng;
+  }
+
+  if (barangaySelect) {
+    barangaySelect.addEventListener("change", function () {
+      if (!pickerMap || typeof zoomToBarangay !== "function") return;
+      pickerMarker = zoomToBarangay(pickerMap, this.value, pickerMarker);
+      if (pickerMarker && typeof bindMarkerToInputs === "function") {
+        if (!pickerMarkerBound) {
+          bindMarkerToInputs(pickerMarker, "lat_input", "lng_input");
+          pickerMarkerBound = true;
+        } else {
+          const ll = pickerMarker.getLatLng();
+          document.getElementById("lat_input").value = ll.lat.toFixed(7);
+          document.getElementById("lng_input").value = ll.lng.toFixed(7);
+        }
+        syncLatLngDisplay();
+      }
+    });
+  }
 
   if (modal) {
     modal.addEventListener("shown.bs.modal", function () {
       if (!pickerMap) {
-        pickerMap = L.map("picker-map").setView([15.1465, 120.5794], 16);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-          pickerMap,
-        );
+        if (typeof initAngelesMap === "function") {
+          pickerMap = initAngelesMap("picker-map");
+        } else {
+          pickerMap = L.map("picker-map").setView([15.1465, 120.5794], 16);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+            pickerMap,
+          );
+        }
 
         pickerMap.on("click", function (e) {
           const lat = e.latlng.lat.toFixed(8);
@@ -173,8 +247,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
           document.getElementById("lat_input").value = lat;
           document.getElementById("lng_input").value = lng;
-          document.getElementById("display-lat").innerText = lat;
-          document.getElementById("display-lng").innerText = lng;
+          syncLatLngDisplay();
+
+          if (pickerMarker && typeof bindMarkerToInputs === "function" && !pickerMarkerBound) {
+            bindMarkerToInputs(pickerMarker, "lat_input", "lng_input");
+            pickerMarkerBound = true;
+          }
         });
       } else {
         pickerMap.invalidateSize();
@@ -193,6 +271,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
+      if (pickerMarker) {
+        const ll = pickerMarker.getLatLng();
+        document.getElementById("lat_input").value = ll.lat.toFixed(7);
+        document.getElementById("lng_input").value = ll.lng.toFixed(7);
+      }
+
       const formData = new FormData(this);
       fetch(API_BASE_URL, {
         method: "POST",
@@ -202,15 +286,46 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((data) => {
           if (data.success) {
             const successMsg =
-              USER_ROLE === "admin"
-                ? "Establishment added!"
-                : "Request submitted! Waiting for admin approval.";
+              USER_ROLE === "admin" || USER_ROLE === "super_admin"
+                ? "Establishment added successfully."
+                : "Your establishment has been submitted and is pending admin approval.";
 
             Swal.fire("Success", successMsg, "success").then(() =>
               location.reload(),
             );
           } else {
             Swal.fire("Error", data.message, "error");
+          }
+        });
+    });
+  }
+
+  const rejectSubmitBtn = document.getElementById("confirmRejectEstablishmentBtn");
+  if (rejectSubmitBtn) {
+    rejectSubmitBtn.addEventListener("click", function () {
+      const id = document.getElementById("rejectEstablishmentId").value;
+      const reason = document.getElementById("rejectReasonInput").value.trim();
+      if (!reason) {
+        Swal.fire("Required", "Please enter a rejection reason.", "warning");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("action", "reject_establishment");
+      formData.append("id", id);
+      formData.append("reason", reason);
+
+      fetch(API_BASE_URL, { method: "POST", body: formData })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            const modalEl = document.getElementById("rejectEstablishmentModal");
+            bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+            Swal.fire("Rejected", "The request has been rejected.", "success").then(
+              () => location.reload(),
+            );
+          } else {
+            Swal.fire("Error", data.message || "Rejection failed.", "error");
           }
         });
     });

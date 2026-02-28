@@ -1,0 +1,42 @@
+const ANGELES_BARANGAYS = {
+  "agapito del rosario": [15.1335, 120.5923],
+  "amsic": [15.1456, 120.5891],
+  "anunas": [15.1389, 120.5712],
+  "balibago": [15.1601, 120.5823],
+  "capaya": [15.1712, 120.5934],
+  "claro m. recto": [15.1478, 120.5845],
+  "cuayan": [15.1267, 120.5756],
+  "cutcut": [15.1523, 120.5901],
+  "cutud": [15.1189, 120.5823],
+  "lourdes north west": [15.1634, 120.5778],
+  "lourdes sur": [15.1589, 120.5801],
+  "lourdes sur east": [15.1601, 120.5834],
+  "malabanias": [15.1534, 120.5756],
+  "margot": [15.1423, 120.5667],
+  "marisol": [15.1378, 120.5845],
+  "market area": [15.1456, 120.5912],
+  "mining": [15.1445, 120.5889],
+  "mountain view": [15.1312, 120.5734],
+  "pampang": [15.1678, 120.5845],
+  "pandan": [15.1289, 120.5778],
+  "paradise": [15.1512, 120.5823],
+  "pulung cacutud": [15.1134, 120.5756],
+  "pulung maragul": [15.1545, 120.5634],
+  "pulungbulu": [15.1623, 120.5712],
+  "salapungan": [15.1489, 120.5934],
+  "san jose": [15.1556, 120.5867],
+  "san nicolas": [15.1412, 120.5778],
+  "santa teresita": [15.1367, 120.5845],
+  "santa trinidad": [15.1489, 120.5801],
+  "santo cristo": [15.1534, 120.5923],
+  "santo domingo": [15.1578, 120.5756],
+  "santo rosario": [15.1445, 120.5834],
+  "sapangbato": [15.1723, 120.5667],
+  "tabun": [15.1256, 120.5845],
+  "telepharos": [15.1389, 120.5934],
+  "virgen delos remedios": [15.1501, 120.5778]
+};
+
+const ANGELES_CENTER = [15.1450, 120.5890];
+const ANGELES_DEFAULT_ZOOM = 13;
+const BARANGAY_ZOOM = 16;

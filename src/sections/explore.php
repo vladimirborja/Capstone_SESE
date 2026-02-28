@@ -23,6 +23,28 @@
       </div>
     </div>
 
+    <div class="row mt-4 g-3">
+      <div class="col-12">
+        <h3 class="fw-bold text-primary">Featured Pet-Friendly Establishments</h3>
+      </div>
+      <?php if (!empty($featured_establishments)): ?>
+        <?php foreach ($featured_establishments as $item): ?>
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3 border rounded-4 bg-white h-100">
+              <h5 class="mb-1"><?php echo htmlspecialchars($item['name']); ?></h5>
+              <p class="small mb-1"><strong>Category:</strong> <?php echo htmlspecialchars($item['type']); ?></p>
+              <p class="small mb-1"><strong>Barangay:</strong> <?php echo htmlspecialchars($item['barangay'] ?? 'Angeles City'); ?></p>
+              <p class="small text-muted mb-0"><strong>Rating:</strong> 4.8 ★</p>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="col-12">
+          <div class="alert alert-light border">Featured establishments will appear here once listings are available.</div>
+        </div>
+      <?php endif; ?>
+    </div>
+
     <!-- Map Row -->
     <div class="row mt-4">
       <div class="col-12">
@@ -39,6 +61,30 @@
           <a href="./signUp.php" class="btn btn-primary fs-5">Pet-Friendly Places</a>
           <a href="./signUp.php" class="btn btn-primary fs-5">Pet Care Services</a>
         </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4 g-3">
+      <div class="col-12">
+        <h3 class="fw-bold text-primary">Pet Lover Tips &amp; Info</h3>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 bg-white border rounded-4 h-100">
+          <h6 class="fw-bold">Responsible Pet Ownership</h6>
+          <p class="small mb-0 text-muted">Keep vaccinations updated, microchip or tag your pet, and maintain a secure routine for walks and feeding.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 bg-white border rounded-4 h-100">
+          <h6 class="fw-bold">If Your Pet Is Lost</h6>
+          <p class="small mb-0 text-muted">Post clear photos, include barangay and date, and respond quickly to community messages for better recovery chances.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 bg-white border rounded-4 h-100">
+          <h6 class="fw-bold">Finding Pet-Friendly Spots</h6>
+          <p class="small mb-0 text-muted">Check policies before visiting, bring essentials, and choose places that openly support pet safety and comfort.</p>
         </div>
       </div>
     </div>

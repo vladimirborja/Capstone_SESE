@@ -26,6 +26,9 @@
                 <li class="nav-item">
                     <a class="nav-link fs-5 " href="#contact">Contact Us</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link fs-5" href="pages/community-guidelines.php">Guidelines</a>
+                </li>
             </ul>
             <div class="d-flex gap-2">
                 <a href="signIn.php" class="btn btn-outline-light">Sign In</a>

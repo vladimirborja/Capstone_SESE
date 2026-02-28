@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 22, 2026 at 02:19 PM
+-- Generation Time: Feb 27, 2026 at 08:23 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,74 @@ SET time_zone = "+00:00";
 --
 -- Database: `capstone_db`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_logs`
+--
+
+CREATE TABLE `admin_logs` (
+  `log_id` int(11) NOT NULL,
+  `admin_id` int(11) NOT NULL,
+  `admin_name` varchar(255) NOT NULL,
+  `affected_user_id` int(11) DEFAULT NULL,
+  `affected_user_name` varchar(255) DEFAULT NULL,
+  `action_type` varchar(80) NOT NULL,
+  `old_status` varchar(80) DEFAULT NULL,
+  `new_status` varchar(80) DEFAULT NULL,
+  `reason` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `admin_logs`
+--
+
+INSERT INTO `admin_logs` (`log_id`, `admin_id`, `admin_name`, `affected_user_id`, `affected_user_name`, `action_type`, `old_status`, `new_status`, `reason`, `created_at`) VALUES
+(1, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'user_role_update', 'admin', 'user', 'd', '2026-02-27 17:39:14'),
+(2, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'establishment_rejection', 'pending', 'rejected', 'Rejected establishment \"marquee\". Reason: bad', '2026-02-27 17:48:29'),
+(3, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'establishment_approval', 'pending', 'approved', 'Approved establishment: SM Clark', '2026-02-27 17:48:35'),
+(4, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'establishment_approval', 'pending', 'approved', 'Approved establishment: marquee', '2026-02-27 17:50:56'),
+(5, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'establishment_rejection', 'pending', 'rejected', 'Rejected establishment \"SM Clark\". Reason: test', '2026-02-27 18:00:39'),
+(6, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'pet_post_approval', 'waiting_approval', 'lost', 'Approved pet post: otlum (LOST)', '2026-02-27 19:15:25'),
+(7, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'pet_post_rejection', 'waiting_approval', 'rejected', 'Rejected pet post: tsesf. Reason: test', '2026-02-27 19:16:05'),
+(8, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'pet_post_approval', 'waiting_approval', 'for_adoption', 'Approved pet post: muwah (FOR_ADOPTION)', '2026-02-27 19:16:51');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `adoption_notifications`
+--
+
+CREATE TABLE `adoption_notifications` (
+  `notification_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `message` text NOT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `adoption_notifications`
+--
+
+INSERT INTO `adoption_notifications` (`notification_id`, `user_id`, `message`, `is_read`, `created_at`) VALUES
+(1, 7, 'Karl Vladimir Borjaa sent an adoption request for your pet post.', 0, '2026-02-27 17:09:49'),
+(2, 5, 'Your adoption request for micophobia was approved. Contact owner: Kristine Tuazon (09318424195).', 0, '2026-02-27 17:10:34'),
+(3, 7, 'Karl Vladimir Borjaa sent an adoption request for your pet post.', 0, '2026-02-27 17:11:24'),
+(4, 5, 'Your adoption request for otlum was declined. Reason: test', 0, '2026-02-27 17:11:32'),
+(5, 7, 'Karl Vladimir Borjaa sent an adoption request for your pet post.', 0, '2026-02-27 17:19:06'),
+(6, 5, 'Your adoption request for muwah was approved. Contact owner: Kristine Tuazon (09318424195).', 0, '2026-02-27 17:19:14'),
+(7, 5, 'Kristine Tuazon sent an adoption request for your pet post.', 0, '2026-02-27 17:19:52'),
+(8, 7, 'Your adoption request for otlum111 was declined. Reason: test', 0, '2026-02-27 17:20:00'),
+(9, 7, 'Karl Vladimir Borjaa sent an adoption request for your pet post.', 0, '2026-02-27 17:33:53'),
+(10, 5, 'Your adoption request for otlummmm was declined. Reason: testt', 0, '2026-02-27 17:58:07'),
+(11, 7, 'Your lost & found post \"otlum\" has been approved and is now live.', 0, '2026-02-27 19:15:25'),
+(12, 7, 'Your lost & found post \"tsesf\" was rejected. Reason: test', 0, '2026-02-27 19:16:05'),
+(13, 7, 'Your lost & found post \"muwah\" has been approved and is now live.', 0, '2026-02-27 19:16:51'),
+(14, 7, 'Karl Vladimir Borjaa sent an adoption request for your pet post.', 0, '2026-02-27 19:17:28'),
+(15, 5, 'Your adoption request for muwah was approved. Contact owner: Kristine Tuazon (09318424195).', 0, '2026-02-27 19:18:01');
 
 -- --------------------------------------------------------
 
@@ -57,7 +125,28 @@ INSERT INTO `archives` (`archive_id`, `original_id`, `type`, `sender_name`, `con
 (17, 38, '', 'Karl Vladimir Borjaa', 'hi', NULL, '2026-02-16 05:20:13'),
 (18, 30, '', 'Kristine Tuazon', 'hi', NULL, '2026-02-20 18:16:37'),
 (19, 22, 'Message', 'cafe beni', 'TESTING SWAL', NULL, '2026-02-20 18:16:44'),
-(20, 49, '', 'Karl Vladimir Borjaa', 'd', NULL, '2026-02-20 18:22:49');
+(20, 49, '', 'Karl Vladimir Borjaa', 'd', NULL, '2026-02-20 18:22:49'),
+(21, 21, '', 'Kristine Tuazon', 'test', NULL, '2026-02-23 05:36:07'),
+(22, 18, '', 'Kristine Tuazon', 'test1', NULL, '2026-02-23 05:36:10'),
+(23, 16, '', 'Kristine Tuazon', 'bbbb e', NULL, '2026-02-23 05:36:12'),
+(24, 21, 'Message', 'cafe beni', 'HAYY', NULL, '2026-02-23 05:36:24'),
+(25, 20, 'Message', 'DAHS SDHA', 'DASNM,', NULL, '2026-02-23 05:36:26');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `business_claims`
+--
+
+CREATE TABLE `business_claims` (
+  `claim_id` int(11) NOT NULL,
+  `establishment_id` int(11) NOT NULL,
+  `requester_user_id` int(11) NOT NULL,
+  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `reason` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -99,8 +188,7 @@ INSERT INTO `contact_messages` (`id`, `name`, `email`, `contact`, `subject`, `me
 (17, 'cafe beni', 'cafe@gmail.com', '0823', 'Testing', 'WORKINGG??', '2026-02-09 10:24:32'),
 (18, 'cafe beni', 'cafe@gmail.com', '83291', 'Testing ULIT', 'haha', '2026-02-09 10:25:35'),
 (19, 'kristine tuazon', 'kristinetuazon16@gmail.com', '98', 'Testing', 'swal', '2026-02-09 10:29:12'),
-(20, 'DAHS SDHA', 'kristinetuazon16@gmail.com', '6762880', 'DHASJ', 'DASNM,', '2026-02-09 10:34:25'),
-(21, 'cafe beni', 'cafe@gmail.com', '67890', 'Testing ULIT', 'HAYY', '2026-02-09 10:34:56');
+(26, 'Vladimir Borja', 'vladimirborja013@gmail.com', '09650561211', 'hi', 'test', '2026-02-23 15:40:45');
 
 -- --------------------------------------------------------
 
@@ -112,30 +200,68 @@ CREATE TABLE `establishments` (
   `id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
   `requester_id` int(11) DEFAULT NULL,
-  `status` enum('active','pending') NOT NULL,
+  `status` enum('active','pending','approved','rejected') NOT NULL DEFAULT 'pending',
   `type` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `address` varchar(255) NOT NULL,
-  `latitude` decimal(10,8) NOT NULL,
-  `longitude` decimal(11,8) NOT NULL
+  `latitude` decimal(10,7) DEFAULT NULL,
+  `longitude` decimal(11,7) DEFAULT NULL,
+  `barangay` varchar(120) DEFAULT NULL,
+  `policies` text DEFAULT NULL,
+  `pet_types_allowed` varchar(255) DEFAULT NULL,
+  `venue_size` enum('Small','Medium','Large') DEFAULT NULL,
+  `operating_hours` varchar(120) DEFAULT NULL,
+  `contact_number` varchar(30) DEFAULT NULL,
+  `social_links` varchar(255) DEFAULT NULL,
+  `featured` tinyint(1) NOT NULL DEFAULT 0,
+  `guidelines_accepted` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `rejection_reason` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `establishments`
 --
 
-INSERT INTO `establishments` (`id`, `user_id`, `requester_id`, `status`, `type`, `name`, `description`, `address`, `latitude`, `longitude`) VALUES
-(12, 5, 6, 'active', 'Restaurant / Cafe', 'PREMIER PERLINE VETERINARY CLINIC', 'test', 'Malino', 15.14611247, 120.58009860),
-(20, 5, NULL, 'active', 'Restaurant / Cafe', 'test', 'test', 'test', 15.14521355, 120.58069920),
-(21, 5, 6, 'active', 'Mall / Shopping Center', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.14843223, 120.57452039),
-(22, 5, 6, 'active', 'Mall / Shopping Center', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.14843223, 120.57452039),
-(23, 5, 6, 'active', 'Restaurant / Cafe', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.14745876, 120.57909046),
-(24, 5, NULL, 'active', 'Park / Recreational Area', 'PREMIER PERLINE VETERINARY CLINIC', 'nuu', 'holy angel university', 15.10235531, 120.62608330),
-(25, 5, 7, 'active', 'Hotel / Resort', 'Alfa Mart', 'test', 'Malino', 15.14675455, 120.57634490),
-(26, 5, 6, 'active', 'Restaurant / Cafe', 'Alfa Mart', 'test', 'dito lang', 15.14709009, 120.58044307),
-(27, 5, NULL, 'active', 'Restaurant / Cafe', 'test', 'sasa', 'test', 15.21210823, 120.65383207),
-(28, 5, NULL, 'active', 'Hotel / Resort', 'tambay coffee', 'asd', 'Malino', 15.16645096, 120.50834288);
+INSERT INTO `establishments` (`id`, `user_id`, `requester_id`, `status`, `type`, `name`, `description`, `address`, `latitude`, `longitude`, `barangay`, `policies`, `pet_types_allowed`, `venue_size`, `operating_hours`, `contact_number`, `social_links`, `featured`, `guidelines_accepted`, `created_at`, `rejection_reason`) VALUES
+(12, 5, 6, 'active', 'Restaurant / Cafe', 'PREMIER PERLINE VETERINARY CLINIC', 'test', 'Malino', 15.1461125, 120.5800986, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(20, 5, NULL, 'active', 'Restaurant / Cafe', 'test', 'test', 'test', 15.1452136, 120.5806992, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(21, 5, 6, 'active', 'Mall / Shopping Center', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1484322, 120.5745204, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(22, 5, 6, 'active', 'Mall / Shopping Center', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1484322, 120.5745204, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(23, 5, 6, 'active', 'Restaurant / Cafe', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1474588, 120.5790905, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(24, 5, NULL, 'active', 'Park / Recreational Area', 'PREMIER PERLINE VETERINARY CLINIC', 'nuu', 'holy angel university', 15.1023553, 120.6260833, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(25, 5, 7, 'active', 'Hotel / Resort', 'Alfa Mart', 'test', 'Malino', 15.1467546, 120.5763449, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(26, 5, 6, 'active', 'Restaurant / Cafe', 'Alfa Mart', 'test', 'dito lang', 15.1470901, 120.5804431, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(27, 5, NULL, 'active', 'Restaurant / Cafe', 'test', 'sasa', 'test', 15.2121082, 120.6538321, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(28, 5, NULL, 'active', 'Hotel / Resort', 'tambay coffee', 'asd', 'Malino', 15.1664510, 120.5083429, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(29, 7, NULL, 'active', 'Restaurant / Cafe', 'tambay coffee', 'da', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1460503, 120.5696283, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(30, 7, NULL, 'active', 'Park / Recreational Area', 'test', 'd', 'holy angel university', 15.1471274, 120.5799270, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(31, 5, NULL, 'active', 'Restaurant / Cafe', 'tambay coffee', 'asd', 'asd', 15.1473759, 120.5779322, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(34, 7, 7, 'approved', 'Mall / Shopping Center', 'marquee', 'test', 'test', 15.1523000, 120.5901000, 'cutcut', 'test', 'Dogs, Birds', 'Medium', '8:00 AM - 8:00 PM', '09650561211', '', 0, 1, '2026-02-27 17:50:52', NULL),
+(35, NULL, 7, 'rejected', 'Mall / Shopping Center', 'SM Clark', 'test', 'test', 15.1456000, 120.5912000, 'market area', 'test', 'Small Animals', 'Medium', '8:00 AM - 8:00 PM', '09650561211', '', 0, 1, '2026-02-27 18:00:28', 'test');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `establishment_records`
+--
+
+CREATE TABLE `establishment_records` (
+  `record_id` int(11) NOT NULL,
+  `establishment_id` int(11) NOT NULL,
+  `establishment_name` varchar(255) NOT NULL,
+  `category` varchar(120) DEFAULT NULL,
+  `barangay` varchar(120) DEFAULT NULL,
+  `submitted_by_user_id` int(11) DEFAULT NULL,
+  `submitted_by_name` varchar(255) DEFAULT NULL,
+  `status` enum('approved','rejected') NOT NULL,
+  `admin_id` int(11) NOT NULL,
+  `admin_name` varchar(255) NOT NULL,
+  `submitted_at` timestamp NULL DEFAULT NULL,
+  `actioned_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `rejection_reason` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -341,7 +467,69 @@ INSERT INTO `login_history` (`login_id`, `user_id`, `login_time`, `ip_address`, 
 (193, 5, '2026-02-20 17:37:47', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
 (194, 5, '2026-02-20 18:08:12', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
 (195, 7, '2026-02-20 18:21:47', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
-(196, 5, '2026-02-20 18:22:08', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success');
+(196, 5, '2026-02-20 18:22:08', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(197, 5, '2026-02-22 07:27:01', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(198, 5, '2026-02-22 07:34:23', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(199, 5, '2026-02-23 00:39:38', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(200, 5, '2026-02-23 05:34:40', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(201, 5, '2026-02-23 05:35:34', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(202, 5, '2026-02-23 06:21:03', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(203, 5, '2026-02-23 06:21:29', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(204, 5, '2026-02-23 06:43:20', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(205, 5, '2026-02-23 06:49:53', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(206, 6, '2026-02-23 06:58:07', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(207, 5, '2026-02-23 07:00:07', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(208, 7, '2026-02-23 07:41:14', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(209, 5, '2026-02-23 07:41:32', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(210, 7, '2026-02-23 08:04:50', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(211, 5, '2026-02-23 08:14:48', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(212, 7, '2026-02-23 08:20:22', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(213, 5, '2026-02-23 09:39:38', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(214, 5, '2026-02-23 09:46:38', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(215, 5, '2026-02-23 09:48:32', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(216, 5, '2026-02-23 14:20:13', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(217, 5, '2026-02-23 14:35:14', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(218, 5, '2026-02-23 19:00:17', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(219, 5, '2026-02-24 01:22:45', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', 'success'),
+(220, 5, '2026-02-24 01:30:41', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', 'success'),
+(221, 5, '2026-02-24 01:39:20', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(222, 5, '2026-02-24 02:06:26', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', 'success'),
+(223, 5, '2026-02-27 17:08:33', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(224, 7, '2026-02-27 17:38:14', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(225, 5, '2026-02-27 17:38:32', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(226, 6, '2026-02-27 17:39:55', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(227, 6, '2026-02-27 17:42:45', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(228, 5, '2026-02-27 17:45:00', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `lost_found_review_records`
+--
+
+CREATE TABLE `lost_found_review_records` (
+  `record_id` int(11) NOT NULL,
+  `pet_id` int(11) NOT NULL,
+  `pet_name` varchar(255) NOT NULL,
+  `post_type` varchar(40) NOT NULL,
+  `submitted_by_user_id` int(11) DEFAULT NULL,
+  `submitted_by_name` varchar(255) DEFAULT NULL,
+  `status` enum('approved','rejected') NOT NULL,
+  `admin_id` int(11) NOT NULL,
+  `admin_name` varchar(255) NOT NULL,
+  `rejection_reason` text DEFAULT NULL,
+  `submitted_at` timestamp NULL DEFAULT NULL,
+  `actioned_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `lost_found_review_records`
+--
+
+INSERT INTO `lost_found_review_records` (`record_id`, `pet_id`, `pet_name`, `post_type`, `submitted_by_user_id`, `submitted_by_name`, `status`, `admin_id`, `admin_name`, `rejection_reason`, `submitted_at`, `actioned_at`) VALUES
+(1, 32, 'otlum', 'lost', 7, 'Kristine Tuazon', 'approved', 5, 'Karl Vladimir Borjaa', NULL, '2026-02-27 19:10:29', '2026-02-27 19:15:25'),
+(2, 33, 'tsesf', 'lost', 7, 'Kristine Tuazon', 'rejected', 5, 'Karl Vladimir Borjaa', 'test', '2026-02-27 19:15:56', '2026-02-27 19:16:05'),
+(3, 34, 'muwah', 'for_adoption', 7, 'Kristine Tuazon', 'approved', 5, 'Karl Vladimir Borjaa', NULL, '2026-02-27 19:16:37', '2026-02-27 19:16:51');
 
 -- --------------------------------------------------------
 
@@ -370,13 +558,21 @@ INSERT INTO `notifications` (`id`, `post_id`, `user_id`, `message`, `is_read`, `
 (7, 34, 9, 'Ariana Punsalang liked your post.', 0, '2026-02-15 10:11:22'),
 (14, 39, 7, 'Ariana Punsalang liked your post.', 1, '2026-02-17 09:58:11'),
 (15, 39, 7, 'Ariana Punsalang commented: \"test...\"', 1, '2026-02-17 09:58:15'),
-(16, 36, 6, 'Kristine Tuazon commented: \"hi...\"', 0, '2026-02-17 10:48:53'),
+(16, 36, 6, 'Kristine Tuazon commented: \"hi...\"', 1, '2026-02-17 10:48:53'),
 (17, 46, 7, 'Karl Vladimir Borjaa liked your post.', 1, '2026-02-20 15:49:49'),
 (18, 46, 7, 'Karl Vladimir Borjaa commented: \"test...\"', 1, '2026-02-20 15:49:52'),
-(19, 36, 6, 'Kristine Tuazon liked your post.', 0, '2026-02-20 16:24:53'),
-(20, 36, 6, 'Kristine Tuazon commented: \"test...\"', 0, '2026-02-20 16:24:56'),
+(19, 36, 6, 'Kristine Tuazon liked your post.', 1, '2026-02-20 16:24:53'),
+(20, 36, 6, 'Kristine Tuazon commented: \"test...\"', 1, '2026-02-20 16:24:56'),
 (21, 46, 7, 'Karl Vladimir Borjaa liked your post.', 1, '2026-02-20 17:36:28'),
-(22, 46, 7, 'Karl Vladimir Borjaa commented: \"baboy...\"', 1, '2026-02-20 17:36:32');
+(22, 46, 7, 'Karl Vladimir Borjaa commented: \"baboy...\"', 1, '2026-02-20 17:36:32'),
+(25, 48, 5, 'Kristine Tuazon commented: \"g...\"', 1, '2026-02-23 08:04:58'),
+(26, 48, 5, 'Kristine Tuazon liked your post.', 1, '2026-02-23 08:05:00'),
+(27, 48, 5, 'Kristine Tuazon liked your post.', 1, '2026-02-23 08:20:52'),
+(28, 48, 5, 'Kristine Tuazon commented: \"g...\"', 1, '2026-02-23 08:20:54'),
+(29, 48, 5, 'Kristine Tuazon commented: \"hahaha...\"', 1, '2026-02-23 08:26:58'),
+(30, 48, 5, 'Kristine Tuazon liked your post.', 1, '2026-02-23 09:36:29'),
+(31, 51, 7, 'Karl Vladimir Borjaa liked your post.', 1, '2026-02-24 01:33:20'),
+(32, 51, 7, 'Karl Vladimir Borjaa commented: \"hi...\"', 1, '2026-02-24 01:33:22');
 
 -- --------------------------------------------------------
 
@@ -388,7 +584,7 @@ CREATE TABLE `pets` (
   `pet_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `pet_name` varchar(100) NOT NULL,
-  `category` enum('Lost','Found','Pending') NOT NULL,
+  `category` enum('Lost','Found','Pending','lost','found','pending','for_adoption','For Adoption','adopted','Adopted','waiting_approval','rejected','resolved') NOT NULL DEFAULT 'waiting_approval',
   `gender` varchar(20) DEFAULT NULL,
   `breed` varchar(100) DEFAULT 'Unknown',
   `color` varchar(50) DEFAULT 'Not Specified',
@@ -396,20 +592,94 @@ CREATE TABLE `pets` (
   `description` text DEFAULT NULL,
   `image_url` varchar(255) DEFAULT 'uploads/default_pet.png',
   `contact_number` varchar(20) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `pet_type` varchar(50) DEFAULT NULL,
+  `size` enum('Small','Medium','Large') DEFAULT NULL,
+  `last_seen_date` date DEFAULT NULL,
+  `last_seen_barangay` varchar(120) DEFAULT NULL,
+  `requested_category` varchar(40) DEFAULT NULL,
+  `latitude` decimal(10,7) DEFAULT NULL,
+  `longitude` decimal(11,7) DEFAULT NULL,
+  `owner_with_pet_image_url` varchar(255) DEFAULT NULL,
+  `verification_status` enum('pending','approved','rejected') DEFAULT 'pending',
+  `verification_reason` text DEFAULT NULL,
+  `reward_offered` tinyint(1) NOT NULL DEFAULT 0,
+  `reward_details` varchar(255) DEFAULT NULL,
+  `guidelines_accepted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `pets`
 --
 
-INSERT INTO `pets` (`pet_id`, `user_id`, `pet_name`, `category`, `gender`, `breed`, `color`, `last_seen_location`, `description`, `image_url`, `contact_number`, `created_at`) VALUES
-(19, 11, 'tsesf', 'Pending', 'Male', 'Dog', 'brown', 'Test', 'adadaw', 'uploads/1770802913_sinoo.gif', '3131312', '2026-02-11 09:41:53'),
-(21, 6, 'sino ka', 'Found', 'Male', 'Dog', 'black', 'angeles', 'nawawala', 'uploads/1770811765_sino.jpg', '09123456789', '2026-02-11 12:09:25'),
-(22, 6, 'muwah', 'Found', 'Unknown', 'bakla', 'black', 'dito lang', 'aaa', 'uploads/1770811788_heart.jpg', '09999999', '2026-02-11 12:09:48'),
-(23, 6, 'otlum', 'Pending', 'Male', 'Dog', 'black', 'angeles', 'asd', 'uploads/1770861809_heart.jpg', '09123456789', '2026-02-12 02:03:29'),
-(24, 9, 'otlum', 'Lost', 'Female', 'Dog', 'white', 'sanfer', 'hi', 'uploads/1770865886_otlum.jpg', '09123456789', '2026-02-12 03:11:26'),
-(25, 6, 'otlum', 'Found', 'Male', 'bird', 'brown', 'dito lang', 'test', 'uploads/1771218978_sino.jpg', '09123456789', '2026-02-16 05:16:18');
+INSERT INTO `pets` (`pet_id`, `user_id`, `pet_name`, `category`, `gender`, `breed`, `color`, `last_seen_location`, `description`, `image_url`, `contact_number`, `created_at`, `pet_type`, `size`, `last_seen_date`, `last_seen_barangay`, `requested_category`, `latitude`, `longitude`, `owner_with_pet_image_url`, `verification_status`, `verification_reason`, `reward_offered`, `reward_details`, `guidelines_accepted`) VALUES
+(19, 11, 'tsesf', 'Pending', 'Male', 'Dog', 'brown', 'Test', 'adadaw', 'uploads/1770802913_sinoo.gif', '3131312', '2026-02-11 09:41:53', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, 0, NULL, 0),
+(21, 6, 'sino ka', 'Found', 'Male', 'Dog', 'black', 'angeles', 'nawawala', 'uploads/1770811765_sino.jpg', '09123456789', '2026-02-11 12:09:25', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, 0, NULL, 0),
+(22, 6, 'muwah', 'Found', 'Unknown', 'bakla', 'black', 'dito lang', 'aaa', 'uploads/1770811788_heart.jpg', '09999999', '2026-02-11 12:09:48', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, 0, NULL, 0),
+(23, 6, 'otlum', 'Pending', 'Male', 'Dog', 'black', 'angeles', 'asd', 'uploads/1770861809_heart.jpg', '09123456789', '2026-02-12 02:03:29', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, 0, NULL, 0),
+(24, 9, 'otlum', 'Lost', 'Female', 'Dog', 'white', 'sanfer', 'hi', 'uploads/1770865886_otlum.jpg', '09123456789', '2026-02-12 03:11:26', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, 0, NULL, 0),
+(25, 6, 'otlum', 'Found', 'Male', 'bird', 'brown', 'dito lang', 'test', 'uploads/1771218978_sino.jpg', '09123456789', '2026-02-16 05:16:18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, 0, NULL, 0),
+(26, 7, 'micophobia', 'adopted', 'Unknown', 'Puspin', 'White/Gray', 'Capaya', 'test\n\nAdoption Info:\ntest\nRequirements: test', 'uploads/1772212149_people.png', '09650561211', '2026-02-27 17:09:09', 'Dog', 'Large', '0000-00-00', 'capaya', NULL, 15.1712000, 120.5934000, 'uploads/1772212149_6.png', 'pending', NULL, 0, NULL, 1),
+(27, 7, 'otlum', 'for_adoption', 'Unknown', 'ewan', 'black', 'Amsic', 'test\n\nAdoption Info:\ntest\nRequirements: test', 'uploads/1772212265_people.png', 'test', '2026-02-27 17:11:05', 'Dog', 'Large', '0000-00-00', 'amsic', NULL, 15.1456000, 120.5891000, 'uploads/1772212265_6.png', 'pending', NULL, 0, NULL, 1),
+(28, 7, 'muwah', 'adopted', 'Unknown', 'ewan', 'whte/gray', 'Agapito Del Rosario', 'test\n\nAdoption Info:\ntest\nRequirements: test', 'uploads/1772212707_people.png', '09999999', '2026-02-27 17:18:27', 'Dog', 'Small', '0000-00-00', 'agapito del rosario', NULL, 15.1335000, 120.5923000, '', 'pending', NULL, 0, NULL, 1),
+(29, 5, 'otlum111', 'for_adoption', 'Unknown', 'Puspin', 'whte/gray', 'Margot', 'test\n\nAdoption Info:\ntest\nRequirements: test', 'uploads/1772212777_people.png', 'test', '2026-02-27 17:19:37', 'Dog', 'Small', '0000-00-00', 'margot', NULL, 15.1423000, 120.5667000, '', 'pending', NULL, 0, NULL, 1),
+(30, 7, 'otlummmm', 'for_adoption', 'Unknown', 'Puspin', 'red', 'Amsic', 'test\n\nAdoption Info:\ntest\nRequirements: test', 'uploads/1772213317_sinoo.gif', 'test', '2026-02-27 17:28:37', 'Dog', 'Medium', '0000-00-00', 'amsic', NULL, 15.1456000, 120.5891000, '', 'pending', NULL, 0, NULL, 1),
+(31, 7, 'heart', 'Lost', 'Unknown', 'ewan', 'brown', 'Pandan', 'test', 'uploads/1772214879_heart.jpg', '09999999', '2026-02-27 17:54:39', 'Dog', 'Small', '2026-02-23', 'pandan', NULL, 15.1289000, 120.5778000, 'uploads/1772214879_micophobia.png', 'pending', NULL, 0, NULL, 1),
+(32, 7, 'otlum', 'Lost', 'Unknown', 'Puspin', 'White/Gray', 'Marisol', 'a', 'uploads/1772219429_dog1.png', '09650561211', '2026-02-27 19:10:29', 'Dog', 'Large', '2026-02-04', 'marisol', 'lost', 15.1378000, 120.5845000, 'uploads/1772219429_5.png', 'approved', NULL, 1, '3333', 1),
+(33, 7, 'tsesf', 'rejected', 'Unknown', 'Puspin', 'whte/gray', 'Amsic', 'asd', 'uploads/1772219756_cat1.png', '09123456789', '2026-02-27 19:15:56', 'Cat', 'Small', '2026-02-09', 'amsic', 'lost', 15.1456000, 120.5891000, 'uploads/1772219756_dog1.png', 'rejected', 'test', 1, '555', 1),
+(34, 7, 'muwah', 'adopted', 'Unknown', 'Puspin', 'black', 'Tabun', 'test\n\nAdoption Info:\ntest\nRequirements: test', 'uploads/1772219797_cat1.png', 'test', '2026-02-27 19:16:37', 'Cat', 'Small', '0000-00-00', 'tabun', 'for_adoption', 15.1256000, 120.5845000, '', 'approved', NULL, 0, '', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pet_bookmarks`
+--
+
+CREATE TABLE `pet_bookmarks` (
+  `bookmark_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `pet_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `pet_bookmarks`
+--
+
+INSERT INTO `pet_bookmarks` (`bookmark_id`, `user_id`, `pet_id`, `created_at`) VALUES
+(3, 5, 31, '2026-02-27 18:04:17');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pet_responses`
+--
+
+CREATE TABLE `pet_responses` (
+  `response_id` int(11) NOT NULL,
+  `pet_id` int(11) NOT NULL,
+  `responder_user_id` int(11) NOT NULL,
+  `owner_user_id` int(11) DEFAULT NULL,
+  `adopter_name` varchar(255) DEFAULT NULL,
+  `adopter_contact` varchar(50) DEFAULT NULL,
+  `message` text DEFAULT NULL,
+  `decline_reason` text DEFAULT NULL,
+  `status` enum('pending','approved','declined','resolved') NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `decided_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `pet_responses`
+--
+
+INSERT INTO `pet_responses` (`response_id`, `pet_id`, `responder_user_id`, `owner_user_id`, `adopter_name`, `adopter_contact`, `message`, `decline_reason`, `status`, `created_at`, `decided_at`) VALUES
+(1, 26, 5, 7, 'Karl Vladimir Borjaa', '09650561211', 'About Me: Vlad\n\nWhy I want to adopt / living situation:\ntest\n\nAdditional Message:\ntest', NULL, 'approved', '2026-02-27 17:09:49', '2026-02-27 17:10:34'),
+(2, 27, 5, 7, 'Karl Vladimir Borjaa', '09650561211', 'About Me: Vlad\n\nWhy I want to adopt / living situation:\ntest\n\nAdditional Message:\ntest', 'test', 'declined', '2026-02-27 17:11:24', '2026-02-27 17:11:32'),
+(3, 28, 5, 7, 'Karl Vladimir Borjaa', '09650561211', 'About Me: Vlad\n\nWhy I want to adopt / living situation:\ntestttt\n\nAdditional Message:\ntesstttt', NULL, 'approved', '2026-02-27 17:19:06', '2026-02-27 17:19:14'),
+(4, 29, 7, 5, 'Kristine Tuazon', '09318424195', 'About Me: test\n\nWhy I want to adopt / living situation:\ntest\n\nAdditional Message:\ntest', 'test', 'declined', '2026-02-27 17:19:52', '2026-02-27 17:20:00'),
+(5, 30, 5, 7, 'Karl Vladimir Borjaa', '09650561211', 'Adoption Application\nName: Karl Vladimir Borjaa\nAge: 21\nOccupation: single\nContact: 09650561211\nLiving Type: House\nOutdoor Space: test\nPet Experience: Yes\nExperience Details: test\n\nWhy adopt this pet:\ntestttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\n\nAdditional Message:\ntest', 'testt', 'declined', '2026-02-27 17:33:53', '2026-02-27 17:58:07'),
+(6, 34, 5, 7, 'Karl Vladimir Borjaa', '09650561211', 'Adoption Application\nName: Karl Vladimir Borjaa\nAge: 22\nOccupation: single\nContact: 09650561211\nLiving Type: House\nOutdoor Space: test\nPet Experience: Yes\nExperience Details: test\n\nWhy adopt this pet:\ntesttesttesttesttesttesttesttesttesttest\n\nAdditional Message:\ntest', NULL, 'approved', '2026-02-27 19:17:28', '2026-02-27 19:18:01');
 
 -- --------------------------------------------------------
 
@@ -437,10 +707,7 @@ INSERT INTO `posts` (`post_id`, `user_id`, `content`, `image_url`, `created_at`)
 (12, 7, '[MISSING DOG] Name: margielaaa | Last Seen: dito lang | Contact: 123', 'uploads/missing_1770410882_GyiYtEVbMAAn5Tc.jpg', '2026-02-06 20:48:02'),
 (14, 7, '[MISSING DOG] Name: margielaaaaaaaaa | Last Seen: dito langaaaa | Contact: 0920 ikaw na bahala sa pito ejrer', 'uploads/missing_1770412209_526744371_734164873116640_6121404047598711197_n.png', '2026-02-06 21:10:09'),
 (15, 7, 'hey', 'uploads/1770715114_sinoo.gif', '2026-02-10 09:18:34'),
-(16, 7, 'bbbb e', 'uploads/1770717654_sinoo.gif', '2026-02-10 10:00:54'),
 (17, 6, '[MISSING DOG] Nam1e: margiel | Last Seen: dito lang | Contact: 123', 'uploads/missing_1770718695_otlum.jpg', '2026-02-10 10:18:15'),
-(18, 7, 'test1', 'uploads/1770779161_sinoo.gif', '2026-02-11 03:06:01'),
-(21, 7, 'test', 'uploads/1770791314_otlum.jpg', '2026-02-11 06:28:34'),
 (34, 9, 'hi', 'uploads/1770913450_heart.jpg', '2026-02-12 16:24:10'),
 (36, 6, 'asasdasdasdas', 'uploads/1771150351_heart.jpg', '2026-02-15 10:12:31'),
 (39, 7, 'hi', 'uploads/1771322266_otlum1.jpg', '2026-02-17 09:57:46'),
@@ -450,9 +717,10 @@ INSERT INTO `posts` (`post_id`, `user_id`, `content`, `image_url`, `created_at`)
 (43, 7, 'test\ntest', '', '2026-02-17 12:05:36'),
 (44, 7, 'test\ntest\ntest\ntest', '', '2026-02-17 12:05:51'),
 (45, 7, 'hi\nhi\nhi\ntest\nasdasd', 'uploads/1771330019_sinoo.gif', '2026-02-17 12:06:59'),
-(46, 7, 'bjh jhj guuv', '', '2026-02-17 12:07:20'),
+(46, 7, 'bjh jhj guuvr', '', '2026-02-17 12:07:20'),
 (47, 5, 'tesst', '', '2026-02-20 18:19:39'),
-(48, 5, 'test', 'uploads/1771611650_sinoo.gif', '2026-02-20 18:19:48');
+(48, 5, 'test', 'uploads/1771611650_sinoo.gif', '2026-02-20 18:19:48'),
+(51, 7, 'HI', 'uploads/1771839405_Ella es Baby, la cachorrita corgi que vas a querer abrazar en este momento (2).jpg', '2026-02-23 09:36:45');
 
 -- --------------------------------------------------------
 
@@ -473,9 +741,6 @@ CREATE TABLE `post_comments` (
 --
 
 INSERT INTO `post_comments` (`comment_id`, `post_id`, `user_id`, `comment_text`, `created_at`) VALUES
-(2, 21, 10, 'test 2', '2026-02-11 06:43:41'),
-(18, 21, 6, 'bababa', '2026-02-11 12:43:30'),
-(25, 21, 7, 'bababa', '2026-02-11 17:40:00'),
 (28, 34, 5, 'a', '2026-02-15 04:19:07'),
 (33, 34, 6, 'test 1', '2026-02-15 10:11:17'),
 (41, 39, 6, 'test', '2026-02-17 09:58:15'),
@@ -483,7 +748,11 @@ INSERT INTO `post_comments` (`comment_id`, `post_id`, `user_id`, `comment_text`,
 (43, 46, 5, 'test', '2026-02-20 15:49:52'),
 (44, 36, 7, 'test', '2026-02-20 16:24:56'),
 (45, 46, 5, 'baboy', '2026-02-20 17:36:32'),
-(46, 48, 5, 'test', '2026-02-20 18:20:05');
+(46, 48, 5, 'test', '2026-02-20 18:20:05'),
+(48, 48, 7, 'g', '2026-02-23 08:04:58'),
+(49, 48, 7, 'g', '2026-02-23 08:20:54'),
+(50, 48, 7, 'hahaha', '2026-02-23 08:26:58'),
+(51, 51, 5, 'hi', '2026-02-24 01:33:22');
 
 -- --------------------------------------------------------
 
@@ -503,15 +772,13 @@ CREATE TABLE `post_likes` (
 --
 
 INSERT INTO `post_likes` (`like_id`, `post_id`, `user_id`, `created_at`) VALUES
-(2, 21, 10, '2026-02-11 06:43:22'),
-(4, 18, 10, '2026-02-11 06:43:25'),
-(12, 21, 6, '2026-02-11 12:43:27'),
-(18, 21, 7, '2026-02-11 17:39:58'),
 (26, 34, 6, '2026-02-15 10:11:22'),
 (36, 39, 6, '2026-02-17 09:58:11'),
 (39, 36, 7, '2026-02-20 16:24:53'),
 (40, 46, 5, '2026-02-20 17:36:28'),
-(41, 48, 5, '2026-02-20 18:20:03');
+(41, 48, 5, '2026-02-20 18:20:03'),
+(45, 48, 7, '2026-02-23 09:36:29'),
+(46, 51, 5, '2026-02-24 01:33:20');
 
 -- --------------------------------------------------------
 
@@ -537,9 +804,14 @@ INSERT INTO `post_reports` (`report_id`, `post_id`, `user_id`, `report_type`, `d
 (4, 3, 7, 'Inappropriate Content', 'aa', '2026-02-06 20:08:59'),
 (5, 3, 7, 'Spam', 'a', '2026-02-06 20:12:11'),
 (6, 3, 7, 'Verbal Abuse', 'asd', '2026-02-06 20:15:56'),
-(11, 16, 6, 'Fake Content', 'a', '2026-02-10 10:18:45'),
-(13, 18, 9, 'Fake Content', 'hhi', '2026-02-11 03:11:12'),
-(15, 21, 6, 'Fake Content', 'testnow', '2026-02-11 06:30:18');
+(78, 46, 5, 'Fake Content', '0', '2026-02-23 07:21:26'),
+(79, 40, 5, 'Inappropriate', 'hi', '2026-02-23 07:21:40'),
+(80, 48, 7, 'Fake Content', 'd', '2026-02-23 08:20:59'),
+(81, 48, 7, 'Verbal Abuse', 'a', '2026-02-23 08:26:41'),
+(82, 48, 7, 'Spam', 'asd', '2026-02-23 08:26:50'),
+(83, 48, 7, 'Verbal Abuse', 'a', '2026-02-23 08:27:20'),
+(84, 51, 5, 'Verbal Abuse', 'da', '2026-02-23 14:37:15'),
+(85, 51, 5, 'Fake Content', 'hi\\r\\n', '2026-02-24 01:33:31');
 
 -- --------------------------------------------------------
 
@@ -558,7 +830,7 @@ CREATE TABLE `users` (
   `google_id` varchar(255) DEFAULT NULL,
   `phone_number` varchar(20) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('user','admin') NOT NULL DEFAULT 'user',
+  `role` enum('user','admin','super_admin','business_owner','veterinarian','salon_owner') NOT NULL DEFAULT 'user',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `last_login` timestamp NULL DEFAULT NULL,
@@ -572,24 +844,49 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `full_name`, `username`, `is_verified`, `bio`, `email`, `verification_code`, `google_id`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`, `profile_image`) VALUES
 (4, 'margiel escalante', NULL, 0, '', 'info@bb88advertising.com', '', '', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1, NULL),
-(5, 'Karl Vladimir Borjaa', 'Karlaaa', 1, 'SINO TO?!', 'vladimirborja013@gmail.com', '', '', '09650561211', '$2y$10$qpS58OYVf9xG8yJRhiv4JuXKojMJBD0QvVbWiMXJsoMNp4vbticYG', 'admin', '2026-01-29 18:09:12', '2026-02-20 18:22:08', '2026-02-20 18:22:08', 1, '../uploads/profile_pics/user_5_1771609008.jpeg'),
-(6, 'Ariana Punsalang', NULL, 1, '', 'anairadump@gmail.com', '', '', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-20 16:24:20', '2026-02-17 09:58:06', 1, '../uploads/profile_pics/user_6_1771150867.png'),
-(7, 'Kristine Tuazon', NULL, 1, 'bioooo', 'kristinetuazon16@gmail.com', '', '', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-20 18:21:47', '2026-02-20 18:21:47', 1, '../uploads/profile_pics/user_7_1771609052.jpg'),
+(5, 'Karl Vladimir Borjaa', 'Karlaaaaaaaaaa', 1, 'SINO TO?!', 'vladimirborja013@gmail.com', '', '', '09650561211', '$2y$10$qpS58OYVf9xG8yJRhiv4JuXKojMJBD0QvVbWiMXJsoMNp4vbticYG', 'admin', '2026-01-29 18:09:12', '2026-02-27 17:45:00', '2026-02-27 17:45:00', 1, '../uploads/profile_pics/user_5_1772212175.jpeg'),
+(6, 'Ariana Punsalang', NULL, 1, '', 'anairadump@gmail.com', '', '', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-27 17:42:45', '2026-02-27 17:42:45', 1, '../uploads/profile_pics/user_6_1771150867.png'),
+(7, 'Kristine Tuazon', NULL, 1, 'bioooo', 'kristinetuazon16@gmail.com', '', '', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-27 17:39:14', '2026-02-27 17:38:14', 1, '../uploads/profile_pics/user_7_1771609052.jpg'),
 (8, 'Mico Cuenco', NULL, 0, '', 'micocuenco@gmail.com', '', '', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1, NULL),
 (9, 'Cayoh Anicete', NULL, 0, '', 'cayohanicete@gmail.com', '', '', '09123456789', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'user', '2026-02-11 03:10:13', '2026-02-20 18:18:23', '2026-02-15 07:31:06', 0, NULL),
 (10, 'margiel escalante', NULL, 0, '', 'margielescalante@gmail.com', '', '', '09123456789', '$2y$10$tJ6ojSH5oqJUchJHtZDGbuMJOKjQADmyrlhiP01MQfVfB4Fbbdcn.', 'user', '2026-02-11 06:26:03', '2026-02-20 18:18:21', '2026-02-11 06:31:48', 1, NULL),
 (11, 'Christian Aguas', NULL, 0, '', 'acdeocera.bb88@gmail.com', '', '', '09201172065', '$2y$10$OIYShiZROiBhCVG3/k1nROqr8aQhykXnTTsa9I9QlFNxv2ns4jqKS', 'user', '2026-02-11 09:13:39', '2026-02-12 17:01:12', '2026-02-11 09:20:59', 1, NULL),
-(12, 'Cess Pascual', NULL, 0, '', 'princesstimbang03@gmail.com', '', '', '09123456789', '$2y$10$5PMDLFah4V/QQH1J1h7Gu.HHHrRMPPFGR2hBhZ0brkXhP9mUePhE2', 'user', '2026-02-17 12:18:23', '2026-02-17 12:18:23', NULL, 1, NULL);
+(12, 'Cess Pascual', NULL, 0, '', 'princesstimbang03@gmail.com', '', '', '09123456789', '$2y$10$5PMDLFah4V/QQH1J1h7Gu.HHHrRMPPFGR2hBhZ0brkXhP9mUePhE2', 'user', '2026-02-17 12:18:23', '2026-02-23 07:41:01', NULL, 0, NULL);
 
 --
 -- Indexes for dumped tables
 --
 
 --
+-- Indexes for table `admin_logs`
+--
+ALTER TABLE `admin_logs`
+  ADD PRIMARY KEY (`log_id`),
+  ADD KEY `idx_admin_logs_admin` (`admin_id`),
+  ADD KEY `idx_admin_logs_action` (`action_type`),
+  ADD KEY `idx_admin_logs_date` (`created_at`);
+
+--
+-- Indexes for table `adoption_notifications`
+--
+ALTER TABLE `adoption_notifications`
+  ADD PRIMARY KEY (`notification_id`),
+  ADD KEY `idx_adopt_notif_user` (`user_id`),
+  ADD KEY `idx_adopt_notif_date` (`created_at`);
+
+--
 -- Indexes for table `archives`
 --
 ALTER TABLE `archives`
   ADD PRIMARY KEY (`archive_id`);
+
+--
+-- Indexes for table `business_claims`
+--
+ALTER TABLE `business_claims`
+  ADD PRIMARY KEY (`claim_id`),
+  ADD KEY `idx_claim_est` (`establishment_id`),
+  ADD KEY `idx_claim_user` (`requester_user_id`);
 
 --
 -- Indexes for table `contact_messages`
@@ -606,12 +903,30 @@ ALTER TABLE `establishments`
   ADD KEY `requester_id` (`requester_id`);
 
 --
+-- Indexes for table `establishment_records`
+--
+ALTER TABLE `establishment_records`
+  ADD PRIMARY KEY (`record_id`),
+  ADD KEY `idx_est_records_status` (`status`),
+  ADD KEY `idx_est_records_establishment` (`establishment_id`),
+  ADD KEY `idx_est_records_actioned_at` (`actioned_at`);
+
+--
 -- Indexes for table `login_history`
 --
 ALTER TABLE `login_history`
   ADD PRIMARY KEY (`login_id`),
   ADD KEY `idx_user_id` (`user_id`),
   ADD KEY `idx_login_time` (`login_time`);
+
+--
+-- Indexes for table `lost_found_review_records`
+--
+ALTER TABLE `lost_found_review_records`
+  ADD PRIMARY KEY (`record_id`),
+  ADD UNIQUE KEY `uniq_lf_review_pet` (`pet_id`),
+  ADD KEY `idx_lf_review_status` (`status`),
+  ADD KEY `idx_lf_review_actioned` (`actioned_at`);
 
 --
 -- Indexes for table `notifications`
@@ -627,6 +942,24 @@ ALTER TABLE `notifications`
 ALTER TABLE `pets`
   ADD PRIMARY KEY (`pet_id`),
   ADD KEY `fk_pet_user` (`user_id`);
+
+--
+-- Indexes for table `pet_bookmarks`
+--
+ALTER TABLE `pet_bookmarks`
+  ADD PRIMARY KEY (`bookmark_id`),
+  ADD UNIQUE KEY `uniq_user_pet_bookmark` (`user_id`,`pet_id`),
+  ADD KEY `idx_bookmark_pet` (`pet_id`);
+
+--
+-- Indexes for table `pet_responses`
+--
+ALTER TABLE `pet_responses`
+  ADD PRIMARY KEY (`response_id`),
+  ADD UNIQUE KEY `uniq_pet_adopter` (`pet_id`,`responder_user_id`),
+  ADD KEY `idx_pet_response_pet` (`pet_id`),
+  ADD KEY `idx_pet_response_user` (`responder_user_id`),
+  ADD KEY `idx_pet_response_owner` (`owner_user_id`);
 
 --
 -- Indexes for table `posts`
@@ -673,74 +1006,135 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `admin_logs`
+--
+ALTER TABLE `admin_logs`
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `adoption_notifications`
+--
+ALTER TABLE `adoption_notifications`
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
 -- AUTO_INCREMENT for table `archives`
 --
 ALTER TABLE `archives`
-  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+
+--
+-- AUTO_INCREMENT for table `business_claims`
+--
+ALTER TABLE `business_claims`
+  MODIFY `claim_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `contact_messages`
 --
 ALTER TABLE `contact_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `establishments`
 --
 ALTER TABLE `establishments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+
+--
+-- AUTO_INCREMENT for table `establishment_records`
+--
+ALTER TABLE `establishment_records`
+  MODIFY `record_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `login_history`
 --
 ALTER TABLE `login_history`
-  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=197;
+  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=229;
+
+--
+-- AUTO_INCREMENT for table `lost_found_review_records`
+--
+ALTER TABLE `lost_found_review_records`
+  MODIFY `record_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `pets`
 --
 ALTER TABLE `pets`
-  MODIFY `pet_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `pet_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+
+--
+-- AUTO_INCREMENT for table `pet_bookmarks`
+--
+ALTER TABLE `pet_bookmarks`
+  MODIFY `bookmark_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `pet_responses`
+--
+ALTER TABLE `pet_responses`
+  MODIFY `response_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `post_comments`
 --
 ALTER TABLE `post_comments`
-  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `post_likes`
 --
 ALTER TABLE `post_likes`
-  MODIFY `like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `post_reports`
 --
 ALTER TABLE `post_reports`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `admin_logs`
+--
+ALTER TABLE `admin_logs`
+  ADD CONSTRAINT `fk_admin_logs_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `adoption_notifications`
+--
+ALTER TABLE `adoption_notifications`
+  ADD CONSTRAINT `fk_adopt_notif_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `business_claims`
+--
+ALTER TABLE `business_claims`
+  ADD CONSTRAINT `fk_claim_est` FOREIGN KEY (`establishment_id`) REFERENCES `establishments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_claim_user` FOREIGN KEY (`requester_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `establishments`
@@ -767,6 +1161,21 @@ ALTER TABLE `notifications`
 --
 ALTER TABLE `pets`
   ADD CONSTRAINT `fk_pet_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `pet_bookmarks`
+--
+ALTER TABLE `pet_bookmarks`
+  ADD CONSTRAINT `fk_bookmark_pet` FOREIGN KEY (`pet_id`) REFERENCES `pets` (`pet_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_bookmark_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `pet_responses`
+--
+ALTER TABLE `pet_responses`
+  ADD CONSTRAINT `fk_pet_response_owner` FOREIGN KEY (`owner_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_pet_response_pet` FOREIGN KEY (`pet_id`) REFERENCES `pets` (`pet_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_pet_response_user` FOREIGN KEY (`responder_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `posts`

@@ -29,6 +29,17 @@ $last_name = $name_parts[1] ?? '';
 $username_val = $user['username'] ?? 'user';
 // Image logic: use database image if exists, else default
 $profile_img = !empty($user['profile_image']) ? $user['profile_image'] : '../images/homeImages/profile icon.png';
+
+$myPetSubmissions = [];
+$petStmt = $conn->prepare("SELECT pet_id, pet_name, category, requested_category, verification_reason, created_at
+                           FROM pets
+                           WHERE user_id = ?
+                           ORDER BY created_at DESC");
+if ($petStmt) {
+    $petStmt->bind_param("i", $user_id);
+    $petStmt->execute();
+    $myPetSubmissions = $petStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
 ?>
 
 <!DOCTYPE html>
@@ -85,6 +96,59 @@ $profile_img = !empty($user['profile_image']) ? $user['profile_image'] : '../ima
                     </div>
                     <button type="submit" name="save_bio" class="save-btn">Save</button>
                 </form>
+
+                <div class="mt-4">
+                    <h5 class="fw-bold text-primary">My Lost &amp; Found Submissions</h5>
+                    <?php if (empty($myPetSubmissions)): ?>
+                        <p class="text-muted small mb-0">No pet submissions yet.</p>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Pet</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($myPetSubmissions as $p): ?>
+                                        <?php
+                                            $key = strtolower(trim((string)($p['category'] ?? '')));
+                                            $label = strtoupper($key);
+                                            $badge = 'bg-secondary';
+                                            if ($key === 'waiting_approval') { $label = 'WAITING FOR APPROVAL'; $badge = 'bg-danger'; }
+                                            elseif ($key === 'rejected') { $label = 'REJECTED'; $badge = 'bg-secondary'; }
+                                            elseif ($key === 'lost') { $label = 'LOST'; $badge = 'bg-danger'; }
+                                            elseif ($key === 'found') { $label = 'FOUND'; $badge = 'bg-success'; }
+                                            elseif ($key === 'for_adoption') { $label = 'FOR ADOPTION'; $badge = 'bg-primary'; }
+                                            elseif ($key === 'adopted') { $label = 'ADOPTED'; $badge = 'bg-success'; }
+                                            elseif ($key === 'pending') { $label = 'PENDING'; $badge = 'bg-warning text-dark'; }
+                                            elseif ($key === 'resolved') { $label = 'RESOLVED'; $badge = 'bg-secondary'; }
+                                            $requested = strtoupper(str_replace('_', ' ', (string)($p['requested_category'] ?? '')));
+                                        ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($p['pet_name'] ?? 'N/A') ?></td>
+                                            <td><span class="badge <?= $badge ?>"><?= htmlspecialchars($label) ?></span></td>
+                                            <td><?= !empty($p['created_at']) ? htmlspecialchars(date('M d, Y h:i A', strtotime($p['created_at']))) : 'N/A' ?></td>
+                                            <td class="small">
+                                                <?php if ($key === 'waiting_approval'): ?>
+                                                    <span class="text-danger fw-bold">Under admin review</span>
+                                                    <?php if ($requested !== ''): ?><div class="text-muted">Pending type: <?= htmlspecialchars($requested) ?></div><?php endif; ?>
+                                                <?php elseif ($key === 'rejected'): ?>
+                                                    <span class="text-secondary fw-bold"><?= htmlspecialchars($p['verification_reason'] ?? 'Rejected by admin.') ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-muted">Visible according to current status.</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
 
             <?php else: ?>
                 <div class="settings-content mt-4">

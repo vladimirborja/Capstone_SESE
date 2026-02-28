@@ -168,7 +168,7 @@ if (!empty($search)) {
 require_once '../db_config.php';
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$est_stmt = $pdo->query("SELECT name, description, address, latitude, longitude, type FROM establishments WHERE status = 'active'");
+$est_stmt = $pdo->query("SELECT name, description, address, latitude, longitude, type, barangay FROM establishments WHERE status IN ('approved','active')");
 $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -573,6 +573,10 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../script/barangay-coords.js"></script>
+<script src="../script/map-utils.js"></script>
+<script src="../script/barangay-dropdown.js"></script>
 <script src="../script/map_init.js"></script>
 
 <script>

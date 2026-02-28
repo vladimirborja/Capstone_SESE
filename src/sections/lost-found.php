@@ -18,92 +18,30 @@
 
         <!-- CAROUSEL -->
         <div id="lost_found_carousel" class="owl-carousel owl-theme">
-
-            <!-- CARD 1 -->
-            <div class="item">
-                <div class="pet-card-vertical">
-                    <div class="pet-image-container">
-                        <span class="badge-latest">Latest</span>
-                        <img src="images/lost&found_section/5.png" alt="Lost Pet Luna">
+            <?php if (!empty($latest_lost_found)): ?>
+                <?php foreach ($latest_lost_found as $pet): ?>
+                    <div class="item">
+                        <div class="pet-card-vertical">
+                            <div class="pet-image-container">
+                                <span class="badge-latest">Latest</span>
+                                <img src="<?php echo !empty($pet['image_url']) ? htmlspecialchars($pet['image_url']) : 'images/lost&found_section/5.png'; ?>" alt="Pet Photo">
+                            </div>
+                            <div class="pet-details-container">
+                                <h3 class="pet-status fs-5">Status: <span><?php echo strtoupper(htmlspecialchars($pet['category'])); ?></span></h3>
+                                <div class="pet-info-item"><label>Pet Name:</label>
+                                    <p><?php echo htmlspecialchars($pet['pet_name']); ?></p>
+                                </div>
+                                <div class="pet-info-item"><label>Type/Breed:</label>
+                                    <p><?php echo htmlspecialchars($pet['breed'] ?? 'Unknown'); ?></p>
+                                </div>
+                                <div class="pet-info-item"><label>Last Seen:</label>
+                                    <p><?php echo htmlspecialchars($pet['last_seen_location'] ?? 'Angeles City'); ?></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="pet-details-container">
-                        <h3 class="pet-status fs-5">Status: <span>LOST PET</span></h3>
-                        <div class="pet-info-item"><label>Pet Name:</label>
-                            <p>Luna</p>
-                        </div>
-                        <div class="pet-info-item"><label>Type/Breed:</label>
-                            <p>Shih Tzu</p>
-                        </div>
-                        <div class="pet-info-item"><label>Last Seen:</label>
-                            <p>Angeles City</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CARD 2 -->
-            <div class="item">
-                <div class="pet-card-vertical">
-                    <div class="pet-image-container">
-                        <span class="badge-latest">Latest</span>
-                        <img src="images/lost&found_section/cat1.png" alt="Lost Pet Lily">
-                    </div>
-                    <div class="pet-details-container">
-                        <h3 class="pet-status fs-5">Status: <span>LOST PET</span></h3>
-                        <div class="pet-info-item"><label>Pet Name:</label>
-                            <p>Lily</p>
-                        </div>
-                        <div class="pet-info-item"><label>Type/Breed:</label>
-                            <p>Ragdoll</p>
-                        </div>
-                        <div class="pet-info-item"><label>Last Seen:</label>
-                            <p>Angeles City</p>
-                        </div>                    </div>
-                </div>
-            </div>
-
-            <!-- CARD 3 -->
-            <div class="item">
-                <div class="pet-card-vertical">
-                    <div class="pet-image-container">
-                        <span class="badge-latest">Latest</span>
-                        <img src="images/lost&found_section/dog1.png" alt="Lost Pet Max">
-                    </div>
-                    <div class="pet-details-container">
-                        <h3 class="pet-status fs-5">Status: <span>LOST PET</span></h3>
-                        <div class="pet-info-item"><label>Pet Name:</label>
-                            <p>Max</p>
-                        </div>
-                        <div class="pet-info-item"><label>Type/Breed:</label>
-                            <p>Corgi</p>
-                        </div>
-                        <div class="pet-info-item"><label>Last Seen:</label>
-                            <p>Angeles City</p>
-                        </div>                    </div>
-                </div>
-            </div>
-
-            <!-- CARD 4 -->
-            <div class="item">
-                <div class="pet-card-vertical">
-                    <div class="pet-image-container">
-                        <span class="badge-latest">Latest</span>
-                        <img src="images/lost&found_section/cat2.png" alt="Lost Pet Bella">
-                    </div>
-                    <div class="pet-details-container">
-                        <h3 class="pet-status fs-5">Status: <span>LOST PET</span></h3>
-                        <div class="pet-info-item"><label>Pet Name:</label>
-                            <p>Bella</p>
-                        </div>
-                        <div class="pet-info-item"><label>Type/Breed:</label>
-                            <p>Ragdoll</p>
-                        </div>
-                        <div class="pet-info-item"><label>Last Seen:</label>
-                            <p>Angeles City</p>
-                        </div>                    </div>
-                </div>
-            </div>
-
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>
