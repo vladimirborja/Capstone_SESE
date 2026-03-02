@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 27, 2026 at 08:23 PM
+-- Generation Time: Mar 02, 2026 at 03:52 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -52,7 +52,17 @@ INSERT INTO `admin_logs` (`log_id`, `admin_id`, `admin_name`, `affected_user_id`
 (5, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'establishment_rejection', 'pending', 'rejected', 'Rejected establishment \"SM Clark\". Reason: test', '2026-02-27 18:00:39'),
 (6, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'pet_post_approval', 'waiting_approval', 'lost', 'Approved pet post: otlum (LOST)', '2026-02-27 19:15:25'),
 (7, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'pet_post_rejection', 'waiting_approval', 'rejected', 'Rejected pet post: tsesf. Reason: test', '2026-02-27 19:16:05'),
-(8, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'pet_post_approval', 'waiting_approval', 'for_adoption', 'Approved pet post: muwah (FOR_ADOPTION)', '2026-02-27 19:16:51');
+(8, 5, 'Karl Vladimir Borjaa', 7, 'Kristine Tuazon', 'pet_post_approval', 'waiting_approval', 'for_adoption', 'Approved pet post: muwah (FOR_ADOPTION)', '2026-02-27 19:16:51'),
+(9, 5, 'Karl Vladimir Borjaa', 5, 'Karl Vladimir Borjaa', 'ownership_claim_submitted', 'none', 'pending', 'Submitted ownership claim for \"test\".', '2026-03-02 08:24:19'),
+(10, 5, 'Karl Vladimir Borjaa', 5, 'Karl Vladimir Borjaa', 'user_role_update', 'admin', 'super_admin', 'tesst', '2026-03-02 08:24:47'),
+(11, 5, 'Karl Vladimir Borjaa', 5, 'Karl Vladimir Borjaa', 'ownership_claim_approved', 'pending', 'approved', 'Approved ownership claim for \"test\".', '2026-03-02 08:25:23'),
+(12, 5, 'Karl Vladimir Borjaa', 5, 'Karl Vladimir Borjaa', 'ownership_claim_submitted', 'none', 'pending', 'Submitted ownership claim for \"tambay coffee\".', '2026-03-02 08:27:29'),
+(13, 5, 'Karl Vladimir Borjaa', 5, 'Karl Vladimir Borjaa', 'ownership_claim_rejected', 'pending', 'rejected', 'Rejected ownership claim for \"tambay coffee\". Reason: test', '2026-03-02 08:29:04'),
+(14, 5, 'Karl Vladimir Borjaa', 5, 'Karl Vladimir Borjaa', 'ownership_claim_submitted', 'none', 'pending', 'Submitted ownership claim for \"tambay coffee\".', '2026-03-02 08:44:57'),
+(15, 5, 'Karl Vladimir Borjaa', 5, 'Karl Vladimir Borjaa', 'ownership_claim_rejected', 'pending', 'rejected', 'Rejected ownership claim for \"tambay coffee\". Reason: test', '2026-03-02 08:45:03'),
+(16, 5, 'Karl Vladimir Borjaa', 5, 'Karl Vladimir Borjaa', 'ownership_claim_submitted', 'none', 'pending', 'Submitted ownership claim for \"tambay coffee\".', '2026-03-02 09:28:30'),
+(17, 5, 'Karl Vladimir Borjaa', 5, 'Karl Vladimir Borjaa', 'user_role_update', 'admin', 'super_admin', 'yes', '2026-03-02 14:25:05'),
+(18, 5, 'Karl Vladimir Borjaa', 6, 'Ariana Punsalang', 'user_role_update', 'user', 'admin', 'yes', '2026-03-02 14:25:08');
 
 -- --------------------------------------------------------
 
@@ -87,7 +97,10 @@ INSERT INTO `adoption_notifications` (`notification_id`, `user_id`, `message`, `
 (12, 7, 'Your lost & found post \"tsesf\" was rejected. Reason: test', 0, '2026-02-27 19:16:05'),
 (13, 7, 'Your lost & found post \"muwah\" has been approved and is now live.', 0, '2026-02-27 19:16:51'),
 (14, 7, 'Karl Vladimir Borjaa sent an adoption request for your pet post.', 0, '2026-02-27 19:17:28'),
-(15, 5, 'Your adoption request for muwah was approved. Contact owner: Kristine Tuazon (09318424195).', 0, '2026-02-27 19:18:01');
+(15, 5, 'Your adoption request for muwah was approved. Contact owner: Kristine Tuazon (09318424195).', 0, '2026-02-27 19:18:01'),
+(16, 5, 'Your ownership claim for \"test\" was approved.', 0, '2026-03-02 08:25:23'),
+(17, 5, 'Your ownership claim for \"tambay coffee\" was rejected. Reason: test', 0, '2026-03-02 08:29:04'),
+(18, 5, 'Your ownership claim for \"tambay coffee\" was rejected. Reason: test', 0, '2026-03-02 08:45:03');
 
 -- --------------------------------------------------------
 
@@ -152,30 +165,6 @@ CREATE TABLE `business_claims` (
   `reviewed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `ownership_claims`
---
-
-CREATE TABLE IF NOT EXISTS `ownership_claims` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `establishment_id` int(11) NOT NULL,
-  `claimant_user_id` int(11) NOT NULL,
-  `full_name` varchar(150) DEFAULT NULL,
-  `permit_number` varchar(150) NOT NULL,
-  `document_path` varchar(255) NOT NULL,
-  `contact_number` varchar(50) NOT NULL,
-  `message` text DEFAULT NULL,
-  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
-  `submitted_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `reviewed_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_ownership_claim_est` (`establishment_id`),
-  KEY `idx_ownership_claim_user` (`claimant_user_id`),
-  KEY `idx_ownership_claim_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -256,22 +245,22 @@ CREATE TABLE `establishments` (
 -- Dumping data for table `establishments`
 --
 
-INSERT INTO `establishments` (`id`, `user_id`, `requester_id`, `status`, `type`, `name`, `description`, `address`, `latitude`, `longitude`, `barangay`, `policies`, `pet_types_allowed`, `venue_size`, `operating_hours`, `contact_number`, `social_links`, `featured`, `guidelines_accepted`, `created_at`, `rejection_reason`) VALUES
-(12, 5, 6, 'active', 'Restaurant / Cafe', 'PREMIER PERLINE VETERINARY CLINIC', 'test', 'Malino', 15.1461125, 120.5800986, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(20, 5, NULL, 'active', 'Restaurant / Cafe', 'test', 'test', 'test', 15.1452136, 120.5806992, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(21, 5, 6, 'active', 'Mall / Shopping Center', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1484322, 120.5745204, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(22, 5, 6, 'active', 'Mall / Shopping Center', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1484322, 120.5745204, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(23, 5, 6, 'active', 'Restaurant / Cafe', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1474588, 120.5790905, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(24, 5, NULL, 'active', 'Park / Recreational Area', 'PREMIER PERLINE VETERINARY CLINIC', 'nuu', 'holy angel university', 15.1023553, 120.6260833, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(25, 5, 7, 'active', 'Hotel / Resort', 'Alfa Mart', 'test', 'Malino', 15.1467546, 120.5763449, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(26, 5, 6, 'active', 'Restaurant / Cafe', 'Alfa Mart', 'test', 'dito lang', 15.1470901, 120.5804431, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(27, 5, NULL, 'active', 'Restaurant / Cafe', 'test', 'sasa', 'test', 15.2121082, 120.6538321, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(28, 5, NULL, 'active', 'Hotel / Resort', 'tambay coffee', 'asd', 'Malino', 15.1664510, 120.5083429, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(29, 7, NULL, 'active', 'Restaurant / Cafe', 'tambay coffee', 'da', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1460503, 120.5696283, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(30, 7, NULL, 'active', 'Park / Recreational Area', 'test', 'd', 'holy angel university', 15.1471274, 120.5799270, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(31, 5, NULL, 'active', 'Restaurant / Cafe', 'tambay coffee', 'asd', 'asd', 15.1473759, 120.5779322, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
-(34, 7, 7, 'approved', 'Mall / Shopping Center', 'marquee', 'test', 'test', 15.1523000, 120.5901000, 'cutcut', 'test', 'Dogs, Birds', 'Medium', '8:00 AM - 8:00 PM', '09650561211', '', 0, 1, '2026-02-27 17:50:52', NULL),
-(35, NULL, 7, 'rejected', 'Mall / Shopping Center', 'SM Clark', 'test', 'test', 15.1456000, 120.5912000, 'market area', 'test', 'Small Animals', 'Medium', '8:00 AM - 8:00 PM', '09650561211', '', 0, 1, '2026-02-27 18:00:28', 'test');
+INSERT INTO `establishments` (`id`, `user_id`, `owner_id`, `owner_verified`, `requester_id`, `status`, `type`, `name`, `description`, `address`, `latitude`, `longitude`, `barangay`, `policies`, `pet_types_allowed`, `venue_size`, `operating_hours`, `contact_number`, `social_links`, `featured`, `guidelines_accepted`, `created_at`, `rejection_reason`) VALUES
+(12, 5, NULL, 0, 6, 'active', 'Restaurant / Cafe', 'PREMIER PERLINE VETERINARY CLINIC', 'test', 'Malino', 15.1461125, 120.5800986, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(20, 5, NULL, 0, NULL, 'active', 'Restaurant / Cafe', 'test', 'test', 'test', 15.1452136, 120.5806992, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(21, 5, NULL, 0, 6, 'active', 'Mall / Shopping Center', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1484322, 120.5745204, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(22, 5, NULL, 0, 6, 'active', 'Mall / Shopping Center', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1484322, 120.5745204, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(23, 5, NULL, 0, 6, 'active', 'Restaurant / Cafe', 'PREMIER PERLINE VETERINARY CLINIC', 'asd', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1474588, 120.5790905, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(24, 5, NULL, 0, NULL, 'active', 'Park / Recreational Area', 'PREMIER PERLINE VETERINARY CLINIC', 'nuu', 'holy angel university', 15.1023553, 120.6260833, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(25, 5, NULL, 0, 7, 'active', 'Hotel / Resort', 'Alfa Mart', 'test', 'Malino', 15.1467546, 120.5763449, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(26, 5, NULL, 0, 6, 'active', 'Restaurant / Cafe', 'Alfa Mart', 'test', 'dito lang', 15.1470901, 120.5804431, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(27, 5, 5, 1, NULL, 'active', 'Restaurant / Cafe', 'test', 'sasa', 'test', 15.2121082, 120.6538321, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(28, 5, NULL, 0, NULL, 'active', 'Hotel / Resort', 'tambay coffee', 'asd', 'Malino', 15.1664510, 120.5083429, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(29, 7, NULL, 0, NULL, 'active', 'Restaurant / Cafe', 'tambay coffee', 'da', '196 C TINIO BLDG. MAC ARTHUR HI-WAY BALIBAGO, ANGELES CITY', 15.1460503, 120.5696283, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(30, 7, NULL, 0, NULL, 'active', 'Park / Recreational Area', 'test', 'd', 'holy angel university', 15.1471274, 120.5799270, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(31, 5, NULL, 0, NULL, 'active', 'Restaurant / Cafe', 'tambay coffee', 'asd', 'asd', 15.1473759, 120.5779322, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '2026-02-27 18:12:30', NULL),
+(34, 7, NULL, 0, 7, 'approved', 'Mall / Shopping Center', 'marquee', 'test', 'test', 15.1523000, 120.5901000, 'cutcut', 'test', 'Dogs, Birds', 'Medium', '8:00 AM - 8:00 PM', '09650561211', '', 0, 1, '2026-02-27 17:50:52', NULL),
+(35, NULL, NULL, 0, 7, 'rejected', 'Mall / Shopping Center', 'SM Clark', 'test', 'test', 15.1456000, 120.5912000, 'market area', 'test', 'Small Animals', 'Medium', '8:00 AM - 8:00 PM', '09650561211', '', 0, 1, '2026-02-27 18:00:28', 'test');
 
 -- --------------------------------------------------------
 
@@ -531,7 +520,23 @@ INSERT INTO `login_history` (`login_id`, `user_id`, `login_time`, `ip_address`, 
 (225, 5, '2026-02-27 17:38:32', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
 (226, 6, '2026-02-27 17:39:55', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
 (227, 6, '2026-02-27 17:42:45', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
-(228, 5, '2026-02-27 17:45:00', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success');
+(228, 5, '2026-02-27 17:45:00', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(229, 5, '2026-03-02 09:03:46', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', 'success'),
+(230, 5, '2026-03-02 09:04:47', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', 'success'),
+(231, 5, '2026-03-02 09:06:42', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(232, 5, '2026-03-02 09:07:22', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(233, 5, '2026-03-02 09:24:24', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', 'success'),
+(234, 5, '2026-03-02 09:31:37', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', 'success'),
+(235, 5, '2026-03-02 09:50:32', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', 'success'),
+(236, 5, '2026-03-02 10:03:22', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(237, 5, '2026-03-02 10:19:12', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(238, 5, '2026-03-02 10:43:34', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(239, 5, '2026-03-02 11:05:05', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(240, 5, '2026-03-02 14:19:22', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(241, 5, '2026-03-02 14:33:47', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(242, 6, '2026-03-02 14:34:17', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(243, 7, '2026-03-02 14:36:32', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success'),
+(244, 5, '2026-03-02 14:37:12', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success');
 
 -- --------------------------------------------------------
 
@@ -604,7 +609,38 @@ INSERT INTO `notifications` (`id`, `post_id`, `user_id`, `message`, `is_read`, `
 (29, 48, 5, 'Kristine Tuazon commented: \"hahaha...\"', 1, '2026-02-23 08:26:58'),
 (30, 48, 5, 'Kristine Tuazon liked your post.', 1, '2026-02-23 09:36:29'),
 (31, 51, 7, 'Karl Vladimir Borjaa liked your post.', 1, '2026-02-24 01:33:20'),
-(32, 51, 7, 'Karl Vladimir Borjaa commented: \"hi...\"', 1, '2026-02-24 01:33:22');
+(32, 51, 7, 'Karl Vladimir Borjaa commented: \"hi...\"', 1, '2026-02-24 01:33:22'),
+(33, 51, 7, 'Karl Vladimir Borjaa liked your post.', 1, '2026-03-02 08:49:06');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ownership_claims`
+--
+
+CREATE TABLE `ownership_claims` (
+  `id` int(11) NOT NULL,
+  `establishment_id` int(11) NOT NULL,
+  `claimant_user_id` int(11) NOT NULL,
+  `full_name` varchar(150) DEFAULT NULL,
+  `permit_number` varchar(150) NOT NULL,
+  `document_path` varchar(255) NOT NULL,
+  `contact_number` varchar(50) NOT NULL,
+  `message` text DEFAULT NULL,
+  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `submitted_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `reviewed_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `ownership_claims`
+--
+
+INSERT INTO `ownership_claims` (`id`, `establishment_id`, `claimant_user_id`, `full_name`, `permit_number`, `document_path`, `contact_number`, `message`, `status`, `submitted_at`, `reviewed_at`) VALUES
+(1, 27, 5, 'Vladimir Borja', '1823718724', 'uploads/ownership_claims/claim_1772439859_9710.jpg', '09650561211', 'hey', 'approved', '2026-03-02 08:24:19', '2026-03-02 08:25:23'),
+(2, 28, 5, 'Mico Cuenco', '1245326', 'uploads/ownership_claims/claim_1772440049_8836.jpg', '09123456789', 'test\n[Admin Rejection Reason] test', 'rejected', '2026-03-02 08:27:29', '2026-03-02 08:29:04'),
+(3, 28, 5, 'Mico Cuenco', '1823718724', 'uploads/ownership_claims/claim_1772441097_1072.jpg', '09123456789', 'test\n[Admin Rejection Reason] test', 'rejected', '2026-03-02 08:44:57', '2026-03-02 08:45:03'),
+(4, 28, 5, 'Vladimir Borja', '1823718724', 'uploads/ownership_claims/claim_1772443710_4654.jpg', '09650561211', 'test', 'pending', '2026-03-02 09:28:30', NULL);
 
 -- --------------------------------------------------------
 
@@ -679,7 +715,8 @@ CREATE TABLE `pet_bookmarks` (
 --
 
 INSERT INTO `pet_bookmarks` (`bookmark_id`, `user_id`, `pet_id`, `created_at`) VALUES
-(3, 5, 31, '2026-02-27 18:04:17');
+(3, 5, 31, '2026-02-27 18:04:17'),
+(6, 5, 30, '2026-03-02 11:34:50');
 
 -- --------------------------------------------------------
 
@@ -810,7 +847,7 @@ INSERT INTO `post_likes` (`like_id`, `post_id`, `user_id`, `created_at`) VALUES
 (40, 46, 5, '2026-02-20 17:36:28'),
 (41, 48, 5, '2026-02-20 18:20:03'),
 (45, 48, 7, '2026-02-23 09:36:29'),
-(46, 51, 5, '2026-02-24 01:33:20');
+(47, 51, 5, '2026-03-02 08:49:06');
 
 -- --------------------------------------------------------
 
@@ -876,9 +913,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `full_name`, `username`, `is_verified`, `bio`, `email`, `verification_code`, `google_id`, `phone_number`, `password`, `role`, `created_at`, `updated_at`, `last_login`, `is_active`, `profile_image`) VALUES
 (4, 'margiel escalante', NULL, 0, '', 'info@bb88advertising.com', '', '', '09650561211', '$2y$10$fADemELEvOqwjJHIqak8..aZpgbW4WpskH3Tml2kxVEgJU2Y3M5Mi', 'user', '2026-01-29 18:00:50', '2026-01-29 18:02:11', '2026-01-29 18:02:11', 1, NULL),
-(5, 'Karl Vladimir Borjaa', 'Karlaaaaaaaaaa', 1, 'SINO TO?!', 'vladimirborja013@gmail.com', '', '', '09650561211', '$2y$10$qpS58OYVf9xG8yJRhiv4JuXKojMJBD0QvVbWiMXJsoMNp4vbticYG', 'admin', '2026-01-29 18:09:12', '2026-02-27 17:45:00', '2026-02-27 17:45:00', 1, '../uploads/profile_pics/user_5_1772212175.jpeg'),
-(6, 'Ariana Punsalang', NULL, 1, '', 'anairadump@gmail.com', '', '', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'user', '2026-02-03 06:36:07', '2026-02-27 17:42:45', '2026-02-27 17:42:45', 1, '../uploads/profile_pics/user_6_1771150867.png'),
-(7, 'Kristine Tuazon', NULL, 1, 'bioooo', 'kristinetuazon16@gmail.com', '', '', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-02-27 17:39:14', '2026-02-27 17:38:14', 1, '../uploads/profile_pics/user_7_1771609052.jpg'),
+(5, 'Karl Vladimir Borjaa', 'Karlaaaaaaaaaa', 1, 'SINO TO?!', 'vladimirborja013@gmail.com', '', '', '09650561211', '$2y$10$qpS58OYVf9xG8yJRhiv4JuXKojMJBD0QvVbWiMXJsoMNp4vbticYG', 'super_admin', '2026-01-29 18:09:12', '2026-03-02 14:37:12', '2026-03-02 14:37:12', 1, '../uploads/profile_pics/user_5_1772212175.jpeg'),
+(6, 'Ariana Punsalang', NULL, 1, '', 'anairadump@gmail.com', '', '', '09915676315', '$2y$10$/KwFozircYcrk5Vpi2oaoO06.jvnzmD0E5AtTkNOXtOoDLsB7S8tO', 'admin', '2026-02-03 06:36:07', '2026-03-02 14:36:15', '2026-03-02 14:34:17', 1, '../uploads/profile_pics/user_6_1772462175.jpg'),
+(7, 'Kristine Tuazon', NULL, 1, 'bioooo', 'kristinetuazon16@gmail.com', '', '', '09318424195', '$2y$10$Js0vpcHQpVXsUSAHj22kF.b5gOPTckaIMYjwS9nazPKEnPXvJgWui', 'user', '2026-02-03 06:41:44', '2026-03-02 14:36:32', '2026-03-02 14:36:32', 1, '../uploads/profile_pics/user_7_1771609052.jpg'),
 (8, 'Mico Cuenco', NULL, 0, '', 'micocuenco@gmail.com', '', '', '09123456789', '$2y$10$5TbZ4Vpu14roc6HtE2ijzeRSQjL3QQxHxdfK9LNe6CduMDB1wro9O', 'user', '2026-02-06 19:32:34', '2026-02-06 19:33:25', '2026-02-06 19:33:25', 1, NULL),
 (9, 'Cayoh Anicete', NULL, 0, '', 'cayohanicete@gmail.com', '', '', '09123456789', '$2y$10$vjFICjPhuwKCKfhCO1gBveIwW3zhneTy99WAV5IfBAtd7ShMcUPja', 'user', '2026-02-11 03:10:13', '2026-02-20 18:18:23', '2026-02-15 07:31:06', 0, NULL),
 (10, 'margiel escalante', NULL, 0, '', 'margielescalante@gmail.com', '', '', '09123456789', '$2y$10$tJ6ojSH5oqJUchJHtZDGbuMJOKjQADmyrlhiP01MQfVfB4Fbbdcn.', 'user', '2026-02-11 06:26:03', '2026-02-20 18:18:21', '2026-02-11 06:31:48', 1, NULL),
@@ -970,6 +1007,15 @@ ALTER TABLE `notifications`
   ADD KEY `post_id` (`post_id`);
 
 --
+-- Indexes for table `ownership_claims`
+--
+ALTER TABLE `ownership_claims`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_ownership_claim_est` (`establishment_id`),
+  ADD KEY `idx_ownership_claim_user` (`claimant_user_id`),
+  ADD KEY `idx_ownership_claim_status` (`status`);
+
+--
 -- Indexes for table `pets`
 --
 ALTER TABLE `pets`
@@ -1042,13 +1088,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `admin_logs`
 --
 ALTER TABLE `admin_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `adoption_notifications`
 --
 ALTER TABLE `adoption_notifications`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `archives`
@@ -1084,7 +1130,7 @@ ALTER TABLE `establishment_records`
 -- AUTO_INCREMENT for table `login_history`
 --
 ALTER TABLE `login_history`
-  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=229;
+  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=245;
 
 --
 -- AUTO_INCREMENT for table `lost_found_review_records`
@@ -1096,7 +1142,13 @@ ALTER TABLE `lost_found_review_records`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+
+--
+-- AUTO_INCREMENT for table `ownership_claims`
+--
+ALTER TABLE `ownership_claims`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `pets`
@@ -1108,7 +1160,7 @@ ALTER TABLE `pets`
 -- AUTO_INCREMENT for table `pet_bookmarks`
 --
 ALTER TABLE `pet_bookmarks`
-  MODIFY `bookmark_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `bookmark_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `pet_responses`
@@ -1132,7 +1184,7 @@ ALTER TABLE `post_comments`
 -- AUTO_INCREMENT for table `post_likes`
 --
 ALTER TABLE `post_likes`
-  MODIFY `like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT for table `post_reports`
@@ -1191,6 +1243,13 @@ ALTER TABLE `notifications`
   ADD CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`);
 
 --
+-- Constraints for table `ownership_claims`
+--
+ALTER TABLE `ownership_claims`
+  ADD CONSTRAINT `fk_ownership_claim_est` FOREIGN KEY (`establishment_id`) REFERENCES `establishments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_ownership_claim_user` FOREIGN KEY (`claimant_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `pets`
 --
 ALTER TABLE `pets`
@@ -1237,13 +1296,6 @@ ALTER TABLE `post_likes`
 ALTER TABLE `post_reports`
   ADD CONSTRAINT `fk_report_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_report_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
-
---
--- Constraints for table `ownership_claims`
---
-ALTER TABLE `ownership_claims`
-  ADD CONSTRAINT `fk_ownership_claim_est` FOREIGN KEY (`establishment_id`) REFERENCES `establishments` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_ownership_claim_user` FOREIGN KEY (`claimant_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
