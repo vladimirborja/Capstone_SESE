@@ -522,6 +522,10 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <label class="form-check-label small" for="f4">Park / Recreational Area</label>
                                 </div>
                                 <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="Pet Salons & Veterinary Clinic" id="f4" onchange="filterMapMarkers()">
+                                    <label class="form-check-label small" for="f4">Pet Salons & Veterinary Clinic</label>
+                                </div>
+                                <div class="form-check">
                                     <input class="form-check-input filter-checkbox" type="checkbox" value="Others" id="f5" onchange="filterMapMarkers()">
                                     <label class="form-check-label small" for="f5">Others</label>
                                 </div>

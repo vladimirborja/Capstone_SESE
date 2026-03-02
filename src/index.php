@@ -52,6 +52,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success'] === true) {
     <?php include 'sections/header.php'; ?>
     <?php include 'sections/home.php'; ?>
     <?php include 'sections/explore.php'; ?>
+    <?php include 'sections/pet-lover-info.php'; ?>
     <?php include 'sections/lost-found.php'; ?>
     <?php include 'sections/about-us.php'; ?>
     <?php include 'sections/contact-us.php'; ?>
