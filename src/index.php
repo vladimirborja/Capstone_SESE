@@ -44,6 +44,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success'] === true) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="main.css">
 </head>
 
@@ -65,6 +66,11 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success'] === true) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script/barangay-coords.js"></script>
+    <script src="script/map-utils.js"></script>
+    <script src="script/barangay-dropdown.js"></script>
+    <script src="script/map_init.js?v=20260302"></script>
 
     <script>
         $(document).ready(function() {

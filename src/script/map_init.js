@@ -95,11 +95,24 @@ function getPopupActionState(place) {
   const viewerId = Number(
     typeof CURRENT_USER_ID !== "undefined" ? CURRENT_USER_ID : 0,
   );
+  const isLoggedIn = viewerId > 0;
   const ownerId = Number(place.ownerId || place.owner_id || 0);
   const ownerVerified = Number(place.ownerVerified || place.owner_verified || 0) === 1;
+  if (!isLoggedIn) return "guest";
   if (ownerVerified && viewerId > 0 && ownerId === viewerId) return "verified_owner";
   if (!ownerVerified || ownerId <= 0) return "claimable";
   return "visitor";
+}
+
+function buildPopupVerificationLabel(place, state) {
+  if (state === "verified_owner") {
+    return `<div class="mb-2"><span class="badge rounded-pill bg-success">✓ Verified by Owner</span></div>`;
+  }
+  const ownerVerified = Number(place.ownerVerified || place.owner_verified || 0) === 1;
+  if (ownerVerified) {
+    return `<div class="mb-2"><span class="badge rounded-pill bg-primary">✓ Verified Establishment</span></div>`;
+  }
+  return "";
 }
 
 function buildPopupActions(place) {
@@ -117,11 +130,21 @@ function buildPopupActions(place) {
   const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
   const directionsBtnStyle =
     "font-size:0.75rem;background:#0d6efd;color:#fff;border:1px solid #0b5ed7;padding:0.35rem 0.5rem;text-decoration:none;";
+  const loginUrl = typeof LOGIN_URL !== "undefined" ? LOGIN_URL : "signIn.php";
+  const registerUrl = typeof REGISTER_URL !== "undefined" ? REGISTER_URL : "signUp.php";
+
+  if (state === "guest") {
+    return `
+      <div class="small text-muted mb-2">Log in to contact the owner.</div>
+      <a href="${loginUrl}" class="btn btn-sm btn-primary py-1" style="font-size:0.75rem;">Login</a>
+      <a href="${registerUrl}" class="btn btn-sm btn-outline-primary py-1 mt-2" style="font-size:0.75rem;">Register</a>
+      <a href="${directionsHref}" target="_blank" class="btn btn-sm map-directions-btn py-1 mt-2" style="${directionsBtnStyle}">View Directions</a>
+    `;
+  }
 
   if (state === "verified_owner") {
     return `
-      <button type="button" class="btn btn-sm btn-success py-1" style="font-size:0.75rem;" disabled>Verified Owner</button>
-      <a href="${profileBase}${viewerId}" class="btn btn-sm btn-outline-primary py-1 mt-2" style="font-size:0.75rem;">Manage Listing</a>
+      <a href="${profileBase}${viewerId}" class="btn btn-sm btn-outline-primary py-1 mt-2" style="font-size:0.75rem;">Manage Establishment</a>
       <a href="${directionsHref}" target="_blank" class="btn btn-sm map-directions-btn py-1 mt-2" style="${directionsBtnStyle}">View Directions</a>
     `;
   }
@@ -129,6 +152,14 @@ function buildPopupActions(place) {
   if (state === "claimable") {
     const estId = Number(place.id || 0);
     const estName = escapeAttr(place.name || "Establishment");
+    if (place.claimPendingByCurrentUser) {
+      return `
+        <button type="button" class="btn btn-sm btn-outline-warning py-1" style="font-size:0.75rem;" disabled>
+          Your claim is under review by admin
+        </button>
+        <a href="${directionsHref}" target="_blank" class="btn btn-sm map-directions-btn py-1 mt-2" style="${directionsBtnStyle}">View Directions</a>
+      `;
+    }
     const canClaimHere = !!document.getElementById("ownershipClaimModal");
     if (!canClaimHere) {
       return `
@@ -139,7 +170,7 @@ function buildPopupActions(place) {
     return `
       <button type="button" class="btn btn-sm btn-warning py-1 claim-owner-btn" style="font-size:0.75rem;"
               data-est-id="${estId}" data-est-name="${estName}">
-        Are You the Owner?
+        🏪 Are You the Owner? Verify Now
       </button>
       <a href="${directionsHref}" target="_blank" class="btn btn-sm map-directions-btn py-1 mt-2" style="${directionsBtnStyle}">View Directions</a>
     `;
@@ -160,6 +191,26 @@ function openOwnershipClaimModal(establishmentId, establishmentName) {
   if (nameLabel) nameLabel.textContent = establishmentName || "Establishment";
   const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
   modal.show();
+}
+
+function buildPopupContent(place) {
+  const actionButtons = buildPopupActions(place);
+  const verificationLabel = buildPopupVerificationLabel(place, getPopupActionState(place));
+  return `
+    <div class="p-1" style="min-width: 200px;">
+      <h6 class="fw-bold text-primary mb-1 d-flex align-items-center">
+        <i class="bi bi-geo-alt-fill me-2"></i> ${escapeHtml(place.name)}
+      </h6>
+      <span class="badge bg-primary rounded-pill" style="font-size: 0.80rem;">${escapeHtml(place.type)}</span>
+      <p class="text-muted mb-2">
+        Barangay: ${escapeHtml(place.barangay || "N/A")}
+      </p>
+      ${verificationLabel}
+      <div class="d-grid">
+        ${actionButtons}
+      </div>
+    </div>
+  `;
 }
 
 // Toggle the 'Specify Others' input field
@@ -216,31 +267,14 @@ function initMainMap() {
       const marker = L.marker([place.latitude, place.longitude], {
         icon: getIconByType(place.type),
       }).addTo(mainMap);
-      // Create a nice popup content
-      const actionButtons = buildPopupActions(place);
-      const popupContent = `
-        <div class="p-1" style="min-width: 200px;">
-            <h6 class="fw-bold text-primary mb-1 d-flex align-items-center">
-            <i class="bi bi-geo-alt-fill me-2"></i> ${escapeHtml(place.name)}
-            </h6>
-            <span class="badge bg-primary rounded-pill" style="font-size: 0.80rem;">${escapeHtml(place.type)}</span>
-            <p class="text-muted mb-2">
-                Barangay: ${escapeHtml(place.barangay || "N/A")}
-            </p>
-
-            <div class="d-grid">
-                ${actionButtons}
-            </div>
-        </div>
-        `;
-
-      marker.bindPopup(popupContent);
+      marker.bindPopup(buildPopupContent(place));
       allMarkers.push({
         marker: marker,
         id: Number(place.id || 0),
         type: place.type,
         typeBucket: normalizeTypeBucket(place.type),
         barangay: (place.barangay || "").toLowerCase().trim(),
+        place: place,
       });
     });
 
@@ -254,12 +288,19 @@ function initMainMap() {
 
 // Filtering Logic
 function filterMapMarkers() {
+  const allOption = document.getElementById("fAll");
   const selectedTypeValues = Array.from(
     document.querySelectorAll(".filter-checkbox:checked"),
   ).map((cb) => cb.value);
-  const selectedBuckets = selectedTypeValues.map((value) =>
-    normalizeTypeBucket(value),
-  );
+  const hasAll = selectedTypeValues.includes("__all__");
+  const selectedBuckets = selectedTypeValues
+    .filter((value) => value !== "__all__")
+    .map((value) => normalizeTypeBucket(value));
+  if (allOption && hasAll && selectedBuckets.length > 0) {
+    allOption.checked = false;
+  } else if (allOption && !hasAll && selectedBuckets.length === 0) {
+    allOption.checked = true;
+  }
   const selectedBarangay = (
     document.getElementById("mapBarangayFilter")?.value || ""
   )
@@ -269,7 +310,7 @@ function filterMapMarkers() {
   allMarkers.forEach((item) => {
     let isVisible = false;
 
-    if (selectedBuckets.length === 0) {
+    if (hasAll || selectedBuckets.length === 0) {
       isVisible = true; // Show all if none selected
     } else {
       isVisible = selectedBuckets.includes(item.typeBucket);
@@ -320,6 +361,11 @@ function rejectEstablishment(id) {
 
 // 3. Keep DOM-dependent event listeners inside the DOMContentLoaded block
 document.addEventListener("DOMContentLoaded", function () {
+  const filterBar = document.getElementById("filterByType");
+  if (filterBar) {
+    filterBar.style.display = "flex";
+    filterBar.classList.remove("hidden");
+  }
   if (
     typeof populateBarangayDropdown === "function" &&
     document.getElementById("mapBarangayFilter")
@@ -519,12 +565,37 @@ document.addEventListener("DOMContentLoaded", function () {
           if (data.success) {
             const modalEl = document.getElementById("ownershipClaimModal");
             if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
-            claimForm.reset();
-            Swal.fire(
-              "Submitted",
-              "Your claim has been submitted and is under review.",
-              "success",
+            const claimEstablishmentId = Number(
+              document.getElementById("claim_establishment_id")?.value || 0,
             );
+            const markerEntry = allMarkers.find((item) => item.id === claimEstablishmentId);
+            if (markerEntry && markerEntry.place) {
+              if (data.status === "self_verified") {
+                markerEntry.place.ownerVerified = 1;
+                markerEntry.place.ownerId = Number(
+                  typeof CURRENT_USER_ID !== "undefined" ? CURRENT_USER_ID : 0,
+                );
+                markerEntry.place.verifiedBy = "self";
+              } else {
+                markerEntry.place.claimPendingByCurrentUser = true;
+              }
+              markerEntry.marker.setPopupContent(buildPopupContent(markerEntry.place));
+              markerEntry.marker.openPopup();
+            }
+            claimForm.reset();
+            if (data.status === "self_verified") {
+              Swal.fire(
+                "Verified",
+                "Your establishment has been verified successfully.",
+                "success",
+              );
+            } else {
+              Swal.fire(
+                "Submitted",
+                "Your claim is under review by admin.",
+                "info",
+              );
+            }
           } else {
             Swal.fire("Error", data.message || "Unable to submit claim.", "error");
           }

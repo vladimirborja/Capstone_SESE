@@ -20,24 +20,132 @@ if ($current_user_id) {
     $currentUserOccupation = $_SESSION['occupation'] ?? '';
 }
 
+// Backward compatibility for DBs that haven't added found_reports.message yet.
+$foundReportsHasMessageColumn = false;
+if ($colCheck = $conn->query("SHOW COLUMNS FROM found_reports LIKE 'message'")) {
+    $foundReportsHasMessageColumn = ($colCheck->num_rows > 0);
+}
+
 // Handle AJAX actions (Status Updates)
 if (isset($_POST['update_status'])) {
     $pet_id = intval($_POST['pet_id']);
     $action = $_POST['action']; 
+    header('Content-Type: application/json');
+    try {
+        if (!$current_user_id) {
+            throw new Exception("Please log in first.");
+        }
 
-    if ($action === 'to_pending') {
-        $sql = "UPDATE pets SET category = 'pending' WHERE pet_id = $pet_id AND LOWER(category) = 'lost'";
-        $success_msg = "Status updated to Pending!";
-    } 
-    elseif ($action === 'confirm_found') {
-        $sql = "UPDATE pets SET category = 'found' WHERE pet_id = $pet_id AND user_id = $current_user_id";
-        $success_msg = "Wonderful! Your pet has been marked as Found.";
-    }
+        if ($action === 'to_pending') {
+            $locationFound = trim((string)($_POST['location_found'] ?? ''));
+            $finderContact = trim((string)($_POST['contact_number'] ?? ''));
+            if ($locationFound === '' || $finderContact === '') {
+                throw new Exception("Found location and contact number are required.");
+            }
 
-    if (isset($sql) && $conn->query($sql) && $conn->affected_rows > 0) {
-        echo json_encode(['success' => true, 'message' => $success_msg]);
-    } else {
-        echo json_encode(['success' => false, 'error' => "Unauthorized or pet not found."]);
+            $petStmt = $conn->prepare("SELECT pet_id, user_id, pet_name, category FROM pets WHERE pet_id = ? LIMIT 1");
+            $petStmt->bind_param("i", $pet_id);
+            $petStmt->execute();
+            $petRow = $petStmt->get_result()->fetch_assoc();
+            if (!$petRow || strtolower((string)$petRow['category']) !== 'lost') {
+                throw new Exception("This listing is no longer available for lost-pet verification.");
+            }
+            if ((int)$petRow['user_id'] === (int)$current_user_id) {
+                throw new Exception("You cannot submit a found report on your own listing.");
+            }
+
+            $photoPath = null;
+            if (!empty($_FILES['found_photo']['name']) && (int)($_FILES['found_photo']['error'] ?? 1) === 0) {
+                $ext = strtolower(pathinfo((string)$_FILES['found_photo']['name'], PATHINFO_EXTENSION));
+                if (!in_array($ext, ['jpg', 'jpeg', 'png'], true)) {
+                    throw new Exception("Found photo must be JPG or PNG.");
+                }
+                if ((int)($_FILES['found_photo']['size'] ?? 0) > (5 * 1024 * 1024)) {
+                    throw new Exception("Found photo must be 5MB or below.");
+                }
+                $uploadDir = "../uploads/found_reports";
+                if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true)) {
+                    throw new Exception("Unable to prepare upload directory.");
+                }
+                $fileName = "found_" . time() . "_" . mt_rand(1000, 9999) . "." . $ext;
+                $target = $uploadDir . "/" . $fileName;
+                if (!move_uploaded_file($_FILES['found_photo']['tmp_name'], $target)) {
+                    throw new Exception("Unable to upload found photo.");
+                }
+                $photoPath = "uploads/found_reports/" . $fileName;
+            }
+
+            $finderMessage = trim((string)($_POST['finder_message'] ?? ''));
+            if ($foundReportsHasMessageColumn) {
+                $reportStmt = $conn->prepare("INSERT INTO found_reports (pet_id, finder_user_id, location_found, contact_number, message, photo, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())");
+                $reportStmt->bind_param("iissss", $pet_id, $current_user_id, $locationFound, $finderContact, $finderMessage, $photoPath);
+            } else {
+                $reportStmt = $conn->prepare("INSERT INTO found_reports (pet_id, finder_user_id, location_found, contact_number, photo, status, created_at) VALUES (?, ?, ?, ?, ?, 'pending', NOW())");
+                $reportStmt->bind_param("iisss", $pet_id, $current_user_id, $locationFound, $finderContact, $photoPath);
+            }
+            $reportStmt->execute();
+
+            $updateStmt = $conn->prepare("UPDATE pets SET category = 'pending' WHERE pet_id = ? AND LOWER(category) = 'lost'");
+            $updateStmt->bind_param("i", $pet_id);
+            $updateStmt->execute();
+            if ($updateStmt->affected_rows <= 0) {
+                throw new Exception("Unable to update listing status.");
+            }
+
+            $ownerMsg = $currentUserName . " reported that they found your pet \"" . ($petRow['pet_name'] ?? 'your pet') . "\". Please review and confirm.";
+            if ($notif = $conn->prepare("INSERT INTO adoption_notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())")) {
+                $ownerId = (int)$petRow['user_id'];
+                $notif->bind_param("is", $ownerId, $ownerMsg);
+                $notif->execute();
+            }
+            echo json_encode(['success' => true, 'message' => 'Status updated to Pending verification.']);
+            exit;
+        } elseif ($action === 'confirm_found') {
+            $foundReportId = intval($_POST['found_report_id'] ?? 0);
+
+            $foundReportMessageExpr = $foundReportsHasMessageColumn ? "fr.message" : "'' AS message";
+            $foundReportSql = "SELECT fr.id, fr.pet_id, fr.contact_number, fr.status, fr.created_at, fr.photo, fr.location_found, {$foundReportMessageExpr}
+                               FROM found_reports fr
+                               JOIN pets p ON p.pet_id = fr.pet_id
+                               WHERE fr.pet_id = ? AND p.user_id = ? AND LOWER(p.category) = 'pending' AND fr.status = 'pending'";
+            if ($foundReportId > 0) {
+                $foundReportSql .= " AND fr.id = ?";
+            }
+            $foundReportSql .= " ORDER BY fr.created_at DESC LIMIT 1";
+            $foundReportStmt = $conn->prepare($foundReportSql);
+            if ($foundReportId > 0) {
+                $foundReportStmt->bind_param("iii", $pet_id, $current_user_id, $foundReportId);
+            } else {
+                $foundReportStmt->bind_param("ii", $pet_id, $current_user_id);
+            }
+            $foundReportStmt->execute();
+            $foundReport = $foundReportStmt->get_result()->fetch_assoc();
+            if (!$foundReport) {
+                throw new Exception("No pending finder report was found for this listing.");
+            }
+
+            $updateStmt = $conn->prepare("UPDATE pets SET category = 'found' WHERE pet_id = ? AND user_id = ? AND LOWER(category) = 'pending'");
+            $updateStmt->bind_param("ii", $pet_id, $current_user_id);
+            $updateStmt->execute();
+            if ($updateStmt->affected_rows <= 0) {
+                throw new Exception("Unauthorized or pet not ready for confirmation.");
+            }
+
+            $foundStmt = $conn->prepare("UPDATE found_reports SET status = 'confirmed' WHERE id = ? AND status = 'pending'");
+            $foundStmt->bind_param("i", $foundReport['id']);
+            $foundStmt->execute();
+            $finderContact = trim((string)($foundReport['contact_number'] ?? ''));
+            $successMsg = "Your pet has been confirmed as found! Thank you to the kind person who reported finding them.";
+            if ($finderContact !== '') {
+                $successMsg .= " Contact the finder at: " . $finderContact . ".";
+            }
+            echo json_encode(['success' => true, 'message' => $successMsg]);
+            exit;
+        }
+
+        throw new Exception("Invalid status action.");
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
     exit;
 }
@@ -222,7 +330,7 @@ $bookmarkedOnly = isset($_GET['bookmarked']) && $_GET['bookmarked'] === '1';
 
 // 2. Build the WHERE clause
 $where_clauses = [];
-$publicLiveStatuses = ['lost', 'found', 'for_adoption'];
+$publicLiveStatuses = ['lost', 'pending', 'found', 'for_adoption'];
 $where_clauses[] = "REPLACE(LOWER(category), ' ', '_') IN ('" . implode("','", array_map([$conn, 'real_escape_string'], $publicLiveStatuses)) . "')";
 
 // Apply category filters if any are checked
@@ -250,6 +358,46 @@ $pets = [];
 if ($result && $result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
         $pets[] = $row;
+    }
+}
+
+$foundReportsByPet = [];
+if ($current_user_id) {
+    $foundReportMessageExpr = $foundReportsHasMessageColumn ? "fr.message" : "'' AS message";
+    $foundReportStmt = $conn->prepare(
+        "SELECT fr.id,
+                fr.pet_id,
+                fr.location_found,
+                fr.contact_number,
+                {$foundReportMessageExpr},
+                fr.photo,
+                fr.created_at,
+                fr.status,
+                COALESCE(u.full_name, 'Finder') AS finder_name
+         FROM found_reports fr
+         JOIN pets p ON p.pet_id = fr.pet_id
+         LEFT JOIN users u ON u.user_id = fr.finder_user_id
+         WHERE p.user_id = ? AND LOWER(p.category) = 'pending' AND fr.status = 'pending'
+         ORDER BY fr.created_at DESC"
+    );
+    if ($foundReportStmt) {
+        $foundReportStmt->bind_param("i", $current_user_id);
+        $foundReportStmt->execute();
+        $frRes = $foundReportStmt->get_result();
+        while ($fr = $frRes->fetch_assoc()) {
+            $petKey = (int)($fr['pet_id'] ?? 0);
+            if ($petKey > 0 && !isset($foundReportsByPet[$petKey])) {
+                $foundReportsByPet[$petKey] = [
+                    'id' => (int)($fr['id'] ?? 0),
+                    'finder_name' => (string)($fr['finder_name'] ?? 'Finder'),
+                    'location_found' => (string)($fr['location_found'] ?? ''),
+                    'contact_number' => (string)($fr['contact_number'] ?? ''),
+                    'message' => (string)($fr['message'] ?? ''),
+                    'photo' => (string)($fr['photo'] ?? ''),
+                    'created_at' => (string)($fr['created_at'] ?? '')
+                ];
+            }
+        }
     }
 }
 
@@ -457,10 +605,10 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
         .pet-img-container img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 12px; }
         
         .status-tag { display: inline-block; padding: 4px 12px; border-radius: 6px; color: white; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
-        .tag-lost { background-color: #dc3545; }
-        .tag-pending { background-color: #fd7e14; }
+        .tag-lost { background-color: #ffebee; color: #c62828; }
+        .tag-pending { background-color: #fff3e0; color: #e65100; }
         .tag-waiting { background-color: #dc3545; }
-        .tag-found { background-color: #198754; }
+        .tag-found { background-color: #e8f5e9; color: #2e7d32; }
         .tag-adoption {
             background-color: #e8f5e9;
             color: #2e7d32;
@@ -472,8 +620,51 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
         .status-tag { border: 0 !important; box-shadow: none !important; line-height: 1.1; }
         
         .view-btn { width: 100%; margin-top: 15px; padding: 10px; border: none; border-radius: 8px; color: white; font-weight: 600; }
-        #petDetailImage { width: 100%; height: 350px; object-fit: cover; border-radius: 12px; }
+        #petDetailImage { width: 100%; height: 340px; object-fit: cover; border-radius: 10px; }
         .modal-content { border-radius: 20px; border: none; }
+        #petModal .modal-dialog {
+            width: min(92vw, 880px);
+            max-width: 880px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #petModal .modal-content {
+            border-radius: 22px;
+            border: none;
+            background: #f8f9fb;
+            padding: 18px !important;
+            transform: translateY(38px);
+            overflow: hidden;
+        }
+        #petModal .modal-header {
+            border: 0;
+            padding: 0 0 12px;
+        }
+        #petModal .modal-body { padding: 0; overflow-x: hidden; }
+        #petModal .row {
+            --bs-gutter-x: 0;
+            margin-left: 0;
+            margin-right: 0;
+            align-items: stretch;
+        }
+        #petModal .row > [class*="col-"] { padding-left: 0; padding-right: 0; }
+        #petModal .row > .col-md-6:last-child { padding-left: 18px; }
+        #petModal #modalPetNameDisplay {
+            font-size: clamp(1.8rem, 3.6vw, 3.2rem);
+            line-height: 1.05;
+            margin-bottom: 0.6rem;
+        }
+        #petModal .col-md-6 p { font-size: 0.92rem; margin-bottom: 0.7rem; }
+        #petModal .col-md-6 p strong { font-size: 0.95rem; }
+        #petModal #modalStatusBadge.tag-found { background-color: #198754; color: #fff; }
+        #petModal hr { margin: 0.7rem 0 1rem; }
+        #petModal #modalDescription { margin: 0.8rem 0 0.6rem; }
+        #petModal #actionButtonContainer .alert,
+        #petModal #actionButtonContainer .btn { border-radius: 8px; }
+        @media (max-width: 767.98px) {
+            #petModal .modal-content { padding: 16px !important; }
+            #petDetailImage { height: 260px; margin-bottom: 10px; }
+        }
         .adoption-action-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .adoption-action-group .btn { min-width: 145px; }
         .status-pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #fff; }
@@ -1090,13 +1281,13 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
 
 <div class="modal fade" id="petModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content p-3">
+        <div class="modal-content">
             <div class="modal-header border-0">
                 <h5 class="modal-title fw-bold text-primary">Pet Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
+                <div class="row g-0">
                     <div class="col-md-6">
                         <img id="petDetailImage" src="" alt="Pet" class="img-fluid rounded shadow-sm">
                     </div>
@@ -1169,6 +1360,16 @@ let currentPet = null;
 let currentUserId = null;
 let currentAdoptPetId = null;
 const myRequestsByPet = <?php echo json_encode($myRequestsByPet); ?>;
+const foundReportsByPet = <?php echo json_encode($foundReportsByPet); ?>;
+
+function escapeModalText(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 function openPetModal(pet, userId) {
     currentPet = pet;
@@ -1224,19 +1425,24 @@ function renderActionButtons() {
 
     if (cat === 'lost') {
         if (!isOwner) {
-            container.innerHTML = `<button class="alert alert-danger w-100 fw-bold" onclick="handleUpdate('to_pending')">I found this pet!</button>`;
+            container.innerHTML = `<button class="alert alert-danger w-100 fw-bold" onclick="handleUpdate('to_pending')">I Have Found This Pet</button>`;
         } else {
             container.innerHTML = `<div class="alert alert-success py-2 text-center small"><strong>Your post is active. Hope you find your pet.</strong></div>`;
         }
     } 
     else if (cat === 'pending') {
         if (isOwner) {
+            const report = foundReportsByPet[String(currentPet.pet_id)] || null;
+            const finderSummary = report
+                ? `<div class="small text-muted mb-2">Latest report from <strong>${escapeModalText(report.finder_name || 'Finder')}</strong> (${escapeModalText(report.contact_number || 'No contact provided')})</div>`
+                : `<div class="small text-muted mb-2">No pending finder report details are available yet.</div>`;
             container.innerHTML = `
                 <div class="alert alert-info py-2 text-center small mb-2">Someone reported they found this pet!</div>
-                <button class="btn btn-success w-100 fw-bold" onclick="handleUpdate('confirm_found')">Confirm Reunited ❤️</button>
+                ${finderSummary}
+                <button class="btn btn-success w-100 fw-bold" onclick="handleUpdate('confirm_found')">This Is My Pet — Confirm Found</button>
             `;
         } else {
-            container.innerHTML = `<button class="alert alert-warning w-100 fw-bold" disabled>Recovery in progress...</button>`;
+            container.innerHTML = `<button class="alert alert-warning w-100 fw-bold" disabled>Pending Verification</button>`;
         }
     }
     else if (cat === 'found') {
@@ -1261,39 +1467,145 @@ function renderActionButtons() {
 
 function handleUpdate(actionType) {
     const isConfirmFound = actionType === 'confirm_found';
-    
-    Swal.fire({
-        title: isConfirmFound ? 'Reunited! ❤️' : 'Help the owner?',
-        text: isConfirmFound ? "This will mark your pet as FOUND." : "Mark as pending? The owner will be notified to confirm.",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#198754',
-        confirmButtonText: 'Yes, proceed!'
-    }).then((result) => {
-        if (result.isConfirmed) {
+    if (!isConfirmFound) {
+        const openFoundReportDialog = () => Swal.fire({
+            title: 'Report Found Pet',
+            html: `
+                <div class="text-start">
+                    <label class="form-label fw-bold small">Where was the pet found?</label>
+                    <input type="text" id="foundLocationInput" class="form-control mb-2" placeholder="Exact location found">
+                    <label class="form-label fw-bold small">Contact number</label>
+                    <input type="text" id="foundContactInput" class="form-control mb-2" placeholder="Your contact number">
+                    <label class="form-label fw-bold small">Optional photo</label>
+                    <input type="file" id="foundPhotoInput" class="form-control" accept=".jpg,.jpeg,.png">
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonColor: '#e65100',
+            confirmButtonText: 'Submit Found Report',
+            preConfirm: () => {
+                const locationVal = (document.getElementById('foundLocationInput')?.value || '').trim();
+                const contactVal = (document.getElementById('foundContactInput')?.value || '').trim();
+                const photoFile = document.getElementById('foundPhotoInput')?.files?.[0] || null;
+                if (!locationVal || !contactVal) {
+                    Swal.showValidationMessage('Please provide where you found the pet and your contact number.');
+                    return false;
+                }
+                return { locationVal, contactVal, photoFile };
+            }
+        }).then((result) => {
+            if (!result.isConfirmed) return;
             const formData = new FormData();
-            formData.append('update_status', true);
+            formData.append('update_status', '1');
             formData.append('pet_id', currentPet.pet_id);
             formData.append('action', actionType);
-
+            formData.append('location_found', result.value.locationVal);
+            formData.append('contact_number', result.value.contactVal);
+            if (result.value.photoFile) {
+                formData.append('found_photo', result.value.photoFile);
+            }
             fetch(window.location.href, { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Updated!', data.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', data.error, 'error');
+                    }
+                });
+        });
+
+        // Prevent Bootstrap modal focus trap from blocking typing inside SweetAlert inputs.
+        const petModalEl = document.getElementById('petModal');
+        const petModalInstance = petModalEl ? bootstrap.Modal.getInstance(petModalEl) : null;
+        if (petModalEl && petModalInstance) {
+            petModalEl.addEventListener('hidden.bs.modal', () => {
+                openFoundReportDialog();
+            }, { once: true });
+            petModalInstance.hide();
+        } else {
+            openFoundReportDialog();
+        }
+        return;
+    }
+
+    const report = foundReportsByPet[String(currentPet.pet_id)] || null;
+    if (!report || !report.id) {
+        Swal.fire('Unable to confirm', 'No pending finder report is available for this pet yet.', 'warning');
+        return;
+    }
+
+    const reportPhotoHtml = report.photo
+        ? `<div class="report-detail mb-2" style="background:#fff;border:1px solid #e7eefb;border-radius:10px;padding:10px 12px;"><span class="label d-block fw-bold">🖼️ Photo of found pet</span><img src="../${escapeModalText(report.photo)}" alt="Found pet photo" style="max-width:100%;border-radius:8px;margin-top:8px;"></div>`
+        : '';
+    const finderMessage = (report.message || '').trim();
+    const finderMessageHtml = finderMessage !== ''
+        ? `<div class="report-detail mb-2" style="background:#fff;border:1px solid #e7eefb;border-radius:10px;padding:10px 12px;"><span class="label d-block fw-bold">💬 Message from finder</span><span class="value">${escapeModalText(finderMessage)}</span></div>`
+        : `<div class="report-detail mb-2" style="background:#fff;border:1px solid #e7eefb;border-radius:10px;padding:10px 12px;"><span class="label d-block fw-bold">💬 Message from finder</span><span class="value text-muted">No additional message provided.</span></div>`;
+    const reportedAt = report.created_at
+        ? new Date(report.created_at.replace(' ', 'T')).toLocaleString()
+        : 'N/A';
+
+    const openOwnerVerificationDialog = () => Swal.fire({
+        title: 'Someone Found Your Pet!',
+        width: window.innerWidth <= 768 ? '95vw' : (window.innerWidth <= 1024 ? '80vw' : 760),
+        html: `
+            <div class="text-start">
+                <div class="finder-report-section" style="border:1px solid #dbe8ff;border-radius:14px;padding:14px;background:linear-gradient(180deg,#f8fbff 0%,#f2f7ff 100%);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                        <h6 class="fw-bold mb-0" style="color:#0d47a1;">📋 Finder's Report</h6>
+                        <span class="badge rounded-pill text-bg-primary">${escapeModalText(report.finder_name || 'Finder')}</span>
+                    </div>
+                    <div class="report-detail mb-2" style="background:#fff;border:1px solid #e7eefb;border-radius:10px;padding:10px 12px;"><span class="label d-block fw-bold">📍 Where found</span><span class="value">${escapeModalText(report.location_found || 'N/A')}</span></div>
+                    <div class="report-detail mb-2" style="background:#fff;border:1px solid #e7eefb;border-radius:10px;padding:10px 12px;"><span class="label d-block fw-bold">📞 Finder's contact number</span><span class="value">${escapeModalText(report.contact_number || 'N/A')}</span></div>
+                    ${finderMessageHtml}
+                    ${reportPhotoHtml}
+                    <div class="report-detail mb-0" style="background:#fff;border:1px solid #e7eefb;border-radius:10px;padding:10px 12px;"><span class="label d-block fw-bold">🕐 Reported at</span><span class="value">${escapeModalText(reportedAt)}</span></div>
+                </div>
+                <p class="small text-muted mt-3 mb-0">Please review the report details above before confirming your pet as found.</p>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#198754',
+        confirmButtonText: '✓ Confirm — This Is My Pet'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+        const formData = new FormData();
+        formData.append('update_status', '1');
+        formData.append('pet_id', currentPet.pet_id);
+        formData.append('action', actionType);
+        formData.append('found_report_id', String(report.id));
+
+        fetch(window.location.href, { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire('Updated!', data.message, 'success').then(() => {
-                        // Redirect to the "Found" category if it was just confirmed
-                        if (isConfirmFound) {
-                            window.location.href = 'lost&found.php?status=found';
-                        } else {
-                            location.reload();
-                        }
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Confirmed',
+                        text: data.message,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = 'lost&found.php?type[]=found';
                     });
                 } else {
                     Swal.fire('Error', data.error, 'error');
                 }
             });
-        }
     });
+
+    const petModalEl = document.getElementById('petModal');
+    const petModalInstance = petModalEl ? bootstrap.Modal.getInstance(petModalEl) : null;
+    if (petModalEl && petModalInstance) {
+        petModalEl.addEventListener('hidden.bs.modal', () => {
+            openOwnerVerificationDialog();
+        }, { once: true });
+        petModalInstance.hide();
+    } else {
+        openOwnerVerificationDialog();
+    }
 }
 
 function toggleBookmark(petId, btnEl) {

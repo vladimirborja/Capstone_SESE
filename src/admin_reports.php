@@ -287,12 +287,12 @@ try {
 try {
     $pending_ownership_claims = $pdo->query(
         "SELECT bc.id AS claim_id, bc.establishment_id, bc.claimant_user_id, bc.full_name, bc.permit_number,
-                bc.document_path, bc.contact_number, bc.message, bc.submitted_at,
+                bc.document_path, bc.contact_number, bc.message, bc.submitted_at, bc.status, bc.reviewed_by,
                 e.name AS establishment_name, COALESCE(u.full_name, 'N/A') AS claimant_name
          FROM ownership_claims bc
          JOIN establishments e ON e.id = bc.establishment_id
          LEFT JOIN users u ON u.user_id = bc.claimant_user_id
-         WHERE bc.status = 'pending'
+         WHERE bc.status IN ('pending','self_verified','admin_verified','rejected')
          ORDER BY bc.submitted_at DESC"
     )->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
@@ -849,7 +849,7 @@ try {
     </div>
 
     <div class="messages-container shadow-sm">
-        <h5 class="fw-bold mb-3"><i class="fas fa-file-signature me-2"></i> PENDING OWNERSHIP CLAIMS</h5>
+        <h5 class="fw-bold mb-3"><i class="fas fa-file-signature me-2"></i> OWNERSHIP CLAIMS</h5>
         <div class="table-responsive">
             <table class="table table-sm align-middle">
                 <thead>
@@ -861,6 +861,7 @@ try {
                         <th>Message</th>
                         <th>Document</th>
                         <th>Submitted</th>
+                        <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -885,15 +886,30 @@ try {
                                 </td>
                                 <td><?= !empty($claim['submitted_at']) ? htmlspecialchars(date('M d, Y h:i A', strtotime($claim['submitted_at']))) : 'N/A' ?></td>
                                 <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-success btn-sm" onclick="approveOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Approve</button>
-                                        <button class="btn btn-danger btn-sm" onclick="rejectOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Reject</button>
-                                    </div>
+                                    <?php
+                                        $claimStatus = strtolower((string)($claim['status'] ?? 'pending'));
+                                        $statusClass = 'bg-warning text-dark';
+                                        $statusLabel = 'Pending';
+                                        if ($claimStatus === 'self_verified') { $statusClass = 'bg-success'; $statusLabel = 'Self-Verified'; }
+                                        elseif ($claimStatus === 'admin_verified') { $statusClass = 'bg-primary'; $statusLabel = 'Admin-Verified'; }
+                                        elseif ($claimStatus === 'rejected') { $statusClass = 'bg-danger'; $statusLabel = 'Rejected'; }
+                                    ?>
+                                    <span class="badge <?= $statusClass ?>"><?= htmlspecialchars($statusLabel) ?></span>
+                                </td>
+                                <td>
+                                    <?php if (in_array($claimStatus, ['pending', 'self_verified'], true)): ?>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-success btn-sm" onclick="approveOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Admin Verify</button>
+                                            <button class="btn btn-danger btn-sm" onclick="rejectOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Reject</button>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="text-muted small">Finalized</span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="8" class="text-center">No pending ownership claims.</td></tr>
+                        <tr><td colspan="9" class="text-center">No ownership claims yet.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>

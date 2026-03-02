@@ -220,6 +220,8 @@ CREATE TABLE `establishments` (
   `user_id` int(11) DEFAULT NULL,
   `owner_id` int(11) DEFAULT NULL,
   `owner_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `verified_by` varchar(50) DEFAULT NULL,
+  `verified_at` timestamp NULL DEFAULT NULL,
   `requester_id` int(11) DEFAULT NULL,
   `status` enum('active','pending','approved','rejected') NOT NULL DEFAULT 'pending',
   `type` varchar(255) NOT NULL,
@@ -571,6 +573,40 @@ INSERT INTO `lost_found_review_records` (`record_id`, `pet_id`, `pet_name`, `pos
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `found_reports`
+--
+
+CREATE TABLE `found_reports` (
+  `id` int(11) NOT NULL,
+  `pet_id` int(11) NOT NULL,
+  `finder_user_id` int(11) NOT NULL,
+  `location_found` text DEFAULT NULL,
+  `contact_number` varchar(20) DEFAULT NULL,
+  `message` text DEFAULT NULL,
+  `photo` varchar(255) DEFAULT NULL,
+  `status` enum('pending','confirmed') NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `owner_verifications`
+--
+
+CREATE TABLE `owner_verifications` (
+  `id` int(11) NOT NULL,
+  `found_report_id` int(11) NOT NULL,
+  `owner_user_id` int(11) NOT NULL,
+  `unique_marking` text NOT NULL,
+  `proof_photo` varchar(255) DEFAULT NULL,
+  `owner_notes` text DEFAULT NULL,
+  `confirmed_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `notifications`
 --
 
@@ -627,9 +663,11 @@ CREATE TABLE `ownership_claims` (
   `document_path` varchar(255) NOT NULL,
   `contact_number` varchar(50) NOT NULL,
   `message` text DEFAULT NULL,
-  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `status` enum('pending','self_verified','admin_verified','approved','rejected') NOT NULL DEFAULT 'pending',
   `submitted_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `reviewed_at` timestamp NULL DEFAULT NULL
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  `reviewed_by` varchar(100) DEFAULT NULL,
+  `rejection_reason` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -999,6 +1037,23 @@ ALTER TABLE `lost_found_review_records`
   ADD KEY `idx_lf_review_actioned` (`actioned_at`);
 
 --
+-- Indexes for table `found_reports`
+--
+ALTER TABLE `found_reports`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_found_reports_pet` (`pet_id`),
+  ADD KEY `idx_found_reports_finder` (`finder_user_id`),
+  ADD KEY `idx_found_reports_status` (`status`);
+
+--
+-- Indexes for table `owner_verifications`
+--
+ALTER TABLE `owner_verifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_owner_verifications_report` (`found_report_id`),
+  ADD KEY `idx_owner_verifications_owner` (`owner_user_id`);
+
+--
 -- Indexes for table `notifications`
 --
 ALTER TABLE `notifications`
@@ -1139,6 +1194,18 @@ ALTER TABLE `lost_found_review_records`
   MODIFY `record_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT for table `found_reports`
+--
+ALTER TABLE `found_reports`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `owner_verifications`
+--
+ALTER TABLE `owner_verifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
@@ -1234,6 +1301,20 @@ ALTER TABLE `establishments`
 --
 ALTER TABLE `login_history`
   ADD CONSTRAINT `login_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `found_reports`
+--
+ALTER TABLE `found_reports`
+  ADD CONSTRAINT `fk_found_reports_finder` FOREIGN KEY (`finder_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_found_reports_pet` FOREIGN KEY (`pet_id`) REFERENCES `pets` (`pet_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `owner_verifications`
+--
+ALTER TABLE `owner_verifications`
+  ADD CONSTRAINT `fk_owner_verify_report` FOREIGN KEY (`found_report_id`) REFERENCES `found_reports` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_owner_verify_user` FOREIGN KEY (`owner_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `notifications`

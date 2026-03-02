@@ -49,18 +49,7 @@
     <div class="row mt-4">
       <div class="col-12">
         <div class="map-container">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3875.1234567890123!2d120.58912345678901!3d15.145678901234567!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b7c123456789%3A0xabcdef1234567890!2sAngeles%20City%2C%20Pampanga%2C%20Philippines!5e0!3m2!1sen!2sus!4v1697041234567!5m2!1sen!2sus"
-            width="100%" height="450" style="border:0;"
-            allowfullscreen loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            class="map-iframe">
-          </iframe>
-
-         <div class="map-buttons">
-          <a href="./signUp.php" class="btn btn-primary fs-5">Pet-Friendly Places</a>
-          <a href="./signUp.php" class="btn btn-primary fs-5">Pet Care Services</a>
-        </div>
+          <div id="landingLeafletMap" class="map-iframe" style="height: 450px; width: 100%;"></div>
         </div>
       </div>
     </div>
@@ -91,3 +80,52 @@
 
   </div>
 </section>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const mapEl = document.getElementById('landingLeafletMap');
+    if (!mapEl || typeof L === 'undefined') return;
+    const guest = !<?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
+    const map = L.map('landingLeafletMap').setView([15.1450, 120.5887], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    fetch('features/handle_establishments.php?action=list_public_establishments')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        const rows = Array.isArray(data.establishments) ? data.establishments : [];
+        if (!rows.length) return;
+        rows.forEach(function (place) {
+          const lat = Number(place.latitude || 0);
+          const lng = Number(place.longitude || 0);
+          if (!lat || !lng) return;
+          const marker = L.marker([lat, lng], {
+            icon: (typeof getIconByType === 'function') ? getIconByType(place.type) : undefined
+          }).addTo(map);
+
+          let actionsHtml = '';
+          if (guest) {
+            actionsHtml = `
+              <div class="small text-muted mb-2">Log in to contact the owner.</div>
+              <a href="signIn.php" class="btn btn-sm btn-primary">Login</a>
+              <a href="signUp.php" class="btn btn-sm btn-outline-primary mt-2">Register</a>
+            `;
+          } else {
+            actionsHtml = `
+              <a href="mains/profile.php?user_id=${Number(place.ownerId || 0)}" class="btn btn-sm btn-outline-primary">Contact Owner</a>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="btn btn-sm btn-primary mt-2">View Directions</a>
+            `;
+          }
+
+          marker.bindPopup(`
+            <div style="min-width:210px">
+              <h6 class="fw-bold text-primary mb-1">${String(place.name || 'Establishment')}</h6>
+              <div class="small mb-1">${String(place.type || 'Others')}</div>
+              <div class="mb-2"><span class="badge rounded-pill bg-primary">✓ Verified Establishment</span></div>
+              <div class="d-grid">${actionsHtml}</div>
+            </div>
+          `);
+        });
+      });
+  });
+</script>

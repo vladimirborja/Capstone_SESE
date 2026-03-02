@@ -21,8 +21,7 @@
                                     <option value="Hotel / Resort">Hotel / Resort</option>
                                     <option value="Mall / Shopping Center">Mall / Shopping Center</option>
                                     <option value="Park / Recreational Area">Park / Recreational Area</option>
-                                    <option value="Pet Salon">Pet Salon</option>
-                                    <option value="Veterinary Clinic">Veterinary Clinic</option>
+                                    <option value="Pet Salons & Veterinary Clinic">Pet Salons & Veterinary Clinic</option>
                                     <option value="Others">Others</option>
                                 </select>
                             </div>
@@ -104,5 +103,54 @@
         </div>
     </div>
 </div>
+
+<?php if (!defined('OWNERSHIP_CLAIM_MODAL_RENDERED')): define('OWNERSHIP_CLAIM_MODAL_RENDERED', true); ?>
+<div class="modal fade" id="ownershipClaimModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="ownershipClaimForm" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Claim Establishment Ownership</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Claiming: <strong id="claimEstablishmentName">Establishment</strong></p>
+                    <input type="hidden" name="establishment_id" id="claim_establishment_id">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" name="full_name" class="form-control" placeholder="Must match your account name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Business Permit No. / DTI Registration No. <span class="text-danger">*</span></label>
+                        <input type="text" name="permit_number" class="form-control" placeholder="Enter your permit or registration number" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Upload Proof of Ownership <span class="text-danger">*</span></label>
+                        <small class="d-block text-muted mb-1">(Business permit, DTI cert, Gov ID - JPG, PNG, PDF max 5MB)</small>
+                        <input type="file" name="proof_document" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Contact Number <span class="text-danger">*</span></label>
+                        <input type="text" name="contact_number" class="form-control" placeholder="Your contact number" required>
+                    </div>
+
+                    <div class="mb-1">
+                        <label class="form-label fw-bold small">Reason for Claiming (optional)</label>
+                        <textarea name="message" class="form-control" rows="3" placeholder="Brief description..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitClaimBtn">Submit Verification</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />

@@ -303,6 +303,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'save_pet') {
 
                     <input type="hidden" name="lat" id="lat">
                     <input type="hidden" name="lng" id="lng">
+                    <input type="hidden" id="pinLat">
+                    <input type="hidden" id="pinLng">
                     <input type="hidden" name="location" id="location_text">
 
                     <div class="row g-2 d-none" id="adoption-fields">
@@ -321,8 +323,12 @@ if (isset($_POST['action']) && $_POST['action'] === 'save_pet') {
                     </div>
 
                     <div class="mb-3">
-                        <label class="fw-bold small" id="map-label">Pinpoint on Map</label>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="fw-bold small mb-0" id="map-label">Pinpoint on Map</label>
+                            <button type="button" id="pinpointBtn" class="btn btn-outline-primary btn-sm">Pinpoint on Map</button>
+                        </div>
                         <div id="lost-found-map"></div>
+                        <p id="pinCoords" style="font-size:0.85rem; color:#666;" class="mt-2 mb-0"></p>
                     </div>
 
                     <div class="mb-3">
@@ -391,15 +397,31 @@ if (isset($_POST['action']) && $_POST['action'] === 'save_pet') {
         populateBarangayDropdown('barangay-select');
         populateBarangayDropdown('adoption-barangay-select');
         lostFoundMap = initAngelesMap('lost-found-map');
+        let pinpointMode = false;
+        let currentPin = null;
         const statusSelect = document.getElementById('status-select');
         const lostFoundFields = document.getElementById('lost-found-fields');
         const adoptionFields = document.getElementById('adoption-fields');
         const mapLabel = document.getElementById('map-label');
+        const pinpointBtn = document.getElementById('pinpointBtn');
+        const pinCoords = document.getElementById('pinCoords');
         const ownerVerificationBlock = document.getElementById('owner-verification-block');
         const rewardWrap = document.getElementById('reward-field-wrap');
         const rewardCheck = document.getElementById('rewardOffered');
         const rewardInputWrap = document.getElementById('reward-input-wrap');
         const rewardDetailsInput = document.getElementById('rewardDetails');
+
+        const syncPinToForm = (lat, lng) => {
+            const latVal = Number(lat).toFixed(6);
+            const lngVal = Number(lng).toFixed(6);
+            document.getElementById('pinLat').value = latVal;
+            document.getElementById('pinLng').value = lngVal;
+            document.getElementById('lat').value = latVal;
+            document.getElementById('lng').value = lngVal;
+            if (pinCoords) {
+                pinCoords.textContent = 'Selected: ' + latVal + ', ' + lngVal;
+            }
+        };
 
         document.getElementById('barangay-select').addEventListener('change', function () {
             const selectedText = this.options[this.selectedIndex] ? this.options[this.selectedIndex].text : '';
@@ -407,6 +429,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'save_pet') {
             lostFoundMarker = zoomToBarangay(lostFoundMap, this.value, lostFoundMarker);
             if (lostFoundMarker) {
                 bindMarkerToInputs(lostFoundMarker, 'lat', 'lng');
+                currentPin = lostFoundMarker;
+                const ll = currentPin.getLatLng();
+                syncPinToForm(ll.lat, ll.lng);
+                currentPin.off('dragend');
+                currentPin.on('dragend', function () {
+                    const pos = currentPin.getLatLng();
+                    syncPinToForm(pos.lat, pos.lng);
+                });
             }
         });
 
@@ -416,7 +446,49 @@ if (isset($_POST['action']) && $_POST['action'] === 'save_pet') {
             lostFoundMarker = zoomToBarangay(lostFoundMap, this.value, lostFoundMarker);
             if (lostFoundMarker) {
                 bindMarkerToInputs(lostFoundMarker, 'lat', 'lng');
+                currentPin = lostFoundMarker;
+                const ll = currentPin.getLatLng();
+                syncPinToForm(ll.lat, ll.lng);
+                currentPin.off('dragend');
+                currentPin.on('dragend', function () {
+                    const pos = currentPin.getLatLng();
+                    syncPinToForm(pos.lat, pos.lng);
+                });
             }
+        });
+
+        if (pinpointBtn) {
+            pinpointBtn.addEventListener('click', function () {
+                pinpointMode = true;
+                this.textContent = 'Click on the map to drop your pin';
+                lostFoundMap.getContainer().style.cursor = 'crosshair';
+            });
+        }
+
+        lostFoundMap.on('click', function (e) {
+            if (!pinpointMode) return;
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+
+            if (currentPin) {
+                lostFoundMap.removeLayer(currentPin);
+            }
+
+            currentPin = L.marker([lat, lng], { draggable: true })
+                .addTo(lostFoundMap)
+                .bindPopup('Drag to adjust location')
+                .openPopup();
+            lostFoundMarker = currentPin;
+            syncPinToForm(lat, lng);
+
+            currentPin.on('dragend', function () {
+                const pos = currentPin.getLatLng();
+                syncPinToForm(pos.lat, pos.lng);
+            });
+
+            pinpointMode = false;
+            if (pinpointBtn) pinpointBtn.textContent = 'Pinpoint on Map';
+            lostFoundMap.getContainer().style.cursor = '';
         });
 
         function toggleStatusForm() {

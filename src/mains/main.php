@@ -575,40 +575,34 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <button class="btn btn-secondary btn-sm" onclick="toggleMapView()"><i class="bi bi-arrow-left"></i> Back to Feed</button>
                 </div>
                 <div class="card border-0 shadow-sm rounded-4 p-3">
-                    <div class="d-flex justify-content-end">
-                        <button class="btn btn-sm btn-outline-primary mb-2 w-auto" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
-                            <i class="bi bi-filter"></i> Filter by Type
-                        </button>
-                    </div>
-                    
-                    <div class="collapse" id="filterCollapse">
-                        <div class="p-2 border rounded-3 mb-3 bg-light">
-                            <div class="d-flex flex-wrap gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" value="Restaurant / Cafe" id="f1" onchange="filterMapMarkers()">
-                                    <label class="form-check-label small" for="f1">Restaurant / Cafe</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" value="Hotel / Resort" id="f2" onchange="filterMapMarkers()">
-                                    <label class="form-check-label small" for="f2">Hotel / Resort</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" value="Mall / Shopping Center" id="f3" onchange="filterMapMarkers()">
-                                    <label class="form-check-label small" for="f3">Mall / Shopping Center</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" value="Park / Recreational Area" id="f4" onchange="filterMapMarkers()">
-                                    <label class="form-check-label small" for="f4">Park / Recreational Area</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" value="Pet Salons & Veterinary Clinic" id="f4" onchange="filterMapMarkers()">
-                                    <label class="form-check-label small" for="f4">Pet Salons & Veterinary Clinic</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" value="Others" id="f5" onchange="filterMapMarkers()">
-                                    <label class="form-check-label small" for="f5">Others</label>
-                                </div>
-                            </div>
+                    <div class="p-2 border rounded-3 mb-3 bg-light d-flex flex-wrap gap-3" id="filterByType">
+                        <div class="form-check">
+                            <input class="form-check-input filter-checkbox" type="checkbox" value="__all__" id="fAll" checked onchange="filterMapMarkers()">
+                            <label class="form-check-label small" for="fAll">All</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input filter-checkbox" type="checkbox" value="Restaurant / Cafe" id="f1" onchange="filterMapMarkers()">
+                            <label class="form-check-label small" for="f1">Restaurant / Cafe</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input filter-checkbox" type="checkbox" value="Hotel / Resort" id="f2" onchange="filterMapMarkers()">
+                            <label class="form-check-label small" for="f2">Hotel / Resort</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input filter-checkbox" type="checkbox" value="Mall / Shopping Center" id="f3" onchange="filterMapMarkers()">
+                            <label class="form-check-label small" for="f3">Mall / Shopping Center</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input filter-checkbox" type="checkbox" value="Park / Recreational Area" id="f4" onchange="filterMapMarkers()">
+                            <label class="form-check-label small" for="f4">Park / Recreational Area</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input filter-checkbox" type="checkbox" value="Pet Salons & Veterinary Clinic" id="f6" onchange="filterMapMarkers()">
+                            <label class="form-check-label small" for="f6">Pet Salons & Veterinary Clinic</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input filter-checkbox" type="checkbox" value="Others" id="f5" onchange="filterMapMarkers()">
+                            <label class="form-check-label small" for="f5">Others</label>
                         </div>
                     </div>
                     <div id="map" style="height: 600px; width: 100%; border-radius: 15px;"></div>

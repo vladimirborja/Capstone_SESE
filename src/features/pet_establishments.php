@@ -3,9 +3,6 @@
         <h5 class="fw-bold m-0"><i class="fas fa-map-marker-alt me-2"></i> PET-FRIENDLY ESTABLISHMENTS</h5>
 
         <div class="d-flex gap-2 align-items-center">
-            <button class="btn btn-sm btn-outline-primary w-auto py-1" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
-                <i class="fas fa-filter"></i> Filter by Type
-            </button>
             <select id="mapBarangayFilter" class="form-select form-select-sm" style="max-width: 220px;">
                 <option value="">All Barangays</option>
             </select>
@@ -23,30 +20,34 @@
         </div>
         
     </div>
-    <div class="collapse" id="filterCollapse">
-        <div class="p-2 border rounded-3 mb-3 bg-light">
-            <div class="d-flex flex-wrap gap-3">
-                <div class="form-check">
-                    <input class="form-check-input filter-checkbox" type="checkbox" value="Restaurant / Cafe" id="f1" onchange="filterMapMarkers()">
-                    <label class="form-check-label small" for="f1">Restaurant / Cafe</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input filter-checkbox" type="checkbox" value="Hotel / Resort" id="f2" onchange="filterMapMarkers()">
-                    <label class="form-check-label small" for="f2">Hotel / Resort</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input filter-checkbox" type="checkbox" value="Mall / Shopping Center" id="f3" onchange="filterMapMarkers()">
-                    <label class="form-check-label small" for="f3">Mall / Shopping Center</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input filter-checkbox" type="checkbox" value="Park / Recreational Area" id="f4" onchange="filterMapMarkers()">
-                    <label class="form-check-label small" for="f4">Park / Recreational Area</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input filter-checkbox" type="checkbox" value="Others" id="f5" onchange="filterMapMarkers()">
-                    <label class="form-check-label small" for="f5">Others</label>
-                </div>
-            </div>
+    <div class="p-2 border rounded-3 mb-3 bg-light d-flex flex-wrap gap-3" id="filterByType">
+        <div class="form-check">
+            <input class="form-check-input filter-checkbox" type="checkbox" value="__all__" id="fAll" checked onchange="filterMapMarkers()">
+            <label class="form-check-label small" for="fAll">All</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input filter-checkbox" type="checkbox" value="Restaurant / Cafe" id="f1" onchange="filterMapMarkers()">
+            <label class="form-check-label small" for="f1">Restaurant / Cafe</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input filter-checkbox" type="checkbox" value="Hotel / Resort" id="f2" onchange="filterMapMarkers()">
+            <label class="form-check-label small" for="f2">Hotel / Resort</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input filter-checkbox" type="checkbox" value="Mall / Shopping Center" id="f3" onchange="filterMapMarkers()">
+            <label class="form-check-label small" for="f3">Mall / Shopping Center</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input filter-checkbox" type="checkbox" value="Park / Recreational Area" id="f4" onchange="filterMapMarkers()">
+            <label class="form-check-label small" for="f4">Park / Recreational Area</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input filter-checkbox" type="checkbox" value="Pet Salons & Veterinary Clinic" id="f6" onchange="filterMapMarkers()">
+            <label class="form-check-label small" for="f6">Pet Salons & Veterinary Clinic</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input filter-checkbox" type="checkbox" value="Others" id="f5" onchange="filterMapMarkers()">
+            <label class="form-check-label small" for="f5">Others</label>
         </div>
     </div>
     <div id="map" style="height: 500px; width: 100%; border-radius: 15px; border: 2px solid white;"></div>
@@ -188,7 +189,7 @@
 
                 <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'super_admin'], true)): ?>
                     <hr class="my-4">
-                    <h6 class="fw-bold mb-3"><i class="fas fa-file-signature me-2"></i>Pending Ownership Claims</h6>
+                    <h6 class="fw-bold mb-3"><i class="fas fa-file-signature me-2"></i>Ownership Claims</h6>
                     <table class="table table-sm align-middle">
                         <thead>
                             <tr>
@@ -199,6 +200,7 @@
                                 <th>Message</th>
                                 <th>Document</th>
                                 <th>Date</th>
+                                <th>Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -213,7 +215,7 @@
                                      FROM ownership_claims bc
                                      JOIN establishments e ON e.id = bc.establishment_id
                                      LEFT JOIN users u ON u.user_id = bc.claimant_user_id
-                                     WHERE bc.status = 'pending'
+                                     WHERE bc.status IN ('pending','self_verified','admin_verified','rejected')
                                      ORDER BY bc.submitted_at DESC"
                                 )->fetchAll(PDO::FETCH_ASSOC);
                             } catch (Exception $e) {
@@ -237,61 +239,33 @@
                                         </td>
                                         <td><small><?= !empty($claim['submitted_at']) ? htmlspecialchars(date('M d, Y h:i A', strtotime($claim['submitted_at']))) : 'N/A' ?></small></td>
                                         <td>
-                                            <button class="btn btn-success btn-sm" onclick="approveOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Approve</button>
-                                            <button class="btn btn-danger btn-sm" onclick="rejectOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Reject</button>
+                                            <?php
+                                                $claimStatus = strtolower((string)($claim['status'] ?? 'pending'));
+                                                $statusClass = 'bg-warning text-dark';
+                                                $statusLabel = 'Pending';
+                                                if ($claimStatus === 'self_verified') { $statusClass = 'bg-success'; $statusLabel = 'Self-Verified'; }
+                                                elseif ($claimStatus === 'admin_verified') { $statusClass = 'bg-primary'; $statusLabel = 'Admin-Verified'; }
+                                                elseif ($claimStatus === 'rejected') { $statusClass = 'bg-danger'; $statusLabel = 'Rejected'; }
+                                            ?>
+                                            <span class="badge <?= $statusClass ?>"><?= htmlspecialchars($statusLabel) ?></span>
+                                        </td>
+                                        <td>
+                                            <?php if (in_array($claimStatus, ['pending', 'self_verified'], true)): ?>
+                                                <button class="btn btn-success btn-sm" onclick="approveOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Admin Verify</button>
+                                                <button class="btn btn-danger btn-sm" onclick="rejectOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Reject</button>
+                                            <?php else: ?>
+                                                <span class="text-muted small">Finalized</span>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="8" class="text-center">No pending ownership claims.</td></tr>
+                                <tr><td colspan="9" class="text-center">No ownership claims yet.</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 <?php endif; ?>
             </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="ownershipClaimModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <form id="ownershipClaimForm" enctype="multipart/form-data">
-                <div class="modal-header">
-                    <h5 class="modal-title">Claim Establishment Ownership</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small text-muted mb-3">Claiming: <strong id="claimEstablishmentName">Establishment</strong></p>
-                    <input type="hidden" name="establishment_id" id="claim_establishment_id">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Full Name</label>
-                            <input type="text" name="full_name" class="form-control" required placeholder="Your legal full name">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Business Permit Number</label>
-                            <input type="text" name="business_permit_number" class="form-control" required placeholder="DTI / permit number">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Contact Number</label>
-                            <input type="text" name="contact_number" class="form-control" required placeholder="e.g., 09123456789">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Ownership Document</label>
-                            <input type="file" name="ownership_document" class="form-control" required accept=".pdf,.jpg,.jpeg,.png,.webp">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold small">Message / Reason</label>
-                            <textarea name="message" class="form-control" rows="3" required placeholder="Explain your ownership claim briefly."></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Submit Claim</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>

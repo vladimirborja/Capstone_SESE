@@ -75,29 +75,3 @@
         </div>
     </div>
 </section>
-
-<!-- Statistics Section -->
-<section class="stats-section">
-    <div class="container">
-        <div class="row g-0 justify-content-center">
-            <div class="col-md-4 col-lg-3">
-                <div class="stat-card">
-                    <h3 class="stat-number">50+</h3>
-                    <p class="stat-label">Establishments to Explore</p>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-3">
-                <div class="stat-card">
-                    <h3 class="stat-number">10+</h3>
-                    <p class="stat-label">Trusted Fur-Friendly Partners</p>
-                </div>
-            </div>
-            <div class="col-md-4 col-lg-3">
-                <div class="stat-card">
-                    <h3 class="stat-number">100+</h3>
-                    <p class="stat-label">Satisfied Fur Parents</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>

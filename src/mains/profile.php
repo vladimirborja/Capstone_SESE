@@ -54,8 +54,10 @@ if ($petStmt) {
 }
 
 $ownedEstablishments = [];
+$ownerBadgeLabel = '';
+$ownerBadgeClass = '';
 try {
-    $ownedStmt = $conn->prepare("SELECT name
+    $ownedStmt = $conn->prepare("SELECT name, COALESCE(verified_by, 'self') AS verified_by
                                  FROM establishments
                                  WHERE COALESCE(owner_id, user_id) = ? AND COALESCE(owner_verified, 0) = 1
                                  ORDER BY created_at DESC");
@@ -63,6 +65,12 @@ try {
         $ownedStmt->bind_param("i", $profile_user_id);
         $ownedStmt->execute();
         $ownedEstablishments = $ownedStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        if (!empty($ownedEstablishments)) {
+            $verifiedByValues = array_map(static fn($row) => strtolower((string)($row['verified_by'] ?? 'self')), $ownedEstablishments);
+            $isAdminVerified = in_array('admin', $verifiedByValues, true) || in_array('super_admin', $verifiedByValues, true);
+            $ownerBadgeLabel = $isAdminVerified ? '✓ Admin-Verified Establishment Owner' : '✓ Verified Establishment Owner';
+            $ownerBadgeClass = $isAdminVerified ? 'owner-verified-chip-admin' : 'owner-verified-chip-self';
+        }
     }
 } catch (Exception $e) {
     $ownedEstablishments = [];
@@ -114,15 +122,22 @@ $currentRole = $roleMeta[$roleKey] ?? ['label' => 'User', 'class' => 'role-user'
             margin-top: 10px;
             padding: 10px 12px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #dcfce7, #ecfdf5);
-            border: 1px solid #86efac;
-            color: #14532d;
             font-size: 0.82rem;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
+        }
+        .owner-verified-chip-self {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+        }
+        .owner-verified-chip-admin {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            color: #1565c0;
         }
         .owner-verified-chip .owner-sub {
             font-weight: 600;
@@ -166,9 +181,9 @@ $currentRole = $roleMeta[$roleKey] ?? ['label' => 'User', 'class' => 'role-user'
                             <?php echo htmlspecialchars($currentRole['label']); ?>
                         </div>
                         <?php if (!empty($ownedEstablishments)): ?>
-                            <div class="owner-verified-chip">
+                            <div class="owner-verified-chip <?php echo htmlspecialchars($ownerBadgeClass); ?>">
                                 <i class="fas fa-shield-alt"></i>
-                                Verified Establishment Owner
+                                <?php echo htmlspecialchars($ownerBadgeLabel); ?>
                                 <span class="owner-sub">
                                     Owner of: <?php echo htmlspecialchars(implode(', ', array_map(static fn($r) => (string)($r['name'] ?? ''), $ownedEstablishments))); ?>
                                 </span>
