@@ -168,7 +168,22 @@ if (!empty($search)) {
 require_once '../db_config.php';
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$est_stmt = $pdo->query("SELECT name, description, address, latitude, longitude, type, barangay FROM establishments WHERE status IN ('approved','active')");
+$estSql = "SELECT id, name, description, address, latitude, longitude, type, barangay,
+                  COALESCE(owner_id, user_id, requester_id) AS ownerId,
+                  COALESCE(owner_verified, 0) AS ownerVerified
+           FROM establishments
+           WHERE status IN ('approved','active')";
+try {
+    $est_stmt = $pdo->query($estSql);
+} catch (Exception $e) {
+    $est_stmt = $pdo->query(
+        "SELECT id, name, description, address, latitude, longitude, type, barangay,
+                COALESCE(user_id, requester_id) AS ownerId,
+                CASE WHEN user_id IS NULL THEN 0 ELSE 1 END AS ownerVerified
+         FROM establishments
+         WHERE status IN ('approved','active')"
+    );
+}
 $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -176,6 +191,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
@@ -204,7 +220,7 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         .faq-btn-read { background: #3ab0ff; border: none; color: white; flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; }
         .faq-btn-ask { background: #0d6efd; border: none; color: white; flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; }
         #missing_preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; margin-top: 10px; }
-        .sticky-column { position: -webkit-sticky; position: sticky; bottom: 20px; align-self: flex-end; }
+        .sticky-column { position: -webkit-sticky; position: sticky; top: 20px; align-self: flex-start; }
         .btn-send-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; transition: all 0.2s ease-in-out; border: none; background-color: #0d6efd; color: white; }
         .btn-send-circle:hover { background-color: #0b5ed7; transform: scale(1.08); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .btn-send-circle i { font-size: 1.1rem; margin-left: 2px; }
@@ -260,6 +276,70 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         #dropL .dropdown-item.text-danger:hover {
             background-color: #fff5f5;
             color: #e53e3e !important;
+        }
+
+        @media (max-width: 1024px) {
+            .search-row {
+                flex-wrap: wrap;
+                justify-content: stretch !important;
+                gap: 10px !important;
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+            }
+            .search-box {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .filters {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+            .filters .chip {
+                min-height: 44px;
+                flex: 1 1 180px;
+            }
+            #map {
+                height: 480px !important;
+            }
+        }
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 20px;
+            }
+            .container-fluid.px-lg-5 {
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+            h1 { font-size: 1.6rem; }
+            h2 { font-size: 1.3rem; }
+            h3 { font-size: 1.1rem; }
+            p { font-size: 0.9rem; }
+            .search-row {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+            .sticky-column {
+                position: static !important;
+                bottom: auto !important;
+            }
+            .faq-btn-group {
+                flex-direction: column;
+            }
+            .faq-btn-read,
+            .faq-btn-ask {
+                width: 100%;
+            }
+            #map {
+                height: 360px !important;
+            }
+            .card-body {
+                overflow-wrap: anywhere;
+            }
+            .btn,
+            button,
+            .chip {
+                min-height: 44px;
+            }
         }
     </style>
 </head>
@@ -395,7 +475,6 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="filters d-flex gap-2">
         <button class="chip blue" data-bs-toggle="modal" data-bs-target="#createPostModal">+ Share a Furrendly Post</button>
         <button class="chip green" data-bs-toggle="modal" data-bs-target="#addEstablishmentModal">+ Add Establishment</button>
-        <button class="chip purple" id="toggleMapBtn" onclick="toggleMapView()">Location</button>
     </div>
 </div>
 
@@ -538,12 +617,6 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <div class="col-lg-3 sticky-column">
-            <div class="sidebar-card">
-                <h6 class="fw-bold mb-3" style="color: #21a9ff">EXPLORE</h6>
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d61633.24294026367!2d120.55171720815411!3d15.132931818146714!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3396f2723c347f31%3A0x7d2427b3b3e3e00e!2sAngeles%2C%20Pampanga!5e0!3m2!1sen!2sph!4v1700000000000!5m2!1sen!2sph" width="100%" height="150" style="border:0;border-radius:10px;" allowfullscreen="" loading="lazy"></iframe>
-                <button class="btn btn-primary w-100 mt-2 btn-sm">Explore Angeles Now!</button>
-            </div>
-
             <div class="faq-section mb-4">
                 <h4 class="faq-title">Have a Question?</h4>
                 <p class="faq-subtitle">Here are some FAQ's</p>
@@ -581,12 +654,14 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="../script/barangay-coords.js"></script>
 <script src="../script/map-utils.js"></script>
 <script src="../script/barangay-dropdown.js"></script>
-<script src="../script/map_init.js"></script>
+<script src="../script/map_init.js?v=20260227"></script>
 
 <script>
     const API_BASE_URL = "../features/handle_establishments.php";
     const AUTO_INIT_MAP = false;
     const USER_ROLE = <?php echo json_encode($_SESSION['role']); ?>;
+    const CURRENT_USER_ID = <?php echo (int)($_SESSION['user_id'] ?? 0); ?>;
+    const PROFILE_BASE_URL = "profile.php?user_id=";
     const establishmentData = <?php echo json_encode($active_establishments); ?>;
 
     function viewUserProfile(name, imgPath) {
@@ -608,6 +683,19 @@ $active_establishments = $est_stmt->fetchAll(PDO::FETCH_ASSOC);
             if(toggleText) toggleText.innerText = "View all comments";
         }
     }
+
+    (function initExploreFromNav() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('explore') === '1') {
+            setTimeout(() => {
+                const feed = document.getElementById('feed-container');
+                const mapBox = document.getElementById('map-container');
+                if (feed && mapBox && feed.style.display !== 'none') {
+                    toggleMapView();
+                }
+            }, 50);
+        }
+    })();
 
     function previewImage(input) {
         const preview = document.getElementById('missing_preview');

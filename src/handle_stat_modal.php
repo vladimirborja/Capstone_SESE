@@ -17,6 +17,12 @@ if (!isset($_SESSION['user_id'])) {
     echo json_encode(['error' => 'Unauthorized. Please log in again.']);
     exit;
 }
+$role = $_SESSION['role'] ?? 'user';
+if (!in_array($role, ['admin', 'super_admin'], true)) {
+    ob_end_clean();
+    echo json_encode(['error' => 'Unauthorized.']);
+    exit;
+}
 
 // ── DB connection ────────────────────────────────────────────────────────────
 // NOTE: adjust this path if your db_config.php is in a different folder

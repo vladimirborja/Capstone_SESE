@@ -11,6 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SESE | Contact Us</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -20,6 +21,37 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="../favicon.png" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @media (max-width: 1024px) {
+            .contact-section .container {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+            .contact-form-wrapper,
+            .contact-info-card {
+                height: auto;
+            }
+        }
+        @media (max-width: 768px) {
+            body { padding-bottom: 20px; }
+            h1 { font-size: 1.6rem; }
+            h2 { font-size: 1.3rem; }
+            h3 { font-size: 1.1rem; }
+            p { font-size: 0.9rem; }
+            .contact-form-wrapper,
+            .contact-info-card {
+                padding: 16px !important;
+                border-radius: 14px !important;
+            }
+            .text-end {
+                text-align: left !important;
+            }
+            .btn-send-blue {
+                width: 100%;
+                min-height: 44px;
+            }
+        }
+    </style>
 </head>
 
 <body>

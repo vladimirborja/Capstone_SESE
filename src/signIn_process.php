@@ -68,6 +68,13 @@ try {
         $_SESSION['email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
 
+        $redirectPath = 'mains/main.php';
+        if ($user['role'] === 'super_admin') {
+            $redirectPath = 'manage_users.php';
+        } elseif ($user['role'] === 'admin') {
+            $redirectPath = 'admin_reports.php';
+        }
+
         // Update last login
         $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE user_id = ?");
         $updateStmt->execute([$user['user_id']]);
@@ -87,6 +94,7 @@ try {
         echo json_encode([
             'success' => true,
             'message' => 'Login successful!',
+            'redirect' => $redirectPath,
             'user' => [
                 'id' => $user['user_id'],
                 'name' => $user['full_name'],

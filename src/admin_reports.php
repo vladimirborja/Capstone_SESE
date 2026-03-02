@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once 'check_session.php';
+requireRole(['admin', 'super_admin']);
 include 'db_config.php';
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -13,6 +15,7 @@ $adminProfileImage = (!empty($adminData['profile_image']))
     : 'images/homeImages/profile icon.png';
 
 $isAdminUser = isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'super_admin'], true);
+$adminRole = $_SESSION['role'] ?? 'admin';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_pet_action'])) {
     header('Content-Type: application/json');
@@ -182,9 +185,22 @@ $recent_messages = $pdo->query(
 )->fetchAll(PDO::FETCH_ASSOC);
 
 // 5. Map / Establishments
-$establishments = $pdo->query(
-    "SELECT name, description, address, latitude, longitude, type, barangay FROM establishments WHERE status IN ('approved','active')"
-)->fetchAll(PDO::FETCH_ASSOC);
+$establishments = [];
+try {
+    $establishments = $pdo->query(
+        "SELECT id, name, description, address, latitude, longitude, type, barangay,
+                COALESCE(owner_id, user_id, requester_id) AS ownerId,
+                COALESCE(owner_verified, 0) AS ownerVerified
+         FROM establishments WHERE status IN ('approved','active')"
+    )->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $establishments = $pdo->query(
+        "SELECT id, name, description, address, latitude, longitude, type, barangay,
+                COALESCE(user_id, requester_id) AS ownerId,
+                CASE WHEN user_id IS NULL THEN 0 ELSE 1 END AS ownerVerified
+         FROM establishments WHERE status IN ('approved','active')"
+    )->fetchAll(PDO::FETCH_ASSOC);
+}
 
 $establishment_records = [];
 try {
@@ -240,6 +256,7 @@ try {
 
 $pending_pet_reviews = [];
 $reviewed_pet_posts = [];
+$pending_ownership_claims = [];
 try {
     $pending_pet_reviews = $pdo->query(
         "SELECT p.pet_id, p.pet_name, p.category, p.requested_category, p.pet_type, p.breed, p.size, p.last_seen_barangay,
@@ -261,9 +278,25 @@ try {
          WHERE r.status IN ('approved','rejected')
          ORDER BY r.actioned_at DESC"
     )->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (Exception $e) {
     $pending_pet_reviews = [];
     $reviewed_pet_posts = [];
+}
+
+try {
+    $pending_ownership_claims = $pdo->query(
+        "SELECT bc.id AS claim_id, bc.establishment_id, bc.claimant_user_id, bc.full_name, bc.permit_number,
+                bc.document_path, bc.contact_number, bc.message, bc.submitted_at,
+                e.name AS establishment_name, COALESCE(u.full_name, 'N/A') AS claimant_name
+         FROM ownership_claims bc
+         JOIN establishments e ON e.id = bc.establishment_id
+         LEFT JOIN users u ON u.user_id = bc.claimant_user_id
+         WHERE bc.status = 'pending'
+         ORDER BY bc.submitted_at DESC"
+    )->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $pending_ownership_claims = [];
 }
 ?>
 <!doctype html>
@@ -300,6 +333,31 @@ try {
         .dropdown-item i { width: 18px; text-align: center; }
         .dropdown-item:hover { background-color: #f7fafc; color: #1e88e5; }
         .dropdown-item.text-danger:hover { background-color: #fff5f5; color: #e53e3e !important; }
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .super-admin-badge {
+            background: #4a00e0;
+            color: #ffffff;
+        }
+        .admin-badge {
+            background: #1565c0;
+            color: #ffffff;
+        }
+        .access-error-msg {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 12px 20px 0;
+            font-size: 0.9rem;
+        }
 
         /* ── Layout ── */
         .white-box-container { border: 6px solid white; border-radius: 30px; padding: 25px; display: flex; gap: 25px; align-items: stretch; margin: 20px; height: 600px; background-color: #cbd5e0; }
@@ -447,6 +505,22 @@ try {
             .print-main-header h1 { font-size: 18pt; color: #1e88e5; margin: 0 0 4px; }
             .print-main-header p  { font-size: 10pt; color: #718096; margin: 0; }
         }
+
+        @media (max-width: 1024px) {
+            .navbar-custom { height: auto; padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
+            .nav-center-title { position: static; transform: none; width: 100%; text-align: center; order: 3; }
+            .white-box-container { height: auto; flex-direction: column; margin: 12px; padding: 14px; }
+            .reports-panel { flex: 1 1 auto; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: auto; }
+            .messages-container { margin: 12px; padding: 14px; border-radius: 16px; }
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .message-row { grid-template-columns: 1fr; gap: 8px; }
+            .pet-photo-pair { grid-template-columns: 1fr; min-width: 0; }
+            .btn, button, .form-select, .form-control { min-height: 44px; }
+            .table { font-size: 0.85rem; }
+        }
     </style>
 </head>
 <body>
@@ -457,15 +531,22 @@ try {
 <!-- ═══════════ NAVBAR ═══════════ -->
 <div class="navbar-custom">
     <div class="logo-admin">
-        <a href="../src/manage_users.php">
+        <a href="<?= $adminRole === 'super_admin' ? 'manage_users.php' : 'admin_reports.php' ?>">
             <img src="../src/images/homeImages/Sese-Logo3.png" alt="Logo" />
         </a>
     </div>
     <div class="nav-center-title">ADMIN DASHBOARD</div>
     <div class="nav-right-group">
-        <a href="manage_users.php" class="btn btn-light btn-sm fw-bold me-2">
-            <i class="fas fa-users-cog me-1"></i> User Management
-        </a>
+        <?php if ($adminRole === 'super_admin'): ?>
+            <span class="role-badge super-admin-badge">Super Admin</span>
+        <?php else: ?>
+            <span class="role-badge admin-badge">Admin</span>
+        <?php endif; ?>
+        <?php if ($adminRole === 'super_admin'): ?>
+            <a href="manage_users.php" class="btn btn-light btn-sm fw-bold me-2">
+                <i class="fas fa-users-cog me-1"></i> User Management
+            </a>
+        <?php endif; ?>
         <a href="admin_logs.php" class="btn btn-light btn-sm fw-bold me-2">
             <i class="fas fa-clipboard-list me-1"></i> Admin Logs
         </a>
@@ -480,7 +561,7 @@ try {
                              style="object-fit:cover; border: 2px solid #1e88e5;">
                         <div>
                             <div class="fw-bold text-dark small"><?= htmlspecialchars($adminName); ?></div>
-                            <div class="text-muted" style="font-size:0.75rem;">Administrator</div>
+                            <div class="text-muted" style="font-size:0.75rem;"><?= htmlspecialchars(str_replace('_', ' ', ucfirst((string)$adminRole))); ?></div>
                         </div>
                     </div>
                 </li>
@@ -493,6 +574,13 @@ try {
         </div>
     </div>
 </div>
+
+<?php if (isset($_SESSION['access_error'])): ?>
+    <div class="access-error-msg">
+        <?= htmlspecialchars($_SESSION['access_error']) ?>
+    </div>
+    <?php unset($_SESSION['access_error']); ?>
+<?php endif; ?>
 
 <!-- ═══════════ MAIN CONTENT ═══════════ -->
 <div class="container-fluid">
@@ -759,6 +847,58 @@ try {
             </table>
         </div>
     </div>
+
+    <div class="messages-container shadow-sm">
+        <h5 class="fw-bold mb-3"><i class="fas fa-file-signature me-2"></i> PENDING OWNERSHIP CLAIMS</h5>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Establishment</th>
+                        <th>Claimant</th>
+                        <th>Permit #</th>
+                        <th>Contact</th>
+                        <th>Message</th>
+                        <th>Document</th>
+                        <th>Submitted</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($pending_ownership_claims)): ?>
+                        <?php foreach ($pending_ownership_claims as $claim): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($claim['establishment_name'] ?? 'N/A') ?></td>
+                                <td>
+                                    <div class="fw-bold"><?= htmlspecialchars($claim['claimant_name'] ?? 'N/A') ?></div>
+                                    <div class="small text-muted"><?= htmlspecialchars($claim['full_name'] ?? 'N/A') ?></div>
+                                </td>
+                                <td><?= htmlspecialchars($claim['permit_number'] ?? 'N/A') ?></td>
+                                <td><?= htmlspecialchars($claim['contact_number'] ?? 'N/A') ?></td>
+                                <td style="max-width:220px; white-space:normal;"><?= htmlspecialchars($claim['message'] ?? 'N/A') ?></td>
+                                <td>
+                                    <?php if (!empty($claim['document_path'])): ?>
+                                        <a href="<?= htmlspecialchars($claim['document_path']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">View File</a>
+                                    <?php else: ?>
+                                        <span class="text-muted">N/A</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= !empty($claim['submitted_at']) ? htmlspecialchars(date('M d, Y h:i A', strtotime($claim['submitted_at']))) : 'N/A' ?></td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-success btn-sm" onclick="approveOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Approve</button>
+                                        <button class="btn btn-danger btn-sm" onclick="rejectOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Reject</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr><td colspan="8" class="text-center">No pending ownership claims.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
     <?php endif; ?>
 </div>
 
@@ -927,8 +1067,10 @@ try {
     const API_BASE_URL      = "./features/handle_establishments.php";
     const AUTO_INIT_MAP     = true;
     const USER_ROLE         = <?php echo json_encode($_SESSION['role']); ?>;
+    const CURRENT_USER_ID   = <?php echo (int)($_SESSION['user_id'] ?? 0); ?>;
+    const PROFILE_BASE_URL  = "mains/profile.php?user_id=";
 </script>
-<script src="script/map_init.js"></script>
+<script src="script/map_init.js?v=20260227"></script>
 <script>
 
 /* ═══════════════════════════════════════════

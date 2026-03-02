@@ -3,8 +3,13 @@ session_start();
 require_once 'check_session.php';
 require_once 'db_config.php';
 
-// Only admins can access
-requireRole(['admin']);
+requireLogin();
+$currentRole = $_SESSION['role'] ?? 'user';
+if ($currentRole !== 'super_admin') {
+    $_SESSION['access_error'] = 'You do not have permission to access User Management.';
+    header('Location: admin_reports.php');
+    exit;
+}
 
 $user = getLoggedInUser();
 
@@ -129,12 +134,40 @@ $users = $stmt->fetchAll();
         .dropdown-menu-end { border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: none; margin-top: 12px; min-width: 220px; padding: 10px 0; }
         .dropdown-item { font-size: 0.9rem; font-weight: 500; color: #4a5568; padding: 10px 20px; display: flex; align-items: center; gap: 10px; }
         .dropdown-item:hover { background-color: #f7fafc; color: #1e88e5; }
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .super-admin-badge {
+            background: #4a00e0;
+            color: #ffffff;
+        }
+        .admin-badge {
+            background: #1565c0;
+            color: #ffffff;
+        }
 
         .badge-active { background: #28a745; width: 75px; display: inline-block; color: white; padding: 5px; border-radius: 6px; text-align: center; font-size: 0.75rem; }
         .badge-inactive { background: #dc3545; width: 75px; display: inline-block; color: white; padding: 5px; border-radius: 6px; text-align: center; font-size: 0.75rem; }
         .card { border-radius: 20px; border: 6px solid white; background-color: #edf2f7; margin-top: 30px; }
         .table thead { background-color: #e2e8f0; }
         .status-container { display: flex; align-items: center; gap: 8px; justify-content: start; }
+
+        @media (max-width: 1024px) {
+            .navbar-custom { height: auto; padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
+            .nav-center-title { position: static; transform: none; width: 100%; text-align: center; order: 3; }
+            .nav-right-group { margin-left: auto; }
+        }
+        @media (max-width: 768px) {
+            .container-fluid { padding-left: 10px !important; padding-right: 10px !important; }
+            .card { margin-top: 14px; border-width: 4px; border-radius: 14px; }
+            .table { font-size: 0.85rem; }
+            .btn, .form-select { min-height: 44px; }
+        }
     </style>
 </head>
 
@@ -149,6 +182,11 @@ $users = $stmt->fetchAll();
         <div class="nav-center-title">User Management</div>
 
         <div class="nav-right-group">
+            <?php if (($user['role'] ?? '') === 'super_admin'): ?>
+                <span class="role-badge super-admin-badge">Super Admin</span>
+            <?php elseif (($user['role'] ?? '') === 'admin'): ?>
+                <span class="role-badge admin-badge">Admin</span>
+            <?php endif; ?>
             <a href="admin_reports.php" class="btn btn-light btn-sm fw-bold me-2">
                 <i class="fas fa-chart-line me-1"></i> Dashboard
             </a>
@@ -163,7 +201,7 @@ $users = $stmt->fetchAll();
                             <img src="<?= htmlspecialchars($adminProfileImage); ?>" class="rounded-circle" width="40" height="40" style="object-fit:cover; border: 2px solid #1e88e5;">
                             <div>
                                 <div class="fw-bold text-dark small"><?= htmlspecialchars($user['name']); ?></div>
-                                <div class="text-muted" style="font-size:0.75rem;">Administrator</div>
+                                <div class="text-muted" style="font-size:0.75rem;"><?= htmlspecialchars(str_replace('_', ' ', ucfirst((string)($user['role'] ?? 'admin')))); ?></div>
                             </div>
                         </div>
                     </li>
@@ -214,7 +252,6 @@ $users = $stmt->fetchAll();
                                                 <option value="super_admin" <?= $u['role'] === 'super_admin' ? 'selected' : ''; ?>>Super Admin</option>
                                                 <option value="business_owner" <?= $u['role'] === 'business_owner' ? 'selected' : ''; ?>>Business Owner</option>
                                                 <option value="veterinarian" <?= $u['role'] === 'veterinarian' ? 'selected' : ''; ?>>Veterinarian</option>
-                                                <option value="salon_owner" <?= $u['role'] === 'salon_owner' ? 'selected' : ''; ?>>Salon Owner</option>
                                             </select>
                                         </form>
                                     </td>

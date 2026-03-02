@@ -185,6 +185,134 @@
                         <?php endif; ?>
                     </tbody>
                 </table>
+
+                <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'super_admin'], true)): ?>
+                    <hr class="my-4">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-file-signature me-2"></i>Pending Ownership Claims</h6>
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Establishment</th>
+                                <th>Claimant</th>
+                                <th>Permit #</th>
+                                <th>Contact</th>
+                                <th>Message</th>
+                                <th>Document</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $claimRows = [];
+                            try {
+                                $claimRows = $pdo->query(
+                                    "SELECT bc.id AS claim_id, bc.permit_number, bc.contact_number, bc.message,
+                                            bc.document_path, bc.submitted_at, e.name AS establishment_name,
+                                            COALESCE(u.full_name, 'N/A') AS claimant_name
+                                     FROM ownership_claims bc
+                                     JOIN establishments e ON e.id = bc.establishment_id
+                                     LEFT JOIN users u ON u.user_id = bc.claimant_user_id
+                                     WHERE bc.status = 'pending'
+                                     ORDER BY bc.submitted_at DESC"
+                                )->fetchAll(PDO::FETCH_ASSOC);
+                            } catch (Exception $e) {
+                                $claimRows = [];
+                            }
+                            ?>
+                            <?php if (!empty($claimRows)): ?>
+                                <?php foreach ($claimRows as $claim): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($claim['establishment_name'] ?? 'N/A') ?></td>
+                                        <td><?= htmlspecialchars($claim['claimant_name'] ?? 'N/A') ?></td>
+                                        <td><?= htmlspecialchars($claim['permit_number'] ?? 'N/A') ?></td>
+                                        <td><?= htmlspecialchars($claim['contact_number'] ?? 'N/A') ?></td>
+                                        <td style="max-width: 220px; white-space: normal;"><?= htmlspecialchars($claim['message'] ?? 'N/A') ?></td>
+                                        <td>
+                                            <?php if (!empty($claim['document_path'])): ?>
+                                                <a href="<?= htmlspecialchars($claim['document_path']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">View File</a>
+                                            <?php else: ?>
+                                                <span class="text-muted">N/A</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><small><?= !empty($claim['submitted_at']) ? htmlspecialchars(date('M d, Y h:i A', strtotime($claim['submitted_at']))) : 'N/A' ?></small></td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm" onclick="approveOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Approve</button>
+                                            <button class="btn btn-danger btn-sm" onclick="rejectOwnershipClaim(<?= (int)$claim['claim_id'] ?>)">Reject</button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="8" class="text-center">No pending ownership claims.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ownershipClaimModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="ownershipClaimForm" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Claim Establishment Ownership</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Claiming: <strong id="claimEstablishmentName">Establishment</strong></p>
+                    <input type="hidden" name="establishment_id" id="claim_establishment_id">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" required placeholder="Your legal full name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Business Permit Number</label>
+                            <input type="text" name="business_permit_number" class="form-control" required placeholder="DTI / permit number">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Contact Number</label>
+                            <input type="text" name="contact_number" class="form-control" required placeholder="e.g., 09123456789">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Ownership Document</label>
+                            <input type="file" name="ownership_document" class="form-control" required accept=".pdf,.jpg,.jpeg,.png,.webp">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">Message / Reason</label>
+                            <textarea name="message" class="form-control" rows="3" required placeholder="Explain your ownership claim briefly."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Claim</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rejectOwnershipClaimModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reject Ownership Claim</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="rejectOwnershipClaimId">
+                <label for="rejectOwnershipClaimReason" class="form-label fw-bold">Reason (required)</label>
+                <textarea id="rejectOwnershipClaimReason" class="form-control" rows="4" required
+                          style="pointer-events:auto; z-index:2; position:relative;"
+                          placeholder="Type the reason for rejecting this ownership claim..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRejectOwnershipClaimBtn">Reject Claim</button>
             </div>
         </div>
     </div>

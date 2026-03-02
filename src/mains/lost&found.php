@@ -218,6 +218,7 @@ if (isset($_POST['adoption_owner_action']) && $current_user_id) {
 
 // 1. Get the filter types from the GET request
 $types = isset($_GET['type']) ? $_GET['type'] : [];
+$bookmarkedOnly = isset($_GET['bookmarked']) && $_GET['bookmarked'] === '1';
 
 // 2. Build the WHERE clause
 $where_clauses = [];
@@ -231,6 +232,10 @@ if (!empty($types)) {
     }, $types);
 
     $where_clauses[] = "REPLACE(LOWER(category), ' ', '_') IN (" . implode(',', $sanitized_types) . ")";
+}
+
+if ($bookmarkedOnly && $current_user_id) {
+    $where_clauses[] = "pet_id IN (SELECT pet_id FROM pet_bookmarks WHERE user_id = " . (int)$current_user_id . ")";
 }
 
 // 3. Construct the Final Query
@@ -250,14 +255,18 @@ if ($result && $result->num_rows > 0) {
 
 $myRequestsByPet = [];
 if ($current_user_id) {
-    $mine = $conn->prepare("SELECT pr.pet_id, pr.status, p.pet_name FROM pet_responses pr JOIN pets p ON p.pet_id = pr.pet_id WHERE pr.responder_user_id = ?");
+    $mine = $conn->prepare("SELECT pr.pet_id, pr.status, pr.created_at, p.pet_name, p.image_url, p.breed, p.pet_type FROM pet_responses pr JOIN pets p ON p.pet_id = pr.pet_id WHERE pr.responder_user_id = ?");
     $mine->bind_param("i", $current_user_id);
     $mine->execute();
     $mineRes = $mine->get_result();
     while ($r = $mineRes->fetch_assoc()) {
         $myRequestsByPet[(int)$r['pet_id']] = [
             'status' => $r['status'],
-            'pet_name' => $r['pet_name'] ?? 'Pet'
+            'pet_name' => $r['pet_name'] ?? 'Pet',
+            'created_at' => $r['created_at'] ?? null,
+            'image_url' => $r['image_url'] ?? '',
+            'breed' => $r['breed'] ?? '',
+            'pet_type' => $r['pet_type'] ?? ''
         ];
     }
 }
@@ -443,7 +452,7 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
         }
         .content-area { flex: 1 1 auto; min-width: 0; }
         .pet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .pet-card { background: white; border: 1px solid #dee2e6; border-radius: 15px; padding: 15px; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .pet-card { position: relative; background: white; border: 1px solid #dee2e6; border-radius: 15px; padding: 15px; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .pet-card:hover { transform: translateY(-5px); }
         .pet-img-container img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 12px; }
         
@@ -452,7 +461,11 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
         .tag-pending { background-color: #fd7e14; }
         .tag-waiting { background-color: #dc3545; }
         .tag-found { background-color: #198754; }
-        .tag-adoption { background-color: #0d6efd; }
+        .tag-adoption {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
         .tag-adopted { background-color: #198754; }
         .tag-rejected { background-color: #dc3545; }
         .tag-resolved { background-color: #6c757d; }
@@ -468,18 +481,42 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
         .status-pill-danger { background: #dc3545; }
         .status-pill-warning { background: #fd7e14; }
         .bookmark-btn {
-            width: 100%;
-            margin-top: 8px;
-            border: 1px solid #8e44ad;
-            color: #8e44ad;
-            background: #fff;
-            border-radius: 8px;
-            padding: 10px;
-            font-weight: 600;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #6c757d;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            cursor: pointer;
+            z-index: 3;
             transition: all 0.2s ease;
+            padding: 0;
         }
-        .bookmark-btn:hover { background: #7d3c98; border-color: #7d3c98; color: #fff; }
-        .bookmark-btn.active { background: #8e44ad; border-color: #8e44ad; color: #fff; }
+        .bookmark-btn:hover { transform: translateY(-1px); color: #8e44ad; }
+        .bookmark-btn.active { color: #8e44ad; background: #f6effc; }
+        .bookmark-btn .bookmark-icon { font-size: 1rem; line-height: 1; pointer-events: none; }
+        .bookmarked-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 28px 16px;
+            border: 1px dashed #d0d7de;
+            border-radius: 12px;
+            color: #6c757d;
+            background: #f8fafc;
+        }
+        .bookmarked-empty .icon {
+            display: block;
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+            line-height: 1;
+        }
         .adoption-form-popup { border-radius: 18px !important; padding: 0.25rem !important; }
         .adoption-form-title { color: #1e88ff !important; font-weight: 700 !important; }
         .adoption-form-card { border: 1px solid #dbe7ff; border-radius: 14px; padding: 12px; margin-bottom: 10px; background: #f9fbff; }
@@ -619,8 +656,109 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
             overflow-wrap: anywhere;
             line-height: 1.35;
         }
+        .my-adoption-requests-card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .my-adoption-requests-subtitle {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 14px;
+        }
+        .my-adoption-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+        .my-adoption-item {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .my-adoption-thumb {
+            width: 100%;
+            height: 140px;
+            border-radius: 10px;
+            background: #f1f3f5;
+            border: 1px dashed #ced4da;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 0.82rem;
+            overflow: hidden;
+        }
+        .my-adoption-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .my-adoption-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #212529;
+            margin: 0;
+            line-height: 1.2;
+        }
+        .my-adoption-meta {
+            font-size: 0.82rem;
+            color: #6c757d;
+            margin: 0;
+        }
+        .my-adoption-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            line-height: 1.2;
+            width: fit-content;
+            text-transform: uppercase;
+        }
+        .my-adoption-status-pending {
+            background: #f6c343;
+            color: #3d2f00;
+        }
+        .my-adoption-status-approved {
+            background: #198754;
+            color: #fff;
+        }
+        .my-adoption-status-rejected {
+            background: #dc3545;
+            color: #fff;
+        }
+        .my-adoption-empty {
+            text-align: center;
+            padding: 22px 14px;
+            border: 1px dashed #d0d7de;
+            border-radius: 12px;
+            color: #6c757d;
+            background: #f8fafc;
+        }
+        .my-adoption-empty .icon {
+            font-size: 1.4rem;
+            line-height: 1;
+            margin-bottom: 6px;
+            display: block;
+        }
         @media (max-width: 767px) {
             .adoption-form-grid { grid-template-columns: 1fr; }
+            .my-adoption-grid { grid-template-columns: 1fr; }
+            .bookmark-btn {
+                width: 44px;
+                height: 44px;
+                top: 10px;
+                right: 10px;
+            }
+        }
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .my-adoption-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media (max-width: 991px) {
             .main-container { flex-direction: column; padding: 16px; gap: 16px; }
@@ -659,8 +797,14 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
                 </div>
                 <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" name="type[]" value="for_adoption" id="filterAdoption" <?php echo in_array('for_adoption', $activeTypes) ? 'checked' : ''; ?>>
-                    <label class="form-check-label text-primary fw-bold" for="filterAdoption">For Adoption</label>
+                    <label class="form-check-label" for="filterAdoption">For Adoption</label>
                 </div>
+                <?php if ($current_user_id): ?>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="bookmarked" value="1" id="filterBookmarked" <?php echo $bookmarkedOnly ? 'checked' : ''; ?>>
+                    <label class="form-check-label" for="filterBookmarked">Bookmarked</label>
+                </div>
+                <?php endif; ?>
             </div>
 
             <button type="submit" class="btn btn-primary w-100 fw-bold">Apply Filters</button>
@@ -679,12 +823,28 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
         <div class="pet-grid">
             <?php if (empty($pets)): ?>
                 <div class="col-12 text-center py-5">
-                    <h5 class="text-muted">No pets found matching these filters.</h5>
+                    <?php if ($bookmarkedOnly && $current_user_id): ?>
+                        <div class="bookmarked-empty">
+                            <span class="icon">🔖</span>
+                            You haven't bookmarked any pets yet.
+                        </div>
+                    <?php else: ?>
+                        <h5 class="text-muted">No pets found matching these filters.</h5>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <?php foreach ($pets as $pet): ?>
                     <?php $statusMeta = petStatusMeta($pet['category']); ?>
                     <div class="pet-card animate__animated animate__fadeIn">
+                        <?php $isBookmarked = !empty($bookmarkedPetIds[(int)$pet['pet_id']]); ?>
+                        <button
+                            class="bookmark-btn <?php echo $isBookmarked ? 'active bookmarked' : ''; ?>"
+                            data-pet-id="<?php echo (int)$pet['pet_id']; ?>"
+                            onclick="toggleBookmark(<?php echo (int)$pet['pet_id']; ?>, this)"
+                            title="<?php echo $isBookmarked ? 'Remove bookmark' : 'Save bookmark'; ?>"
+                            aria-label="<?php echo $isBookmarked ? 'Remove bookmark' : 'Save bookmark'; ?>">
+                            <span class="bookmark-icon"><?php echo $isBookmarked ? '★' : '☆'; ?></span>
+                        </button>
                         <div class="pet-img-container">
                             <img src="../<?php echo htmlspecialchars($pet['image_url']); ?>" alt="Pet">
                         </div>
@@ -707,12 +867,6 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
                             View Details
                         </button>
                         <?php if ($current_user_id): ?>
-                            <button class="bookmark-btn <?php echo !empty($bookmarkedPetIds[(int)$pet['pet_id']]) ? 'active' : ''; ?>" onclick="toggleBookmark(<?php echo (int)$pet['pet_id']; ?>, this)">
-                                <?php
-                                    $isBookmarked = !empty($bookmarkedPetIds[(int)$pet['pet_id']]);
-                                    echo $isBookmarked ? 'Bookmarked' : 'Bookmark';
-                                ?>
-                            </button>
                             <?php if ($statusMeta['key'] === 'for_adoption'): ?>
                                 <?php
                                     $petId = (int)$pet['pet_id'];
@@ -836,19 +990,49 @@ function parseAdoptionApplication(string $rawMessage, string $fallbackName = '',
             </div>
         <?php endif; ?>
         <?php if ($current_user_id): ?>
-            <div class="card mt-4 border-0 shadow-sm">
+            <div class="card mt-4 border-0 shadow-sm my-adoption-requests-card">
                 <div class="card-body">
                     <h5 class="text-primary fw-bold">My Adoption Requests</h5>
-                    <div class="small text-muted">Status updates for requests you sent appear automatically here on reload.</div>
-                    <ul class="mt-2 mb-0">
-                        <?php foreach ($myRequestsByPet as $pid => $reqInfo): ?>
-                            <?php
-                                $myStatus = strtolower((string)$reqInfo['status']);
-                                $myStatusClass = $myStatus === 'declined' ? 'status-pill-danger' : 'status-pill-success';
-                            ?>
-                            <li><?php echo htmlspecialchars($reqInfo['pet_name']); ?> — <span class="status-pill <?php echo $myStatusClass; ?>"><?php echo htmlspecialchars($myStatus); ?></span></li>
-                        <?php endforeach; ?>
-                    </ul>
+                    <div class="my-adoption-requests-subtitle">Status updates for requests you sent appear automatically here on reload.</div>
+                    <?php if (empty($myRequestsByPet)): ?>
+                        <div class="my-adoption-empty">
+                            <span class="icon">📋</span>
+                            You have no adoption requests yet.
+                        </div>
+                    <?php else: ?>
+                        <div class="my-adoption-grid">
+                            <?php foreach ($myRequestsByPet as $pid => $reqInfo): ?>
+                                <?php
+                                    $myStatus = strtolower((string)($reqInfo['status'] ?? 'pending'));
+                                    $statusText = $myStatus === 'approved' ? 'Approved' : ($myStatus === 'declined' ? 'Rejected' : 'Pending');
+                                    $myStatusClass = $myStatus === 'approved'
+                                        ? 'my-adoption-status-approved'
+                                        : ($myStatus === 'declined' ? 'my-adoption-status-rejected' : 'my-adoption-status-pending');
+                                    $requestedDate = !empty($reqInfo['created_at']) ? date('M d, Y h:i A', strtotime((string)$reqInfo['created_at'])) : 'Not available';
+                                    $breedTypeText = trim((string)($reqInfo['breed'] ?? ''));
+                                    if ($breedTypeText === '') {
+                                        $breedTypeText = trim((string)($reqInfo['pet_type'] ?? ''));
+                                    }
+                                    if ($breedTypeText === '') {
+                                        $breedTypeText = 'N/A';
+                                    }
+                                ?>
+                                <article class="my-adoption-item">
+                                    <div class="my-adoption-thumb">
+                                        <?php if (!empty($reqInfo['image_url'])): ?>
+                                            <img src="../<?php echo htmlspecialchars((string)$reqInfo['image_url']); ?>" alt="<?php echo htmlspecialchars((string)($reqInfo['pet_name'] ?? 'Pet')); ?>">
+                                        <?php else: ?>
+                                            Pet image
+                                        <?php endif; ?>
+                                    </div>
+                                    <h6 class="my-adoption-name"><?php echo htmlspecialchars((string)($reqInfo['pet_name'] ?? 'Pet')); ?></h6>
+                                    <p class="my-adoption-meta">Breed / Type: <?php echo htmlspecialchars($breedTypeText); ?></p>
+                                    <p class="my-adoption-meta"><strong>Date requested:</strong> <?php echo htmlspecialchars($requestedDate); ?></p>
+                                    <span class="my-adoption-status <?php echo $myStatusClass; ?>"><?php echo htmlspecialchars($statusText); ?></span>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endif; ?>
@@ -1113,6 +1297,17 @@ function handleUpdate(actionType) {
 }
 
 function toggleBookmark(petId, btnEl) {
+    if (!<?php echo $current_user_id ? 'true' : 'false'; ?>) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Login required',
+            text: 'Please log in to bookmark pets'
+        }).then(() => {
+            window.location.href = '../signIn.php';
+        });
+        return;
+    }
+
     const formData = new FormData();
     formData.append('bookmark_action', 'toggle');
     formData.append('pet_id', petId);
@@ -1121,8 +1316,13 @@ function toggleBookmark(petId, btnEl) {
         .then(data => {
             if (data.success) {
                 if (btnEl) {
-                    btnEl.classList.toggle('active', data.status === 'saved');
-                    btnEl.textContent = data.status === 'saved' ? 'Bookmarked' : 'Bookmark';
+                    const isSaved = data.status === 'saved';
+                    btnEl.classList.toggle('active', isSaved);
+                    btnEl.classList.toggle('bookmarked', isSaved);
+                    btnEl.title = isSaved ? 'Remove bookmark' : 'Save bookmark';
+                    btnEl.setAttribute('aria-label', isSaved ? 'Remove bookmark' : 'Save bookmark');
+                    const iconEl = btnEl.querySelector('.bookmark-icon');
+                    if (iconEl) iconEl.textContent = isSaved ? '★' : '☆';
                 }
                 Swal.fire('Saved', data.status === 'saved' ? 'Post bookmarked.' : 'Bookmark removed.', 'success');
             } else {

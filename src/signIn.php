@@ -3,8 +3,10 @@ session_start();
 
 // Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
-    if ($_SESSION['role'] === 'admin') {
+    if ($_SESSION['role'] === 'super_admin') {
         header("Location: manage_users.php");
+    } elseif ($_SESSION['role'] === 'admin') {
+        header("Location: admin_reports.php");
     } else {
         header("Location: mains/main.php");
     }
@@ -183,8 +185,7 @@ if (isset($_SESSION['user_id'])) {
             timer: 1500,
             showConfirmButton: false
           }).then(() => {
-            // Check the role returned from your process script
-            window.location.href = result.user.role === 'admin' ? 'admin_reports.php' : 'mains/main.php';
+            window.location.href = result.redirect || (result.user.role === 'admin' ? 'admin_reports.php' : 'mains/main.php');
           });
         } else {
           Swal.fire({ 

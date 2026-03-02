@@ -3,6 +3,7 @@ session_start();
 require_once 'check_session.php';
 requireRole(['admin', 'super_admin']);
 require_once 'db_config.php';
+$currentRole = $_SESSION['role'] ?? 'admin';
 
 $from = $_GET['from'] ?? '';
 $to = $_GET['to'] ?? '';
@@ -58,11 +59,56 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Logs</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .super-admin-badge {
+            background: #4a00e0;
+            color: #ffffff;
+        }
+        .admin-badge {
+            background: #1565c0;
+            color: #ffffff;
+        }
+        @media (max-width: 1024px) {
+            .container.py-4 { padding-left: 10px; padding-right: 10px; }
+            .d-flex.justify-content-between.align-items-center.mb-3 {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .d-flex.justify-content-between.align-items-center.mb-3 .btn {
+                min-height: 44px;
+            }
+        }
+        @media (max-width: 768px) {
+            .row.g-2.mb-3 > [class*="col-"] { width: 100%; }
+            .row.g-2.mb-3 .form-control,
+            .row.g-2.mb-3 .form-select,
+            .row.g-2.mb-3 .btn {
+                min-height: 44px;
+            }
+            .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .table { font-size: 0.85rem; }
+        }
+    </style>
 </head>
 <body class="bg-light">
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h4 mb-0">Admin Logs</h1>
+        <div class="d-flex align-items-center gap-2">
+            <h1 class="h4 mb-0">Admin Logs</h1>
+            <?php if ($currentRole === 'super_admin'): ?>
+                <span class="role-badge super-admin-badge">Super Admin</span>
+            <?php else: ?>
+                <span class="role-badge admin-badge">Admin</span>
+            <?php endif; ?>
+        </div>
         <a href="admin_reports.php" class="btn btn-outline-primary btn-sm">Back to Dashboard</a>
     </div>
 

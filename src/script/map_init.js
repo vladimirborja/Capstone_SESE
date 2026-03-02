@@ -3,6 +3,165 @@ let mainMap;
 let isMapInitialized = false;
 let allMarkers = []; // Array to store marker objects and their types
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeAttr(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function buildTypeIcon(svgContent, color = "#1e88e5") {
+  return L.divIcon({
+    className: "custom-est-marker",
+    iconSize: [40, 40],
+    iconAnchor: [20, 39],
+    popupAnchor: [0, -34],
+    html: `
+      <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M20 1.8C12.27 1.8 6 8.07 6 15.8c0 9.73 10.46 20.65 13.04 23.2a1.4 1.4 0 0 0 1.92 0C23.54 36.45 34 25.53 34 15.8 34 8.07 27.73 1.8 20 1.8z" fill="${color}" stroke="#fff" stroke-width="2"/>
+        <circle cx="20" cy="16" r="9.2" fill="rgba(255,255,255,.16)"/>
+      </svg>
+      <div style="position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;">
+        ${svgContent}
+      </div>
+    `,
+  });
+}
+
+const ICON_RESTAURANT = buildTypeIcon(
+  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v8"/><path d="M8 2v8"/><path d="M6 10v12"/><path d="M14 2v7a3 3 0 0 0 6 0V2"/><path d="M17 12v10"/></svg>',
+  "#5b8a3c",
+);
+const ICON_HOTEL = buildTypeIcon(
+  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 20v-6h8v6"/><path d="M8 8h.01"/><path d="M12 8h.01"/><path d="M16 8h.01"/></svg>',
+  "#6b7280",
+);
+const ICON_MALL = buildTypeIcon(
+  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 12H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>',
+  "#7c4dff",
+);
+const ICON_PARK = buildTypeIcon(
+  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l4 5h-8l4-5z"/><path d="M7 12l5-6 5 6H7z"/><path d="M12 12v9"/></svg>',
+  "#2f9e44",
+);
+const ICON_PET_SERVICE = buildTypeIcon(
+  '<svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><path d="M12 13.7c-1.35 0-2.42 1.02-2.42 2.32 0 1.07.93 2.06 2.42 2.06s2.42-.99 2.42-2.06c0-1.3-1.07-2.32-2.42-2.32zM6.18 12.03c1.12 0 2.03-.97 2.03-2.16 0-1.2-.91-2.17-2.03-2.17S4.16 8.67 4.16 9.87c0 1.19.9 2.16 2.02 2.16zm11.64 0c1.12 0 2.02-.97 2.02-2.16 0-1.2-.9-2.17-2.02-2.17s-2.03.97-2.03 2.17c0 1.19.91 2.16 2.03 2.16zM9.28 7.58c1.12 0 2.03-.97 2.03-2.16 0-1.2-.91-2.17-2.03-2.17S7.25 4.22 7.25 5.42c0 1.19.9 2.16 2.03 2.16zm5.44 0c1.12 0 2.03-.97 2.03-2.16 0-1.2-.91-2.17-2.03-2.17s-2.03.97-2.03 2.17c0 1.19.91 2.16 2.03 2.16z"/></svg>',
+  "#ec4899",
+);
+const ICON_OTHER = buildTypeIcon(
+  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  "#1e88e5",
+);
+
+function normalizeTypeBucket(type) {
+  const normalized = String(type || "").toLowerCase().trim();
+  if (normalized.includes("restaurant") || normalized.includes("cafe")) return "restaurant";
+  if (normalized.includes("hotel") || normalized.includes("resort")) return "hotel";
+  if (normalized.includes("mall") || normalized.includes("shopping")) return "mall";
+  if (normalized.includes("park") || normalized.includes("recreational")) return "park";
+  if (
+    normalized.includes("pet salon") ||
+    normalized.includes("veterinary") ||
+    normalized.includes("veterinarian") ||
+    normalized.includes("pet salons & veterinary clinic")
+  ) {
+    return "pet_service";
+  }
+  if (normalized === "others" || normalized === "other") return "others";
+  return "others";
+}
+
+function getIconByType(type) {
+  const bucket = normalizeTypeBucket(type);
+  if (bucket === "restaurant") return ICON_RESTAURANT;
+  if (bucket === "hotel") return ICON_HOTEL;
+  if (bucket === "mall") return ICON_MALL;
+  if (bucket === "park") return ICON_PARK;
+  if (bucket === "pet_service") return ICON_PET_SERVICE;
+  return ICON_OTHER;
+}
+
+function getPopupActionState(place) {
+  const viewerId = Number(
+    typeof CURRENT_USER_ID !== "undefined" ? CURRENT_USER_ID : 0,
+  );
+  const ownerId = Number(place.ownerId || place.owner_id || 0);
+  const ownerVerified = Number(place.ownerVerified || place.owner_verified || 0) === 1;
+  if (ownerVerified && viewerId > 0 && ownerId === viewerId) return "verified_owner";
+  if (!ownerVerified || ownerId <= 0) return "claimable";
+  return "visitor";
+}
+
+function buildPopupActions(place) {
+  const state = getPopupActionState(place);
+  const lat = Number(place.latitude || 0);
+  const lng = Number(place.longitude || 0);
+  const profileBase =
+    typeof PROFILE_BASE_URL !== "undefined"
+      ? PROFILE_BASE_URL
+      : "profile.php?user_id=";
+  const viewerId = Number(
+    typeof CURRENT_USER_ID !== "undefined" ? CURRENT_USER_ID : 0,
+  );
+  const ownerId = Number(place.ownerId || place.owner_id || 0);
+  const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  const directionsBtnStyle =
+    "font-size:0.75rem;background:#0d6efd;color:#fff;border:1px solid #0b5ed7;padding:0.35rem 0.5rem;text-decoration:none;";
+
+  if (state === "verified_owner") {
+    return `
+      <button type="button" class="btn btn-sm btn-success py-1" style="font-size:0.75rem;" disabled>Verified Owner</button>
+      <a href="${profileBase}${viewerId}" class="btn btn-sm btn-outline-primary py-1 mt-2" style="font-size:0.75rem;">Manage Listing</a>
+      <a href="${directionsHref}" target="_blank" class="btn btn-sm map-directions-btn py-1 mt-2" style="${directionsBtnStyle}">View Directions</a>
+    `;
+  }
+
+  if (state === "claimable") {
+    const estId = Number(place.id || 0);
+    const estName = escapeAttr(place.name || "Establishment");
+    const canClaimHere = !!document.getElementById("ownershipClaimModal");
+    if (!canClaimHere) {
+      return `
+        <button type="button" class="btn btn-sm btn-outline-secondary py-1" style="font-size:0.75rem;" disabled>Owner Not Yet Verified</button>
+        <a href="${directionsHref}" target="_blank" class="btn btn-sm map-directions-btn py-1 mt-2" style="${directionsBtnStyle}">View Directions</a>
+      `;
+    }
+    return `
+      <button type="button" class="btn btn-sm btn-warning py-1 claim-owner-btn" style="font-size:0.75rem;"
+              data-est-id="${estId}" data-est-name="${estName}">
+        Are You the Owner?
+      </button>
+      <a href="${directionsHref}" target="_blank" class="btn btn-sm map-directions-btn py-1 mt-2" style="${directionsBtnStyle}">View Directions</a>
+    `;
+  }
+
+  return `
+    <a href="${profileBase}${ownerId}" class="btn btn-sm btn-outline-primary py-1" style="font-size:0.75rem;">Contact Owner</a>
+    <a href="${directionsHref}" target="_blank" class="btn btn-sm map-directions-btn py-1 mt-2" style="${directionsBtnStyle}">View Directions</a>
+  `;
+}
+
+function openOwnershipClaimModal(establishmentId, establishmentName) {
+  const modalEl = document.getElementById("ownershipClaimModal");
+  if (!modalEl) return;
+  const idInput = document.getElementById("claim_establishment_id");
+  const nameLabel = document.getElementById("claimEstablishmentName");
+  if (idInput) idInput.value = String(establishmentId || "");
+  if (nameLabel) nameLabel.textContent = establishmentName || "Establishment";
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  modal.show();
+}
+
 // Toggle the 'Specify Others' input field
 function toggleOtherInput(value) {
   const otherDiv = document.getElementById("otherTypeDiv");
@@ -25,12 +184,12 @@ function toggleMapView() {
   if (feed.style.display !== "none") {
     feed.style.display = "none";
     mapBox.style.display = "block";
-    btn.innerHTML = "View Feed";
+    if (btn) btn.innerHTML = "View Feed";
     initMainMap(); // Call the initialization function
   } else {
     feed.style.display = "block";
     mapBox.style.display = "none";
-    btn.innerHTML = "Location";
+    if (btn) btn.innerHTML = "Location";
   }
 }
 
@@ -54,25 +213,23 @@ function initMainMap() {
     establishmentData.length > 0
   ) {
     establishmentData.forEach((place) => {
-      const marker = L.marker([place.latitude, place.longitude]).addTo(mainMap);
+      const marker = L.marker([place.latitude, place.longitude], {
+        icon: getIconByType(place.type),
+      }).addTo(mainMap);
       // Create a nice popup content
+      const actionButtons = buildPopupActions(place);
       const popupContent = `
         <div class="p-1" style="min-width: 200px;">
             <h6 class="fw-bold text-primary mb-1 d-flex align-items-center">
-            <i class="bi bi-geo-alt-fill me-2"></i> ${place.name}
+            <i class="bi bi-geo-alt-fill me-2"></i> ${escapeHtml(place.name)}
             </h6>
-            <span class="badge bg-primary rounded-pill" style="font-size: 0.80rem;">${place.type}</span>
+            <span class="badge bg-primary rounded-pill" style="font-size: 0.80rem;">${escapeHtml(place.type)}</span>
             <p class="text-muted mb-2">
-                Barangay: ${place.barangay || "N/A"}
+                Barangay: ${escapeHtml(place.barangay || "N/A")}
             </p>
 
             <div class="d-grid">
-                <a href="https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}" 
-                    target="_blank" 
-                    class="btn btn-sm btn-primary py-1" 
-                    style="font-size: 0.75rem;">
-                    View Directions
-                </a>
+                ${actionButtons}
             </div>
         </div>
         `;
@@ -80,7 +237,9 @@ function initMainMap() {
       marker.bindPopup(popupContent);
       allMarkers.push({
         marker: marker,
+        id: Number(place.id || 0),
         type: place.type,
+        typeBucket: normalizeTypeBucket(place.type),
         barangay: (place.barangay || "").toLowerCase().trim(),
       });
     });
@@ -95,34 +254,25 @@ function initMainMap() {
 
 // Filtering Logic
 function filterMapMarkers() {
-  const selectedTypes = Array.from(
+  const selectedTypeValues = Array.from(
     document.querySelectorAll(".filter-checkbox:checked"),
   ).map((cb) => cb.value);
+  const selectedBuckets = selectedTypeValues.map((value) =>
+    normalizeTypeBucket(value),
+  );
   const selectedBarangay = (
     document.getElementById("mapBarangayFilter")?.value || ""
   )
     .toLowerCase()
     .trim();
-  const standardTypes = [
-    "Restaurant / Cafe",
-    "Hotel / Resort",
-    "Mall / Shopping Center",
-    "Park / Recreational Area",
-  ];
 
   allMarkers.forEach((item) => {
     let isVisible = false;
 
-    if (selectedTypes.length === 0) {
+    if (selectedBuckets.length === 0) {
       isVisible = true; // Show all if none selected
     } else {
-      const isOther = !standardTypes.includes(item.type);
-
-      if (selectedTypes.includes(item.type)) {
-        isVisible = true;
-      } else if (selectedTypes.includes("Others") && isOther) {
-        isVisible = true;
-      }
+      isVisible = selectedBuckets.includes(item.typeBucket);
     }
 
     if (isVisible && selectedBarangay) {
@@ -187,6 +337,14 @@ document.addEventListener("DOMContentLoaded", function () {
     initMainMap();
   }
 
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".claim-owner-btn");
+    if (!btn) return;
+    const estId = Number(btn.getAttribute("data-est-id") || 0);
+    const estName = btn.getAttribute("data-est-name") || "Establishment";
+    openOwnershipClaimModal(estId, estName);
+  });
+
   // MODAL PICKER MAP LOGIC
   let pickerMap;
   let pickerMarker;
@@ -242,7 +400,13 @@ document.addEventListener("DOMContentLoaded", function () {
           if (pickerMarker) {
             pickerMarker.setLatLng(e.latlng);
           } else {
-            pickerMarker = L.marker(e.latlng).addTo(pickerMap);
+            const selectedType =
+              document.getElementById("typeSelect")?.value === "Others"
+                ? document.getElementById("other_type_input")?.value
+                : document.getElementById("typeSelect")?.value;
+            pickerMarker = L.marker(e.latlng, {
+              icon: getIconByType(selectedType),
+            }).addTo(pickerMap);
           }
 
           document.getElementById("lat_input").value = lat;
@@ -301,6 +465,19 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const rejectSubmitBtn = document.getElementById("confirmRejectEstablishmentBtn");
+  const claimForm = document.getElementById("ownershipClaimForm");
+  const claimRejectSubmitBtn = document.getElementById("confirmRejectOwnershipClaimBtn");
+  const typeSelect = document.getElementById("typeSelect");
+  const otherTypeInput = document.getElementById("other_type_input");
+  const updatePickerIcon = () => {
+    if (!pickerMarker) return;
+    const selectedType =
+      typeSelect?.value === "Others" ? otherTypeInput?.value : typeSelect?.value;
+    pickerMarker.setIcon(getIconByType(selectedType));
+  };
+  if (typeSelect) typeSelect.addEventListener("change", updatePickerIcon);
+  if (otherTypeInput) otherTypeInput.addEventListener("input", updatePickerIcon);
+
   if (rejectSubmitBtn) {
     rejectSubmitBtn.addEventListener("click", function () {
       const id = document.getElementById("rejectEstablishmentId").value;
@@ -330,4 +507,99 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
   }
+
+  if (claimForm) {
+    claimForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(claimForm);
+      formData.append("action", "submit_ownership_claim");
+      fetch(API_BASE_URL, { method: "POST", body: formData })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            const modalEl = document.getElementById("ownershipClaimModal");
+            if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+            claimForm.reset();
+            Swal.fire(
+              "Submitted",
+              "Your claim has been submitted and is under review.",
+              "success",
+            );
+          } else {
+            Swal.fire("Error", data.message || "Unable to submit claim.", "error");
+          }
+        })
+        .catch(() =>
+          Swal.fire("Error", "Connection failed while submitting claim.", "error"),
+        );
+    });
+  }
+
+  if (claimRejectSubmitBtn) {
+    claimRejectSubmitBtn.addEventListener("click", function () {
+      const claimId = document.getElementById("rejectOwnershipClaimId")?.value || "";
+      const reasonEl = document.getElementById("rejectOwnershipClaimReason");
+      const reason = (reasonEl?.value || "").trim();
+      if (!claimId) {
+        Swal.fire("Error", "Missing ownership claim ID.", "error");
+        return;
+      }
+      if (!reason) {
+        Swal.fire("Required", "Rejection reason is required.", "warning");
+        return;
+      }
+      const fd = new FormData();
+      fd.append("action", "reject_ownership_claim");
+      fd.append("claim_id", String(claimId));
+      fd.append("reason", reason);
+      fetch(API_BASE_URL, { method: "POST", body: fd })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            const modalEl = document.getElementById("rejectOwnershipClaimModal");
+            if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+            if (reasonEl) reasonEl.value = "";
+            Swal.fire("Rejected", "Ownership claim rejected.", "success").then(() =>
+              location.reload(),
+            );
+          } else {
+            Swal.fire("Error", data.message || "Rejection failed.", "error");
+          }
+        })
+        .catch(() =>
+          Swal.fire("Error", "Connection failed while rejecting claim.", "error"),
+        );
+    });
+  }
 });
+
+function approveOwnershipClaim(claimId) {
+  const fd = new FormData();
+  fd.append("action", "approve_ownership_claim");
+  fd.append("claim_id", String(claimId));
+  fetch(API_BASE_URL, { method: "POST", body: fd })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        Swal.fire("Approved", "Ownership claim approved.", "success").then(() =>
+          location.reload(),
+        );
+      } else {
+        Swal.fire("Error", data.message || "Approval failed.", "error");
+      }
+    });
+}
+
+function rejectOwnershipClaim(claimId) {
+  const hiddenId = document.getElementById("rejectOwnershipClaimId");
+  const reasonEl = document.getElementById("rejectOwnershipClaimReason");
+  const modalEl = document.getElementById("rejectOwnershipClaimModal");
+  if (!hiddenId || !reasonEl || !modalEl) {
+    Swal.fire("Error", "Reject modal is not available.", "error");
+    return;
+  }
+  hiddenId.value = String(claimId);
+  reasonEl.value = "";
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  modal.show();
+}

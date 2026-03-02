@@ -1,7 +1,13 @@
 <?php
+session_start();
 include 'db_config.php';
 
 header('Content-Type: application/json');
+
+if (!isset($_SESSION['user_id']) || !in_array(($_SESSION['role'] ?? 'user'), ['admin', 'super_admin'], true)) {
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit;
+}
 
 if (isset($_POST['delete_msg_id'])) {
     $msg_id = $_POST['delete_msg_id'];

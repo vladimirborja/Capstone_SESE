@@ -13,6 +13,8 @@ if (file_exists(__DIR__ . '/../db_config.php')) {
 $user_id = $_SESSION['user_id'] ?? 0;
 $unread_count = 0;
 $notifications = [];
+$current_page_file = strtolower((string)basename($_SERVER['PHP_SELF'] ?? ''));
+$enable_mobile_nav = in_array($current_page_file, ['main.php', 'about.php', 'contact.php'], true);
 
 // Fetch current user's profile image
 $current_user_profile_img = '../images/homeImages/profile icon.png'; // default
@@ -120,7 +122,7 @@ if ($user_id > 0 && isset($pdo)) {
     }
 </style>
 
-<header class="topbar container mx-auto px-4 rounded-4" style="margin-top: 20px;">
+<header class="topbar container mx-auto px-4 rounded-4 <?php echo $enable_mobile_nav ? 'mobile-nav-enabled' : ''; ?>" style="margin-top: 20px;">
     <div class="topbar-inner d-flex justify-content-between align-items-center">
         <div class="logo">
             <a href="../mains/main.php">
@@ -128,9 +130,12 @@ if ($user_id > 0 && isset($pdo)) {
             </a>
         </div>
 
-        <nav class="nav-links">
+
+
+        <nav class="nav-links" id="navLinks">
             <a href="main.php">Home</a>
-            <a href="lost&found.php">Lost & Found</a>
+            <a href="main.php?explore=1">Explore</a>
+            <a href="lost&found.php">Lost &amp; Found</a>
             <a href="about.php">About Us</a>
             <a href="contact.php">Contact Us</a>
         </nav>
@@ -285,6 +290,36 @@ if ($user_id > 0 && isset($pdo)) {
             document.querySelectorAll('.notif-dropdown').forEach(d => d.style.display = 'none');
         }
     }
+
+    (function initHamburgerMenu() {
+        const btn = document.getElementById('hamburgerBtn');
+        const nav = document.getElementById('navLinks');
+        if (!btn || !nav) return;
+
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            nav.classList.toggle('nav-open');
+            const expanded = nav.classList.contains('nav-open');
+            btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            btn.innerHTML = expanded ? '&#10005;' : '&#9776;';
+        });
+
+        nav.querySelectorAll('a').forEach((link) => {
+            link.addEventListener('click', () => {
+                nav.classList.remove('nav-open');
+                btn.setAttribute('aria-expanded', 'false');
+                btn.innerHTML = '&#9776;';
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!nav.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+                nav.classList.remove('nav-open');
+                btn.setAttribute('aria-expanded', 'false');
+                btn.innerHTML = '&#9776;';
+            }
+        });
+    })();
 
     function confirmLogout() {
         if (typeof Swal !== 'undefined') {

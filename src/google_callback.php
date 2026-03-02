@@ -37,7 +37,9 @@ if (isset($_GET['code'])) {
             $_SESSION['full_name'] = $full_name;
         }
 
-        if ($_SESSION['role'] === 'admin') {
+        if ($_SESSION['role'] === 'super_admin') {
+            header('Location: manage_users.php');
+        } elseif ($_SESSION['role'] === 'admin') {
             header('Location: admin_reports.php');
         } else {
             header('Location: mains/main.php');

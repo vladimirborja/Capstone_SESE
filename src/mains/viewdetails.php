@@ -4,19 +4,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lost & Found | Details</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   <style>
     body { background:#f5f9ff; font-family:Arial,sans-serif; }
-    .topbar { background:#1877f2; height:56px; display:flex; align-items:center; }
-    .container { max-width:1000px; margin:30px auto; padding:20px; }
+    .details-container { max-width:1000px; margin:30px auto; padding:20px; }
     .pet-details { display:flex; gap:30px; }
     .pet-image { width:260px; height:260px; border:2px solid #ccc; border-radius:10px; }
     .tag.lost { background:red; color:white; padding:4px 10px; border-radius:4px; }
     .tag.found { background:orange; color:white; padding:4px 10px; border-radius:4px; }
     .contact-btn { background:red; color:white; border:none; padding:10px 18px; border-radius:6px; }
     .post-btn { display:block; margin:30px auto; background:#ffc107; border:none; padding:12px 24px; border-radius:6px; font-weight:bold; }
+    @media (max-width: 768px) {
+      .details-container { margin: 16px auto; padding: 12px; }
+      .pet-details { flex-direction: column; gap: 16px; }
+      .pet-image { width: 100%; max-width: 320px; height: auto; aspect-ratio: 1/1; }
+      .d-flex.gap-3.mt-3 { flex-direction: column; }
+      .contact-btn, .post-btn, button { min-height: 44px; width: 100%; }
+    }
   </style>
 </head>
 
@@ -25,7 +32,7 @@
 <!-- HEADER -->
 <?php include 'header.php'; ?>
 
-<div class="container">
+<div class="details-container">
 
   <div class="pet-details">
     <!-- Image -->

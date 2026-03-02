@@ -144,8 +144,38 @@ CREATE TABLE `business_claims` (
   `requester_user_id` int(11) NOT NULL,
   `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
   `reason` text DEFAULT NULL,
+  `full_name` varchar(150) DEFAULT NULL,
+  `business_permit_number` varchar(150) DEFAULT NULL,
+  `document_path` varchar(255) DEFAULT NULL,
+  `contact_number` varchar(50) DEFAULT NULL,
+  `message` text DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ownership_claims`
+--
+
+CREATE TABLE IF NOT EXISTS `ownership_claims` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `establishment_id` int(11) NOT NULL,
+  `claimant_user_id` int(11) NOT NULL,
+  `full_name` varchar(150) DEFAULT NULL,
+  `permit_number` varchar(150) NOT NULL,
+  `document_path` varchar(255) NOT NULL,
+  `contact_number` varchar(50) NOT NULL,
+  `message` text DEFAULT NULL,
+  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `submitted_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_ownership_claim_est` (`establishment_id`),
+  KEY `idx_ownership_claim_user` (`claimant_user_id`),
+  KEY `idx_ownership_claim_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -199,6 +229,8 @@ INSERT INTO `contact_messages` (`id`, `name`, `email`, `contact`, `subject`, `me
 CREATE TABLE `establishments` (
   `id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
+  `owner_id` int(11) DEFAULT NULL,
+  `owner_verified` tinyint(1) NOT NULL DEFAULT 0,
   `requester_id` int(11) DEFAULT NULL,
   `status` enum('active','pending','approved','rejected') NOT NULL DEFAULT 'pending',
   `type` varchar(255) NOT NULL,
@@ -900,6 +932,7 @@ ALTER TABLE `contact_messages`
 ALTER TABLE `establishments`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
+  ADD KEY `owner_id` (`owner_id`),
   ADD KEY `requester_id` (`requester_id`);
 
 --
@@ -1141,7 +1174,8 @@ ALTER TABLE `business_claims`
 --
 ALTER TABLE `establishments`
   ADD CONSTRAINT `establishments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
-  ADD CONSTRAINT `establishments_ibfk_2` FOREIGN KEY (`requester_id`) REFERENCES `users` (`user_id`);
+  ADD CONSTRAINT `establishments_ibfk_2` FOREIGN KEY (`requester_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `establishments_ibfk_3` FOREIGN KEY (`owner_id`) REFERENCES `users` (`user_id`);
 
 --
 -- Constraints for table `login_history`
@@ -1203,6 +1237,13 @@ ALTER TABLE `post_likes`
 ALTER TABLE `post_reports`
   ADD CONSTRAINT `fk_report_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_report_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `ownership_claims`
+--
+ALTER TABLE `ownership_claims`
+  ADD CONSTRAINT `fk_ownership_claim_est` FOREIGN KEY (`establishment_id`) REFERENCES `establishments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_ownership_claim_user` FOREIGN KEY (`claimant_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -258,6 +258,20 @@ body {
     align-items: center;
 }
 
+.hamburger-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.8rem;
+    padding: 8px;
+    line-height: 1;
+    min-height: 44px;
+    min-width: 44px;
+    z-index: 10000;
+    cursor: pointer;
+}
+
 .icon-wrapper {
     position: relative;
     cursor: pointer;
@@ -1176,4 +1190,172 @@ h4 {
     margin-top: 25px;
     color: #333;
     font-weight: bold;
+}
+
+/* ================= RESPONSIVE GLOBAL OVERRIDES ================= */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.modal-dialog {
+    max-width: calc(100% - 1rem);
+    margin: 0.5rem auto;
+}
+
+.modal-content {
+    max-height: calc(100vh - 1rem);
+}
+
+.modal-body {
+    overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+    .topbar.mobile-nav-enabled .hamburger-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+    }
+    .topbar {
+        height: auto;
+        padding: 8px 0;
+        position: relative;
+    }
+    .topbar.mobile-nav-enabled .topbar-inner {
+        position: relative;
+        flex-wrap: wrap;
+        row-gap: 10px;
+        padding: 8px 12px;
+    }
+    .topbar.mobile-nav-enabled .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background: #1877f2;
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        z-index: 9999;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 18px rgba(0,0,0,.18);
+        padding: 0;
+        margin: 0;
+    }
+    .topbar.mobile-nav-enabled .nav-links.nav-open {
+        display: flex;
+    }
+    .topbar.mobile-nav-enabled .nav-links a {
+        font-size: 1rem;
+        width: 100%;
+        border-bottom: 1px solid rgba(255,255,255,0.18);
+        padding: 14px 20px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+    .topbar.mobile-nav-enabled .nav-links a:last-child {
+        border-bottom: none;
+    }
+    .top-icons {
+        width: auto;
+        justify-content: flex-end;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+    .topbar.container {
+        max-width: calc(100% - 16px);
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .login-card,
+    .signup-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 18px 16px !important;
+    }
+    #signupForm {
+        grid-template-columns: 1fr !important;
+    }
+    #signupForm .row,
+    #signupForm .mb-3,
+    #signupForm .signup-text,
+    #signupForm button,
+    .form-check,
+    .signup-logo,
+    .signup-title {
+        grid-column: span 1 !important;
+    }
+    .search-row {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px;
+    }
+    .search-box {
+        width: 100% !important;
+        max-width: 100%;
+    }
+    .filters {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    .filters .chip {
+        min-height: 44px;
+        flex: 1 1 160px;
+    }
+    .profile-container {
+        margin: 16px 10px;
+        padding: 14px;
+    }
+    .profile-header,
+    .profile-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .profile-header .avatar-wrapper {
+        margin-right: 0;
+    }
+    .tabs a {
+        margin-right: 10px;
+        font-size: 0.92rem;
+    }
+    .topbar-inner {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+    }
+    .logo {
+        min-width: 0;
+    }
+    .logo img {
+        max-width: 132px;
+        height: auto;
+    }
+    .top-icons {
+        gap: 10px;
+    }
+    .notif-dropdown {
+        right: 0;
+        width: min(320px, calc(100vw - 24px));
+    }
+    button,
+    .btn,
+    .nav-links a,
+    input,
+    select,
+    textarea {
+        min-height: 44px;
+    }
 }

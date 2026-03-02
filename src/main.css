@@ -158,7 +158,7 @@ section {
 .hero-section {
   padding: 140px 0 60px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 .hero-section::before {
   content: "";
@@ -189,6 +189,7 @@ section {
   margin-top: 60px;
   position: relative;
   z-index: 2;
+  overflow: visible;
 }
 .hero-section .pet-showcase .pet-images-row {
   display: flex;
@@ -197,9 +198,10 @@ section {
   position: relative;
   z-index: 3;
   padding: 0 20px;
+  margin-bottom: -145px;
 }
 .hero-section .pet-showcase .pet-images-row .pets-group-img {
-  max-width: 100%;
+  width: min(1200px);
   height: auto;
   display: block;
   position: relative;
@@ -208,8 +210,8 @@ section {
 .hero-section .pet-showcase .pet-info-container {
   background: var(--primary-blue);
   border-radius: var(--radius-xl);
-  padding: 80px 40px 40px;
-  margin-top: -152px;
+  padding: 90px 40px 40px;
+  margin-top: 0;
   text-align: center;
   position: relative;
   z-index: 1;
@@ -262,11 +264,15 @@ section {
   .hero-section .hero-title {
     font-size: 2rem;
   }
+  .hero-section .pet-showcase .pet-images-row {
+    margin-bottom: -36px;
+    padding: 0 10px;
+  }
   .hero-section .pets-group-img {
-    max-width: 90%;
+    width: min(520px, 96%);
   }
   .hero-section .pet-info-container {
-    padding: 60px 30px 30px;
+    padding: 66px 24px 30px;
   }
 }
 @media (max-width: 576px) {
@@ -277,10 +283,13 @@ section {
     width: 100%;
   }
   .pets-group-img {
-    max-width: 100%;
+    width: 96%;
+  }
+  .hero-section .pet-showcase .pet-images-row {
+    margin-bottom: -30px;
   }
   .pet-info-container {
-    padding: 50px 20px 30px !important;
+    padding: 58px 20px 30px !important;
   }
 }
 .what-is-sese-section {
@@ -1099,4 +1108,80 @@ section {
     border-left: none;
     border-bottom-color: #4361ee;
   }
-}/*# sourceMappingURL=main.css.map */
+}
+
+@media (max-width: 1024px) {
+  .navbar {
+    margin: 10px;
+    max-width: calc(100% - 20px);
+  }
+  .navbar .navbar-nav {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .explore-section .explore-card {
+    padding: 28px;
+  }
+  .explore-section .explore-card .explore-title {
+    font-size: 2rem;
+  }
+  .hero-section .pet-showcase .pet-images-row {
+    margin-bottom: -50px;
+  }
+  .hero-section .pet-showcase .pet-info-container {
+    padding-top: 78px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hero-section .hero-content .hero-title {
+    font-size: clamp(2.5rem, 4.8vw, 3.1rem);
+    margin-bottom: 28px;
+  }
+  .hero-section .pet-showcase {
+    overflow: visible;
+  }
+  .hero-section .pet-showcase .pet-images-row {
+    margin-bottom: -100px;
+    padding: 0 14px;
+  }
+  .hero-section .pet-showcase .pet-images-row .pets-group-img {
+    width: min(820px, 94%);
+    height: auto;
+  }
+  .hero-section .pet-showcase .pet-info-container {
+    overflow: visible;
+    padding: 82px 28px 34px;
+    width: 92vw;
+    margin-left: calc(50% - 46vw);
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar .navbar-nav .nav-link,
+  .navbar .btn-outline-light,
+  .navbar .btn-light,
+  .map-buttons .btn-primary {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .explore-section .map-container iframe {
+    height: 320px !important;
+  }
+  .about-section .about-title::after {
+    display: none;
+  }
+  .about-section .about-card,
+  .contact-section .contact-info-card {
+    padding: 20px;
+  }
+  .contact-section .contact-main-title {
+    font-size: 2rem;
+  }
+  .contact-section .form-label {
+    font-size: 1rem;
+  }
+}
+/*# sourceMappingURL=main.css.map */

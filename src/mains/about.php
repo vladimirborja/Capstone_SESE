@@ -11,6 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SESE | About Us</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -136,6 +137,40 @@ if (!isset($_SESSION['user_id'])) {
             opacity: 1;
             transform: translateY(0);
             color: #1177FE;
+        }
+        @media (max-width: 1024px) {
+            .team-section {
+                padding: 48px 0;
+            }
+        }
+        @media (max-width: 768px) {
+            body { padding-bottom: 20px; }
+            h1 { font-size: 1.6rem; }
+            h2 { font-size: 1.3rem; }
+            h3 { font-size: 1.1rem; }
+            p { font-size: 0.9rem; }
+            .team-section {
+                padding: 34px 0;
+            }
+            .team-card {
+                padding: 24px 14px;
+                border-radius: 20px;
+            }
+            .team-card:hover {
+                transform: none;
+            }
+            .about-title {
+                font-size: 1.8rem !important;
+            }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                padding-left: 14px;
+                padding-right: 14px;
+            }
+            .row.g-4 > [class*="col-"] {
+                width: 50%;
+            }
         }
 
     </style>

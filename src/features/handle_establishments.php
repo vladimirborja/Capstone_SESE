@@ -13,6 +13,207 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$id]);
             return $stmt->fetchColumn() ?: 'User';
         };
+        $notifyUser = function ($targetUserId, $message) use ($pdo) {
+            $notif = $pdo->prepare("INSERT INTO adoption_notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
+            $notif->execute([(int)$targetUserId, (string)$message]);
+        };
+
+        if (isset($_POST['action']) && $_POST['action'] === 'submit_ownership_claim') {
+            $establishmentId = (int)($_POST['establishment_id'] ?? 0);
+            $fullName = trim((string)($_POST['full_name'] ?? ''));
+            $permitNo = trim((string)($_POST['business_permit_number'] ?? ''));
+            $contactNumber = trim((string)($_POST['contact_number'] ?? ''));
+            $message = trim((string)($_POST['message'] ?? ''));
+
+            if ($establishmentId <= 0) {
+                throw new Exception("Invalid establishment selection.");
+            }
+            if ($fullName === '' || $permitNo === '' || $contactNumber === '' || $message === '') {
+                throw new Exception("Please complete all ownership claim fields.");
+            }
+            if (empty($_FILES['ownership_document']['name']) || (int)($_FILES['ownership_document']['error'] ?? 1) !== 0) {
+                throw new Exception("Ownership document upload is required.");
+            }
+
+            $estStmt = $pdo->prepare("SELECT id, name, COALESCE(owner_id, user_id, requester_id) AS current_owner_id,
+                                             COALESCE(owner_verified, 0) AS owner_verified
+                                      FROM establishments
+                                      WHERE id = ? AND status IN ('approved', 'active')");
+            $estStmt->execute([$establishmentId]);
+            $est = $estStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$est) {
+                throw new Exception("Establishment not found or not yet active.");
+            }
+            if ((int)($est['owner_verified'] ?? 0) === 1) {
+                throw new Exception("This establishment already has a verified owner.");
+            }
+
+            $dupStmt = $pdo->prepare("SELECT id FROM ownership_claims WHERE establishment_id = ? AND claimant_user_id = ? AND status = 'pending' LIMIT 1");
+            $dupStmt->execute([$establishmentId, $user_id]);
+            if ($dupStmt->fetch(PDO::FETCH_ASSOC)) {
+                throw new Exception("You already have a pending claim for this establishment.");
+            }
+
+            $uploadDir = realpath(__DIR__ . '/../') . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'ownership_claims';
+            if ($uploadDir === false) {
+                throw new Exception("Upload directory is unavailable.");
+            }
+            if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true)) {
+                throw new Exception("Failed to prepare upload directory.");
+            }
+
+            $originalName = (string)$_FILES['ownership_document']['name'];
+            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            $allowed = ['pdf', 'jpg', 'jpeg', 'png', 'webp'];
+            if (!in_array($ext, $allowed, true)) {
+                throw new Exception("Invalid file format. Allowed: PDF, JPG, JPEG, PNG, WEBP.");
+            }
+            $filename = 'claim_' . time() . '_' . mt_rand(1000, 9999) . '.' . $ext;
+            $targetPath = $uploadDir . DIRECTORY_SEPARATOR . $filename;
+            if (!move_uploaded_file($_FILES['ownership_document']['tmp_name'], $targetPath)) {
+                throw new Exception("Failed to upload ownership document.");
+            }
+            $relativePath = 'uploads/ownership_claims/' . $filename;
+
+            $insert = $pdo->prepare("INSERT INTO ownership_claims (
+                                        establishment_id, claimant_user_id, full_name, permit_number, document_path, contact_number,
+                                        message, status, submitted_at, reviewed_at
+                                     ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW(), NULL)");
+            $insert->execute([
+                $establishmentId,
+                $user_id,
+                $fullName,
+                $permitNo,
+                $relativePath,
+                $contactNumber,
+                $message
+            ]);
+
+            try {
+                $adminName = $getUserName($user_id);
+                $log = $pdo->prepare("INSERT INTO admin_logs (admin_id, admin_name, action_type, old_status, new_status, reason, affected_user_id, affected_user_name, created_at)
+                                      VALUES (?, ?, 'ownership_claim_submitted', 'none', 'pending', ?, ?, ?, NOW())");
+                $log->execute([
+                    $user_id,
+                    $adminName,
+                    'Submitted ownership claim for "' . ($est['name'] ?? 'Establishment') . '".',
+                    $user_id,
+                    $getUserName($user_id)
+                ]);
+            } catch (Exception $ignore) {
+            }
+
+            echo json_encode(['success' => true]);
+            exit;
+        }
+
+        if (isset($_POST['action']) && $_POST['action'] === 'approve_ownership_claim' && $isAdmin) {
+            $claimId = (int)($_POST['claim_id'] ?? 0);
+            if ($claimId <= 0) {
+                throw new Exception("Invalid claim ID.");
+            }
+            $adminName = $getUserName($user_id);
+
+            $pdo->beginTransaction();
+            $claimStmt = $pdo->prepare("SELECT bc.id AS claim_id, bc.establishment_id, bc.claimant_user_id, bc.status,
+                                               e.name AS establishment_name
+                                        FROM ownership_claims bc
+                                        JOIN establishments e ON e.id = bc.establishment_id
+                                        WHERE bc.id = ? FOR UPDATE");
+            $claimStmt->execute([$claimId]);
+            $claim = $claimStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$claim || strtolower((string)$claim['status']) !== 'pending') {
+                throw new Exception("Pending ownership claim not found.");
+            }
+
+            $approveClaim = $pdo->prepare("UPDATE ownership_claims SET status = 'approved', reviewed_at = NOW() WHERE id = ?");
+            $approveClaim->execute([$claimId]);
+
+            $rejectOthers = $pdo->prepare("UPDATE ownership_claims
+                                           SET status = 'rejected', message = CONCAT(IFNULL(message, ''), '\n[System] Another ownership claim was approved.'), reviewed_at = NOW()
+                                           WHERE establishment_id = ? AND id <> ? AND status = 'pending'");
+            $rejectOthers->execute([$claim['establishment_id'], $claimId]);
+
+            $updateEst = $pdo->prepare("UPDATE establishments
+                                        SET owner_id = ?, user_id = ?, owner_verified = 1
+                                        WHERE id = ?");
+            $updateEst->execute([
+                $claim['claimant_user_id'],
+                $claim['claimant_user_id'],
+                $claim['establishment_id']
+            ]);
+
+            $roleStmt = $pdo->prepare("SELECT role FROM users WHERE user_id = ?");
+            $roleStmt->execute([$claim['claimant_user_id']]);
+            $currentRole = strtolower((string)($roleStmt->fetchColumn() ?: 'user'));
+            if (!in_array($currentRole, ['admin', 'super_admin', 'business_owner'], true)) {
+                $setRole = $pdo->prepare("UPDATE users SET role = 'business_owner' WHERE user_id = ?");
+                $setRole->execute([$claim['claimant_user_id']]);
+            }
+
+            try {
+                $log = $pdo->prepare("INSERT INTO admin_logs (admin_id, admin_name, action_type, old_status, new_status, reason, affected_user_id, affected_user_name, created_at)
+                                      VALUES (?, ?, 'ownership_claim_approved', 'pending', 'approved', ?, ?, ?, NOW())");
+                $log->execute([
+                    $user_id,
+                    $adminName,
+                    'Approved ownership claim for "' . ($claim['establishment_name'] ?? 'Establishment') . '".',
+                    $claim['claimant_user_id'],
+                    $getUserName($claim['claimant_user_id'])
+                ]);
+            } catch (Exception $ignore) {
+            }
+
+            $notifyUser($claim['claimant_user_id'], 'Your ownership claim for "' . ($claim['establishment_name'] ?? 'Establishment') . '" was approved.');
+            $pdo->commit();
+            echo json_encode(['success' => true]);
+            exit;
+        }
+
+        if (isset($_POST['action']) && $_POST['action'] === 'reject_ownership_claim' && $isAdmin) {
+            $claimId = (int)($_POST['claim_id'] ?? 0);
+            $reason = trim((string)($_POST['reason'] ?? ''));
+            if ($claimId <= 0) {
+                throw new Exception("Invalid claim ID.");
+            }
+            if ($reason === '') {
+                throw new Exception("Rejection reason is required.");
+            }
+            $adminName = $getUserName($user_id);
+
+            $pdo->beginTransaction();
+            $claimStmt = $pdo->prepare("SELECT bc.id AS claim_id, bc.establishment_id, bc.claimant_user_id, bc.status,
+                                               e.name AS establishment_name
+                                        FROM ownership_claims bc
+                                        JOIN establishments e ON e.id = bc.establishment_id
+                                        WHERE bc.id = ? FOR UPDATE");
+            $claimStmt->execute([$claimId]);
+            $claim = $claimStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$claim || strtolower((string)$claim['status']) !== 'pending') {
+                throw new Exception("Pending ownership claim not found.");
+            }
+
+            $rejectClaim = $pdo->prepare("UPDATE ownership_claims SET status = 'rejected', message = CONCAT(IFNULL(message, ''), '\n[Admin Rejection Reason] ', ?), reviewed_at = NOW() WHERE id = ?");
+            $rejectClaim->execute([$reason, $claimId]);
+
+            try {
+                $log = $pdo->prepare("INSERT INTO admin_logs (admin_id, admin_name, action_type, old_status, new_status, reason, affected_user_id, affected_user_name, created_at)
+                                      VALUES (?, ?, 'ownership_claim_rejected', 'pending', 'rejected', ?, ?, ?, NOW())");
+                $log->execute([
+                    $user_id,
+                    $adminName,
+                    'Rejected ownership claim for "' . ($claim['establishment_name'] ?? 'Establishment') . '". Reason: ' . $reason,
+                    $claim['claimant_user_id'],
+                    $getUserName($claim['claimant_user_id'])
+                ]);
+            } catch (Exception $ignore) {
+            }
+
+            $notifyUser($claim['claimant_user_id'], 'Your ownership claim for "' . ($claim['establishment_name'] ?? 'Establishment') . '" was rejected. Reason: ' . $reason);
+            $pdo->commit();
+            echo json_encode(['success' => true]);
+            exit;
+        }
 
         // ACTION: APPROVE (ADMIN ONLY)
         if (isset($_POST['action']) && $_POST['action'] === 'approve_establishment' && $isAdmin) {
@@ -27,7 +228,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ownerId = !empty($est['requester_id']) ? $est['requester_id'] : null;
 
             try {
-                $stmt = $pdo->prepare("UPDATE establishments SET status = 'approved', user_id = COALESCE(user_id, requester_id) WHERE id = ?");
+                $stmt = $pdo->prepare("UPDATE establishments
+                                       SET status = 'approved',
+                                           user_id = COALESCE(user_id, requester_id),
+                                           owner_id = COALESCE(owner_id, user_id, requester_id),
+                                           owner_verified = COALESCE(owner_verified, 0)
+                                       WHERE id = ?");
                 $stmt->execute([$id]);
             } catch (Exception $e) {
                 $stmt = $pdo->prepare("UPDATE establishments SET status = 'active', user_id = COALESCE(user_id, requester_id) WHERE id = ?");
@@ -45,8 +251,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $ownerId ? $getUserName($ownerId) : null
                 ]);
                 if ($ownerId) {
-                    $notif = $pdo->prepare("INSERT INTO notifications (post_id, user_id, message, is_read, created_at) VALUES (NULL, ?, ?, 0, NOW())");
-                    $notif->execute([$ownerId, 'Your establishment "' . ($est['name'] ?? 'Listing') . '" was approved.']);
+                    $notifyUser($ownerId, 'Your establishment "' . ($est['name'] ?? 'Listing') . '" was approved.');
                 }
             } catch (Exception $ignore) {
             }
@@ -115,8 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 if ($ownerId) {
-                    $notif = $pdo->prepare("INSERT INTO notifications (post_id, user_id, message, is_read, created_at) VALUES (NULL, ?, ?, 0, NOW())");
-                    $notif->execute([$ownerId, 'Your establishment "' . ($est['name'] ?? 'Listing') . '" was rejected. Reason: ' . $reason]);
+                    $notifyUser($ownerId, 'Your establishment "' . ($est['name'] ?? 'Listing') . '" was rejected. Reason: ' . $reason);
                 }
             } catch (Exception $ignore) {
             }
@@ -168,19 +372,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($isAdmin) {
                 $sql = "INSERT INTO establishments (
-                            user_id, requester_id, status, name, description, address, latitude, longitude, type,
+                            user_id, owner_id, owner_verified, requester_id, status, name, description, address, latitude, longitude, type,
                             barangay, policies, pet_types_allowed, venue_size, operating_hours, contact_number, social_links, guidelines_accepted, created_at
                         ) VALUES (
-                            :uid, NULL, 'approved', :name, :desc, :addr, :lat, :lng, :type,
+                            :uid, :uid, 0, NULL, 'approved', :name, :desc, :addr, :lat, :lng, :type,
                             :barangay, :policies, :pet_types_allowed, :venue_size, :operating_hours, :contact_number, :social_links, 1, NOW()
                         )";
                 $params = ['uid' => $user_id];
             } else {
                 $sql = "INSERT INTO establishments (
-                            user_id, requester_id, status, name, description, address, latitude, longitude, type,
+                            user_id, owner_id, owner_verified, requester_id, status, name, description, address, latitude, longitude, type,
                             barangay, policies, pet_types_allowed, venue_size, operating_hours, contact_number, social_links, guidelines_accepted, created_at
                         ) VALUES (
-                            NULL, :req_id, 'pending', :name, :desc, :addr, :lat, :lng, :type,
+                            NULL, NULL, 0, :req_id, 'pending', :name, :desc, :addr, :lat, :lng, :type,
                             :barangay, :policies, :pet_types_allowed, :venue_size, :operating_hours, :contact_number, :social_links, 1, NOW()
                         )";
                 $params = ['req_id' => $user_id];

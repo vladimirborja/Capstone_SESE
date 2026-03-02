@@ -188,6 +188,29 @@ if (isset($_POST['action']) && $_POST['action'] === 'save_pet') {
         .btn-post { background-color: #ffc107; border: none; font-weight: bold; padding: 12px; border-radius: 10px; transition: 0.3s; color: #000; }
         .btn-post:hover { background-color: #e0ac00; transform: translateY(-1px); }
         .btn-close-custom { position: absolute; top: 20px; right: 20px; text-decoration: none; color: #333; font-size: 24px; }
+        @media (max-width: 1024px) {
+            .form-container-custom {
+                margin: 24px auto;
+                padding: 22px;
+            }
+        }
+        @media (max-width: 768px) {
+            .form-container-custom {
+                margin: 14px auto;
+                padding: 14px;
+                border-radius: 14px;
+            }
+            .btn-close-custom {
+                top: 12px;
+                right: 14px;
+            }
+            .image-box {
+                height: 210px;
+            }
+            #lost-found-map {
+                height: 260px;
+            }
+        }
     </style>
 </head>
 <body>
